@@ -2,6 +2,7 @@
     import Letter from "./Letter.svelte";
     import FreqTable from "./FreqTable.svelte";
     import Container from "../General/Container.svelte";
+    import {isLetter} from "$lib/util/CipherUtil";
 
     let {quote, error, cipherType, autoFocus} = $props();
 
@@ -17,10 +18,6 @@
     info["cipherTextTrim"]=quote.split(" ").join("");
     info["letterInputs"]=initLetterInputs();
     info["letterFocus"]=initLetterFocus();
-
-    function isLetter(character) {
-        return character != '' && /^[a-zA-Z]*$/.test(character);
-    }
 
     let lettersWithIndices = initLWI();
     let directMapCiphers = ['Aristocrat', 'Patristocrat', 'Caesar', 'Atbash'];
@@ -116,6 +113,36 @@
         }
         return res;
     }
+
+    function getInputText() {
+        let text = '';
+        for (let input of info.inputs) {
+            if (input.value != '') {
+                text += input.value;
+            }
+        }
+    }
+
+    async function checkDecodedQuote() {
+        let feedbackMessage = '';
+        try {
+            const response = await fetch('/api/check-quote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: quoteId, decodedQuote: userDecodedQuote })
+            });
+
+            const data = await response.json();
+
+            if (data.correct) {
+                feedbackMessage = 'Correct! Your decoded quote matches the original.';
+            } else {
+                feedbackMessage = 'Incorrect. Try again!';
+            }
+        } catch (error) {
+            feedbackMessage = 'An error occurred while checking the quote.';
+        }
+    }
 </script>
 
 <Container>
@@ -138,6 +165,7 @@
     {#if cipherType=="Aristocrat"}
         <FreqTable info={info}/>
     {/if}
+    <button onclick={checkDecodedQuote}>Hello</button>
 </Container>
 
 <style>

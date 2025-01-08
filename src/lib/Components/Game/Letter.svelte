@@ -1,11 +1,9 @@
 <script>
+    import {isLetter} from "$lib/util/CipherUtil";
+
     let {inputs=$bindable(), cipherLetter, index, inputValue, selected, directMap, autoFocus, onArrow, onFocus, onChange} = $props();
     let error = $state(false);
     let focus = $state(false);
-
-    function isLetter(character) {
-        return character != '' && /^[a-zA-Z]*$/.test(character);
-    }
 
     function handleKeyDown(event) {
         const deleteKeys = [

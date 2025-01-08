@@ -1,4 +1,4 @@
 export const cipherTypes = {
-    'Aristocrat' : {'directMap':false},
+    'Aristocrat' : {'directMap':true},
     'Porta' : {'directMap':false}
 }

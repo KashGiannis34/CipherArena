@@ -1,11 +1,9 @@
 <script>
+    import {isLetter} from "$lib/util/CipherUtil";
+
     let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     let {info} = $props();
     let frequencies = initFreq(info.cipherTextTrim);
-
-    function isLetter(character) {
-        return character != '' && /^[a-zA-Z]*$/.test(character);
-    }
 
     function initFreq(text) {
         let obj = {};
