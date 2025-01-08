@@ -1,17 +1,100 @@
 <script>
     import Letter from "./Letter.svelte";
-    import { info } from "./CipherInfo.svelte.js";
     import FreqTable from "./FreqTable.svelte";
-    import Container from "../Container.svelte";
+    import Container from "../General/Container.svelte";
 
-    let {cipherType, autoFocus} = $props();
+    let {quote, error, cipherType, autoFocus} = $props();
+
+    let info = $state({
+        cipherText: "",
+        cipherTextTrim: "",
+        letterInputs: {},
+        letterFocus: {},
+        inputs: []
+    });
+
+    info["cipherText"]=quote;
+    info["cipherTextTrim"]=quote.split(" ").join("");
+    info["letterInputs"]=initLetterInputs();
+    info["letterFocus"]=initLetterFocus();
+
+    function isLetter(character) {
+        return character != '' && /^[a-zA-Z]*$/.test(character);
+    }
 
     let lettersWithIndices = initLWI();
     let directMapCiphers = ['Aristocrat', 'Patristocrat', 'Caesar', 'Atbash'];
     let directMap = initDirectMap(cipherType);
 
-    function isLetter(character) {
-        return character != '' && /^[a-zA-Z]*$/.test(character);
+    function onArrow(key, index) {
+        let inc;
+        if (key == "ArrowLeft") {
+            inc = -1;
+        } else {
+            inc = 1;
+        }
+
+        let currIndex = index;
+        while (currIndex + inc < info.inputs.length && currIndex >= 0) {
+            let prevChar = info.cipherTextTrim[currIndex];
+            currIndex += inc;
+            if (isLetter(info.cipherTextTrim[currIndex]) && (info.cipherTextTrim[currIndex] != prevChar || !directMap)) {
+                break;
+            }
+        }
+        info.inputs[currIndex]?.focus();
+    }
+
+    function onFocus(letter, focus) {
+        if (!directMap)
+            return;
+        info.letterFocus[letter] = focus;
+    }
+
+    function onChange(letter, value, index) {
+        if (!directMap) {
+            inputValue = value;
+        }
+        else {
+            info.letterInputs[letter] = value;
+        }
+
+        if (autoFocus && value != '') {
+            let currIndex = index;
+            while (currIndex + 1 < info.inputs.length) {
+                currIndex++;
+                if (directMap) {
+                    if (isLetter(info.cipherTextTrim[currIndex]) &&
+                    info.cipherTextTrim[currIndex].toUpperCase() !== letter &&
+                    info.letterInputs[info.cipherTextTrim[currIndex].toUpperCase()] == '') {
+                        break;
+                    }
+                } else {
+                    if (isLetter(info.cipherTextTrim[currIndex])) {
+                        break;
+                    }
+                }
+            }
+            info.inputs[currIndex]?.focus();
+        }
+    }
+
+    function initLetterInputs() {
+        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const letterInputs = {};
+        alphabet.split('').forEach(letter => {
+            letterInputs[letter] = ''; // Initialize each letter with an empty string
+        });
+        return letterInputs;
+    }
+
+    function initLetterFocus() {
+        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const letterFocus = {};
+        alphabet.split('').forEach(letter => {
+            letterFocus[letter] = false;
+        });
+        return letterFocus;
     }
 
     function initDirectMap(type) {
@@ -45,14 +128,15 @@
         {#each lettersWithIndices as word}
             <div class="word">
                 {#each word as {letter, index}}
-                    <Letter cipherLetter={letter} index={index} inputValue={info.letterInputs[letter]}
-                    selected={info.letterFocus[letter]} directMap={directMap} autoFocus={autoFocus}/>
+                    <Letter bind:inputs={info.inputs} cipherLetter={letter} index={index} inputValue={info.letterInputs[letter]}
+                    selected={info.letterFocus[letter]} directMap={directMap} autoFocus={autoFocus} onArrow={onArrow}
+                    onFocus={onFocus} onChange={onChange}/>
                 {/each}
             </div>
         {/each}
     </div>
     {#if cipherType=="Aristocrat"}
-        <FreqTable />
+        <FreqTable info={info}/>
     {/if}
 </Container>
 

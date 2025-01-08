@@ -1,5 +1,5 @@
 <script>
-    import Container from "../Container.svelte";
+    import Container from "../General/Container.svelte";
 
     let {options} = $props();
 </script>

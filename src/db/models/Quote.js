@@ -1,0 +1,8 @@
+import {mongoose} from 'mongoose';
+
+const QuoteSchema = new mongoose.Schema({
+    author: { type: String, required: true },
+    text: { type: String, required: true }
+}, { collection: 'quotes' });
+
+export const Quote = mongoose.model('Quote', QuoteSchema);

@@ -1,16 +1,20 @@
 <script>
     import Cipher from "$lib/Components/Game/Cipher.svelte";
-    import { info } from "$lib/Components/Game/CipherInfo.svelte.js";
     import Options from "$lib/Components/Game/Options.svelte";
 
-    let cipherType = "Aristocrat";
-    let options = $state({'Auto Focus':false});
+    let { data } = $props();
+
+    let options = $state({'Auto Focus':true});
 
 </script>
 
 <div class="mainContainer">
     <Options {options}/>
-    <Cipher cipherType={cipherType} autoFocus={options['Auto Focus']}/>
+    {#if Object.keys(data.props)[0] == 'error'}
+        <p>There was an error in retrieving the quote.</p>
+    {:else}
+        <Cipher quote={data['props']['quote']} cipherType={data['props']['cipherType']} autoFocus={options['Auto Focus']}/>
+    {/if}
 </div>
 
 <style>

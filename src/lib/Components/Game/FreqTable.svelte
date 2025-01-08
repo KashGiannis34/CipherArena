@@ -1,7 +1,6 @@
 <script>
-    import { info } from "./CipherInfo.svelte.js";
-
     let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let {info} = $props();
     let frequencies = initFreq(info.cipherTextTrim);
 
     function isLetter(character) {

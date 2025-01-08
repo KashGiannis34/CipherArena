@@ -1,7 +1,5 @@
 <script>
-    import { info } from "./CipherInfo.svelte.js";
-
-    let {cipherLetter, index, inputValue, selected, directMap, autoFocus} = $props();
+    let {inputs=$bindable(), cipherLetter, index, inputValue, selected, directMap, autoFocus, onArrow, onFocus, onChange} = $props();
     let error = $state(false);
     let focus = $state(false);
 
@@ -37,25 +35,6 @@
         }
     }
 
-    function onArrow(key, index) {
-        let inc;
-        if (key == "ArrowLeft") {
-            inc = -1;
-        } else {
-            inc = 1;
-        }
-
-        let currIndex = index;
-        while (currIndex + inc < info.inputs.length && currIndex >= 0) {
-            let prevChar = info.cipherTextTrim[currIndex];
-            currIndex += inc;
-            if (isLetter(info.cipherTextTrim[currIndex]) && (info.cipherTextTrim[currIndex] != prevChar || !directMap)) {
-                break;
-            }
-        }
-        info.inputs[currIndex]?.focus();
-    }
-
     function handleInput(event) {
         let character = event.data;
         if (isLetter(event.data)) {
@@ -76,45 +55,11 @@
         focus = false;
     }
 
-    function onFocus(letter, focus) {
-        if (!directMap)
-            return;
-        info.letterFocus[letter] = focus;
-    }
-
-    function onChange(letter, value, index) {
-        if (!directMap) {
-            inputValue = value;
-        }
-        else {
-            info.letterInputs[letter] = value;
-        }
-
-        if (autoFocus && value != '') {
-            let currIndex = index;
-            while (currIndex + 1 < info.inputs.length) {
-                currIndex++;
-                if (directMap) {
-                    if (isLetter(info.cipherTextTrim[currIndex]) &&
-                    info.cipherTextTrim[currIndex].toUpperCase() !== letter &&
-                    info.letterInputs[info.cipherTextTrim[currIndex].toUpperCase()] == '') {
-                        break;
-                    }
-                } else {
-                    if (isLetter(info.cipherTextTrim[currIndex])) {
-                        break;
-                    }
-                }
-            }
-            info.inputs[currIndex]?.focus();
-        }
-    }
-
     if (isLetter(cipherLetter) && directMap) {
         $effect(() => {
             if (inputValue !== undefined && isLetter(inputValue)) {
                 if (inputValue == inputValue.toUpperCase()) {
-                    let vals = Object.values(info.letterInputs);
+                    let vals = Object.values(inputs);
                     error = vals.indexOf(inputValue) != vals.lastIndexOf(inputValue);
                 }
             }
@@ -126,7 +71,7 @@
     <div class="cipher-letter">{cipherLetter.toUpperCase()}</div>
     {#if isLetter(cipherLetter)}
         <input
-            bind:this={info.inputs[index]}
+            bind:this={inputs[index]}
             class:selected={selected}
             class:error={error}
             class:focus={focus}
