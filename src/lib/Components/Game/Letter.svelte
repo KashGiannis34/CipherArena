@@ -1,11 +1,14 @@
 <script>
     import {isLetter} from "$lib/util/CipherUtil";
 
-    let {inputs=$bindable(), cipherLetter, index, inputValue, selected, directMap, autoFocus, onArrow, onFocus, onChange} = $props();
+    let {inputs=$bindable(), letterInputs, cipherLetter, index, inputValue, selected, directMap, autoFocus, onArrow, onFocus, onChange, solved} = $props();
     let error = $state(false);
     let focus = $state(false);
 
     function handleKeyDown(event) {
+        if (solved)
+            return;
+
         const deleteKeys = [
             "Backspace",
             "Delete",
@@ -34,6 +37,9 @@
     }
 
     function handleInput(event) {
+        if (solved)
+            return;
+
         let character = event.data;
         if (isLetter(event.data)) {
             character = character.toUpperCase();
@@ -44,6 +50,9 @@
 
 
     function handleFocus() {
+        if (solved)
+            return;
+
         onFocus(cipherLetter, true);
         focus = true;
     }
@@ -56,10 +65,8 @@
     if (isLetter(cipherLetter) && directMap) {
         $effect(() => {
             if (inputValue !== undefined && isLetter(inputValue)) {
-                if (inputValue == inputValue.toUpperCase()) {
-                    let vals = Object.values(inputs);
-                    error = vals.indexOf(inputValue) != vals.lastIndexOf(inputValue);
-                }
+                let vals = Object.values(letterInputs);
+                error = vals.indexOf(inputValue) != vals.lastIndexOf(inputValue);
             }
         });
     }
@@ -70,9 +77,9 @@
     {#if isLetter(cipherLetter)}
         <input
             bind:this={inputs[index]}
-            class:selected={selected}
+            class:selected={selected && !solved}
             class:error={error}
-            class:focus={focus}
+            class:focus={focus && !solved}
             type="text"
             placeholder="="
             maxlength="1"
@@ -81,6 +88,7 @@
             onkeydown={handleKeyDown}
             onfocus={handleFocus}
             onblur={handleBlur}
+            readonly={solved}
         />
     {/if}
 </div>

@@ -1,5 +1,3 @@
-import { mongoose } from 'mongoose';
-import { start_mongo } from '$db/mongo';
 import { Quote } from '$db/models/Quote';
 import { redirect } from '@sveltejs/kit';
 import { cipherTypes } from '$lib/util/CipherTypes';
@@ -23,8 +21,7 @@ export async function load({params, url}) {
         const count = await Quote.countDocuments();
         const randomIndex = Math.floor(Math.random() * count);
         const randomQuote = await Quote.findOne().skip(randomIndex);
-        const encodedQuote = encodeQuote(structuredClone(randomQuote)["_doc"]["text"], cipherType, searchParams);
-        console.log(randomQuote["_doc"]["text"])
+        const encodedQuote = encodeQuote(randomQuote["text"], cipherType, searchParams);
         return {
             props: {
                 cipherType: cipherType,

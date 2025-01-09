@@ -26,6 +26,7 @@ export function encodeQuote(plaintext, cipherType, searchParams) {
 }
 
 function encodeAristocrat(plaintext, searchParams) {
+    //PREVENT SELF DECODE
     var freqTable = (searchParams.get('k') == null) ? freqTableInit('0'):freqTableInit(searchParams.get('k'));
     var ciphertext = '';
     for (let letter of plaintext) {
@@ -42,7 +43,7 @@ function freqTableInit(k) {
     if (k=='0') {
         const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         for (let i = alphabet.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
+            const j = Math.floor(Math.random() * i);
             const temp = alphabet[i];
             alphabet[i] = alphabet[j];
             alphabet[j] = temp;
@@ -51,4 +52,14 @@ function freqTableInit(k) {
     } else {
         return [];
     }
+}
+
+export function stripQuote(text) {
+    var stripped = '';
+    for (let letter of text) {
+        if (isLetter(letter)) {
+            stripped += letter.toUpperCase();
+        }
+    }
+    return stripped;
 }

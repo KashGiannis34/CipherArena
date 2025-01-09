@@ -88,10 +88,10 @@
     }
 }
 
-    .checkbox * {
-        box-sizing: inherit;
-    }
-    .checkbox *:before,
-    .checkbox *:after {
-        box-sizing: inherit;
-    }
+.checkbox * {
+    box-sizing: inherit;
+}
+.checkbox *:before,
+.checkbox *:after {
+    box-sizing: inherit;
+}

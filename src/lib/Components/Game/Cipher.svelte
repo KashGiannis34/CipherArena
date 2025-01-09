@@ -3,8 +3,13 @@
     import FreqTable from "./FreqTable.svelte";
     import Container from "../General/Container.svelte";
     import {isLetter} from "$lib/util/CipherUtil";
+    import Popup from "../General/Popup.svelte";
 
-    let {quote, error, cipherType, autoFocus} = $props();
+    let {quote, hash, cipherType, autoFocus} = $props();
+    let startTime = Date.now()/1000;
+    let visibility=$state(false);
+    let feedbackMessage=$state('');
+    let solved=$state(false);
 
     let info = $state({
         cipherText: "",
@@ -117,31 +122,42 @@
     function getInputText() {
         let text = '';
         for (let input of info.inputs) {
-            if (input.value != '') {
+            if (input != undefined && input.value != '') {
                 text += input.value;
             }
         }
+        return text;
     }
 
     async function checkDecodedQuote() {
-        let feedbackMessage = '';
+        let i = getInputText();
         try {
-            const response = await fetch('/api/check-quote', {
+            const response = await fetch('/api/validate-quote', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: quoteId, decodedQuote: userDecodedQuote })
-            });
-
-            const data = await response.json();
-
-            if (data.correct) {
-                feedbackMessage = 'Correct! Your decoded quote matches the original.';
+                body: JSON.stringify({'input':i, 'id':hash}),
+                headers: {
+                    'content-type': 'application/json'
+                }
+		    });
+            const answer = await response.json();
+            const time = (Date.now()/1000)-startTime;
+            const strTime = Math.floor(time/60).toString().padStart(2,'0')+':'+Math.round(time%60, 0).toString().padStart(2,'0');
+            if (answer) {
+                feedbackMessage = "<h2>Congratulations!</h2><p style=margin-top:8px>The cipher was solved in " + strTime + "!</p>";
+                solved = true;
             } else {
-                feedbackMessage = 'Incorrect. Try again!';
+                feedbackMessage = "<p>Sorry, your answer isn't correct. Giannis hopes you get it on the next try!</p>";
             }
+            visibility = true;
         } catch (error) {
-            feedbackMessage = 'An error occurred while checking the quote.';
+            feedbackMessage = '<p>An error occurred while checking the quote.</p>';
         }
+        return feedbackMessage;
+    }
+
+    function newQuote() {
+        visibility = false;
+        console.log(window.location.pathname);
     }
 </script>
 
@@ -155,9 +171,9 @@
         {#each lettersWithIndices as word}
             <div class="word">
                 {#each word as {letter, index}}
-                    <Letter bind:inputs={info.inputs} cipherLetter={letter} index={index} inputValue={info.letterInputs[letter]}
+                    <Letter bind:inputs={info.inputs} letterInputs={info.letterInputs} cipherLetter={letter} index={index} inputValue={info.letterInputs[letter]}
                     selected={info.letterFocus[letter]} directMap={directMap} autoFocus={autoFocus} onArrow={onArrow}
-                    onFocus={onFocus} onChange={onChange}/>
+                    onFocus={onFocus} onChange={onChange} solved={solved}/>
                 {/each}
             </div>
         {/each}
@@ -165,10 +181,15 @@
     {#if cipherType=="Aristocrat"}
         <FreqTable info={info}/>
     {/if}
-    <button onclick={checkDecodedQuote}>Hello</button>
+    <button class="button" onclick={checkDecodedQuote}>Submit</button>
 </Container>
+<Popup bind:visibility={visibility} exit={newQuote}>
+    {@html feedbackMessage}
+</Popup>
 
 <style>
+    @import "$lib/css/Button";
+
     .word {
         display: flex;
         flex-direction: row;
