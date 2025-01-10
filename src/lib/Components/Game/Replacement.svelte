@@ -1,7 +1,7 @@
 <script>
     import {isLetter} from "$lib/util/CipherUtil";
 
-    let {inputs=$bindable(), letterInputs, cipherLetter, index, inputValue, selected, directMap, autoFocus, onArrow, onFocus, onChange, solved} = $props();
+    let {inputs=$bindable(), letterInputs, cipherLetter, index, inputValue, selected, autoFocus, onArrow, onFocus, onChange, solved} = $props();
     let error = $state(false);
     let focus = $state(false);
 
@@ -24,7 +24,7 @@
             return;
         }
 
-        if (!isLetter(event.key) || (event.key.toUpperCase() == cipherLetter && directMap)) {
+        if (!isLetter(event.key) || (event.key.toUpperCase() == cipherLetter)) {
             event.preventDefault();
             return;
         }
@@ -62,7 +62,16 @@
         focus = false;
     }
 
-    if (isLetter(cipherLetter) && directMap) {
+    function handleClick() {
+        if (solved)
+            return;
+
+        inputs[index]?.focus();
+        onFocus(cipherLetter, true);
+        focus = true;
+    }
+
+    if (isLetter(cipherLetter)) {
         $effect(() => {
             if (inputValue !== undefined && isLetter(inputValue)) {
                 let vals = Object.values(letterInputs);
@@ -72,62 +81,65 @@
     }
 </script>
 
-<div class="letter-container">
-    <div class="cipher-letter">{cipherLetter.toUpperCase()}</div>
-    {#if isLetter(cipherLetter)}
-        <input
-            bind:this={inputs[index]}
-            class:selected={selected && !solved}
-            class:error={error}
-            class:focus={focus && !solved}
-            type="text"
-            placeholder="="
-            maxlength="1"
-            bind:value={inputValue}
-            oninput={handleInput}
-            onkeydown={handleKeyDown}
-            onfocus={handleFocus}
-            onblur={handleBlur}
-            readonly={solved}
-        />
-    {/if}
-</div>
+<td class:last={index==25} class:selected={selected && !solved}
+class:focus={focus && !solved} onclick={handleClick}>
+    <input
+        bind:this={inputs[index]}
+        class:error={error}
+        type="text"
+        placeholder="="
+        maxlength="1"
+        bind:value={inputValue}
+        oninput={handleInput}
+        onkeydown={handleKeyDown}
+        onfocus={handleFocus}
+        onblur={handleBlur}
+        readonly={solved}
+    />
+</td>
 
 <style>
-    .letter-container {
-        display: inline-block;
-        text-align: center;
-        margin: 0px;
-        padding: 0px;
-        width: 20px;
-    }
-
-    .cipher-letter {
-        font-size: 1.2rem;
-        font-weight: 500;
-        margin-bottom: 5px;
-        position: relative;
-        color: white !important;
-    }
-
     input {
         text-align: center;
-        font-size: 1.2rem;
-        font-weight: 500;
-        max-width: 20px;
         width: 100%;
-        min-height: 20px;
-        height: 70%;
+        height: 100%;
         background-color: transparent;
         border: none;
         outline: none;
         caret-color: transparent;
-        border-radius: 2px;
+        font-size: 1.8vw;
         font-family: 'Rubik', sans-serif;
+    }
+    @media screen and (min-width: 1200px) {
+        input {
+            font-size: 1.2rem;
+        }
     }
 
     .selected {
         background-color: #001b42b8 !important;
+    }
+
+    .focus {
+        background-color: #000000ae !important;
+    }
+
+    td:hover {
+        background-color: #002d6d9d;
+        cursor: pointer;
+    }
+
+    td {
+        border-bottom: 1px solid var(--bColor);
+        border-right: 1px solid var(--bColor);
+        text-align: center;
+        display: block;
+        padding-top: 0.65vw;
+        padding-bottom: 0.65vw;
+    }
+
+    .last {
+        border-bottom-right-radius: var(--bRadius);
     }
 
     :not(.error) {
@@ -139,17 +151,7 @@
         color: rgb(219, 44, 44);
     }
 
-    .focus {
-        border-bottom: 2px solid rgba(255, 255, 255, 0.825);
-        background-color: #001b42b8 !important;
-    }
-
-    :not(.focus) {
-        border: none;
-    }
-
     input:hover {
-        background-color: #002d6d9d;
         cursor: pointer;
     }
 

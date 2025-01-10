@@ -1,14 +1,14 @@
 <script>
     import Navbar from "$lib/Components/General/Navbar.svelte";
     import { page } from '$app/stores'
-
+    let {children} = $props();
 </script>
 
 <div class="mainContainer">
     {#if $page.url.pathname !== "/"}
         <Navbar/>
     {/if}
-    <slot />
+    {@render children?.()}
 </div>
 
 <style>

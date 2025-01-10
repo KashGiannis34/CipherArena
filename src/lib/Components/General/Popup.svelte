@@ -1,7 +1,7 @@
 <script>
     import { cubicOut } from "svelte/easing";
     import Container from "./Container.svelte";
-    let {visibility=$bindable(), exit} = $props();
+    let {children, visibility=$bindable(), exit} = $props();
 
     function zoom(node, { duration = 300 }) {
         return {
@@ -23,7 +23,7 @@
     <div class='modal' in:zoom out:zoom>
         <Container --paddingTop=25px --maxWidth=min(50vw,300px) --bgcolor="#e4e0ff" --color="black">
             <i class="fa-solid fa-xmark" onclick={() => {exit();}} onkeydown={() => {}}></i>
-            <slot></slot>
+            {@render children?.()}
             <button class='button' onclick={() => {exit();}}>Ok</button>
         </Container>
     </div>

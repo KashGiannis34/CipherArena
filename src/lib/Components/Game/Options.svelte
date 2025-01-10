@@ -1,7 +1,7 @@
 <script>
     import Container from "../General/Container.svelte";
 
-    let {options} = $props();
+    let {options=$bindable(), changeOption} = $props();
 </script>
 
 <Container>

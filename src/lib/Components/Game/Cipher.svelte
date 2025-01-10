@@ -4,25 +4,26 @@
     import Container from "../General/Container.svelte";
     import {isLetter} from "$lib/util/CipherUtil";
     import Popup from "../General/Popup.svelte";
+    import {Confetti} from 'svelte-confetti';
 
-    let {quote, hash, cipherType, autoFocus} = $props();
+    let {quote, hash, cipherType, autoFocus, k} = $props();
     let startTime = Date.now()/1000;
     let visibility=$state(false);
     let feedbackMessage=$state('');
     let solved=$state(false);
 
     let info = $state({
-        cipherText: "",
-        cipherTextTrim: "",
-        letterInputs: {},
-        letterFocus: {},
+        cipherText: quote,
+        cipherTextTrim: quote.split(" ").join(""),
+        letterInputs: initLetterInputs(),
+        letterFocus: initLetterFocus(),
         inputs: []
     });
 
-    info["cipherText"]=quote;
-    info["cipherTextTrim"]=quote.split(" ").join("");
-    info["letterInputs"]=initLetterInputs();
-    info["letterFocus"]=initLetterFocus();
+    // info["cipherText"]=quote;
+    // info["cipherTextTrim"]=quote.split(" ").join("");
+    // info["letterInputs"]=initLetterInputs();
+    // info["letterFocus"]=initLetterFocus();
 
     let lettersWithIndices = initLWI();
     let directMapCiphers = ['Aristocrat', 'Patristocrat', 'Caesar', 'Atbash'];
@@ -55,7 +56,7 @@
 
     function onChange(letter, value, index) {
         if (!directMap) {
-            inputValue = value;
+            info.inputs[index].value = value;
         }
         else {
             info.letterInputs[letter] = value;
@@ -157,7 +158,8 @@
 
     function newQuote() {
         visibility = false;
-        console.log(window.location.pathname);
+        if (solved)
+            window.location.href = window.location.href;
     }
 </script>
 
@@ -179,13 +181,29 @@
         {/each}
     </div>
     {#if cipherType=="Aristocrat"}
-        <FreqTable info={info}/>
+        <FreqTable bind:info={info} solved={solved} autoFocus={autoFocus}
+        k={k}/>
     {/if}
     <button class="button" onclick={checkDecodedQuote}>Submit</button>
 </Container>
 <Popup bind:visibility={visibility} exit={newQuote}>
     {@html feedbackMessage}
 </Popup>
+{#if solved}
+    <div style="
+    position: fixed;
+    z-index: 101;
+    top: -3vh;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    pointer-events: none;">
+        <Confetti duration=3000 x={[-5, 5]} delay={[0, 3000]} amount=200 fallDistance="100vh" colorRange={[75, 175]}/>
+    </div>
+{/if}
 
 <style>
     @import "$lib/css/Button";

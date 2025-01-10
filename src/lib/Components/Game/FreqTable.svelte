@@ -1,9 +1,49 @@
 <script>
-    import {isLetter} from "$lib/util/CipherUtil";
+    import {isLetter, numberToLetter} from "$lib/util/CipherUtil";
+    import CipherReplacement from "./CipherReplacement.svelte";
+    import Replacement from "./Replacement.svelte";
 
     let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let {info} = $props();
+    let {info=$bindable(), solved, autoFocus, k} = $props();
     let frequencies = initFreq(info.cipherTextTrim);
+    let inputs = $state([]);
+
+    function onChange(letter, value, index) {
+        info.letterInputs[letter] = value;
+
+        if (autoFocus && value != '') {
+            let currIndex = index;
+            while (currIndex + 1 < inputs.length) {
+                currIndex++;
+                if (inputs[currIndex].value == '') {
+                    break;
+                }
+            }
+            inputs[currIndex]?.focus();
+        }
+    }
+
+    function onArrow(key, index) {
+        let inc;
+        if (key == "ArrowLeft") {
+            inc = -1;
+        } else {
+            inc = 1;
+        }
+
+        let currIndex = index;
+        if (currIndex + inc < info.inputs.length && currIndex >= 0) {
+            currIndex += inc;
+        }
+        inputs[currIndex]?.focus();
+    }
+
+    function onFocus(letter, focus) {
+        if (k!='2')
+            info.letterFocus[letter] = focus;
+        else
+            info.letterFocus[letter] = focus;
+    }
 
     function initFreq(text) {
         let obj = {};
@@ -19,28 +59,53 @@
 
         return obj;
     }
+
+    function findInputValue(letter) {
+        const index = Object.values(info.letterInputs).indexOf(letter);
+        if (index == -1)
+            return '';
+        else
+            return numberToLetter(index);
+    }
 </script>
 
 <div class="freqTable">
     <table>
         <tbody>
-            <tr>
-                <th>Letter</th>
-                <th>Frequency</th>
-                <th>Replacement</th>
-            </tr>
-
-            {#each alphabet.split('') as letter}
+            {#if k != '2'}
                 <tr>
-                    <td>{letter}</td>
-                    <td>{frequencies[letter]}</td>
-                    {#if info.letterInputs[letter] == ''}
-                        <td class="transparent">-</td>
-                    {:else}
-                        <td>{info.letterInputs[letter]}</td>
-                    {/if}
+                    <th>Letter</th>
+                    <th>Frequency</th>
+                    <th>Replacement</th>
                 </tr>
-            {/each}
+
+                {#each alphabet.split('') as letter, index}
+                    <tr>
+                        <td>{letter}</td>
+                        <td>{frequencies[letter]}</td>
+                        <Replacement bind:inputs={inputs} letterInputs={info.letterInputs} cipherLetter={letter}
+                        index={index} inputValue={info.letterInputs[letter]} selected={info.letterFocus[letter]}
+                        autoFocus={autoFocus} onArrow={onArrow} onFocus={onFocus} onChange={onChange} solved={solved}/>
+                    </tr>
+                {/each}
+            {:else}
+                <tr>
+                    <th>Letter</th>
+                    <th>Replacement</th>
+                    <th>Frequency</th>
+                </tr>
+
+                {#each alphabet.split('') as letter, index}
+                    <tr>
+                        <CipherReplacement bind:inputs={inputs} letterInputs={info.letterInputs} cipherLetter={letter}
+                        index={index} inputValue={findInputValue(letter)}
+                        autoFocus={autoFocus} onArrow={onArrow} onFocus={onFocus} onChange={onChange} solved={solved}
+                        info={info}/>
+                        <td class:selected={info.letterFocus[letter]}>{letter}</td>
+                        <td class:selected={info.letterFocus[letter]}>{frequencies[letter]}</td>
+                    </tr>
+                {/each}
+            {/if}
         </tbody>
     </table>
 </div>
@@ -56,7 +121,7 @@
     }
 
     table {
-        width: 50%;
+        max-width: 50vw;
         display: table;
         border-collapse: separate;
         border-spacing: 0;
@@ -69,10 +134,10 @@
         transition-duration: 0ms !important;
     }
     @media screen and (min-width: 1200px) {
-    table {
-        font-size: 1.2rem;
+        table {
+            font-size: 1.2rem;
+        }
     }
-}
 
     table tr {
 	    display: table-cell;
@@ -80,11 +145,18 @@
 
     }
 
+    .selected {
+        background-color: #001b42b8 !important;
+    }
+
     th, td {
-        padding: 0.65vw;
         border-bottom: 1px solid var(--bColor);
         border-right: 1px solid var(--bColor);
         text-align: center;
+    }
+
+    th, td {
+        padding: 0.65vw;
     }
 
     table tr th {
@@ -102,10 +174,6 @@
 
     table tr:last-child td:first-child {
         border-top-right-radius: var(--bRadius);
-    }
-
-    table tr:last-child td:last-child {
-        border-bottom-right-radius: var(--bRadius);
     }
 
     table tr:first-child th:last-child {

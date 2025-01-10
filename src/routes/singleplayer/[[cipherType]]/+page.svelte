@@ -9,11 +9,13 @@
 </script>
 
 <div class="mainContainer">
-    <Options {options}/>
+    <Options bind:options={options}/>
     {#if Object.keys(data.props)[0] == 'error'}
         <p>There was an error in retrieving the quote.</p>
     {:else}
-        <Cipher quote={data['props']['quote']} hash={data['props']['hash']} cipherType={data['props']['cipherType']} autoFocus={options['Auto Focus']}/>
+        <Cipher quote={data['props']['quote']} hash={data['props']['hash']}
+        cipherType={data['props']['cipherType']} autoFocus={options['Auto Focus']}
+        k={data['props']['k']}/>
     {/if}
 </div>
 
