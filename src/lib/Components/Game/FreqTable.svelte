@@ -23,6 +23,13 @@
         }
     }
 
+    function onDelete(cipherLetter, index) {
+        for (let letter of Object.keys(info.letterInputs)) {
+            if (info.letterInputs[letter] == cipherLetter)
+                info.letterInputs[letter] = '';
+        }
+    }
+
     function onArrow(key, index) {
         let inc;
         if (key == "ArrowLeft") {
@@ -83,7 +90,7 @@
                     <tr>
                         <td>{letter}</td>
                         <td>{frequencies[letter]}</td>
-                        <Replacement bind:inputs={inputs} letterInputs={info.letterInputs} cipherLetter={letter}
+                        <Replacement bind:inputs={inputs} bind:letterInputs={info.letterInputs} cipherLetter={letter}
                         index={index} inputValue={info.letterInputs[letter]} selected={info.letterFocus[letter]}
                         autoFocus={autoFocus} onArrow={onArrow} onFocus={onFocus} onChange={onChange} solved={solved}/>
                     </tr>
@@ -99,8 +106,8 @@
                     <tr>
                         <CipherReplacement bind:inputs={inputs} letterInputs={info.letterInputs} cipherLetter={letter}
                         index={index} inputValue={findInputValue(letter)}
-                        autoFocus={autoFocus} onArrow={onArrow} onFocus={onFocus} onChange={onChange} solved={solved}
-                        info={info}/>
+                        autoFocus={autoFocus} onArrow={onArrow} onFocus={onFocus} onChange={onChange}
+                        onDelete={onDelete} solved={solved}/>
                         <td class:selected={info.letterFocus[letter]}>{letter}</td>
                         <td class:selected={info.letterFocus[letter]}>{frequencies[letter]}</td>
                     </tr>
@@ -180,7 +187,7 @@
         border-bottom-left-radius: var(--bRadius);
     }
 
-    .transparent {
-        color: transparent;
+    table tr:last-child td:last-child {
+        border-bottom-right-radius: var(--bRadius);
     }
 </style>

@@ -5,7 +5,6 @@
 </script>
 
 <Container>
-
     {#each Object.entries(options) as [option, value]}
         <div class="option checkbox">
             <input type="checkbox" id={option} name={option} bind:checked={options[option]}/>

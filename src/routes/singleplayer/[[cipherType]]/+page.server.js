@@ -3,39 +3,34 @@ import { Word } from '$db/models/Word';
 import { redirect } from '@sveltejs/kit';
 import { cipherTypes } from '$lib/util/CipherTypes';
 import { encodeQuote } from '$lib/util/CipherUtil';
-import { ObjectId } from 'mongodb';
+import { findRandomEntry } from '$db/dbUtil';
 
 /** @type {import('./$types').PageLoad} */
 export async function load({params, url}) {
-    var cipherType = 'Aristocrat';
-    var searchParams = url.searchParams;
+    let cipherType = 'Aristocrat';
+    let searchParams = url.searchParams;
     if (Object.keys(params).length == 0)
-        cipherType = 'Aristocrat';
+        redirect('307', '/singleplayer/Aristocrat');
     else if (Object.keys(cipherTypes).includes(params['cipherType'])) {
         cipherType = params['cipherType'];
     } else {
-        cipherType = 'Aristocrat';
         redirect('307', '/singleplayer/Aristocrat');
     }
 
     try {
-        const count = await Quote.countDocuments();
-        const randomIndex = Math.floor(Math.random() * count);
-        const randomQuote = await Quote.findOne().skip(randomIndex);
+        const randomQuote = await findRandomEntry(Quote, {length: {$gte: cipherTypes[cipherType]['length'][0], $lte: cipherTypes[cipherType]['length'][1]}});
 
         const keyCount = cipherTypes[params['cipherType']]['keys'];
-        var keys = [];
+        let keys = [];
         for (let keyName of keyCount) {
-            var randomWord = '';
+            let randomWord = '';
             do {
-                const count = await Word.countDocuments({length: { $gte: 5, $lte: 9}});
-                const randomIndex = Math.floor(Math.random() * count);
-                randomWord = await Word.findOne({length: { $gte: 5, $lte: 9}}).skip(randomIndex);
+                randomWord = await findRandomEntry(Word, {length: { $gte: 5, $lte: 9}})
             } while (keys.includes(randomWord));
             keys.push(randomWord["text"].toUpperCase());
         }
 
-        const encodedQuote = encodeQuote(randomQuote["text"], cipherType, searchParams, keys);
+        const encodedQuote = encodeQuote(randomQuote["text"], (cipherType == 'Patristocrat' ? 'Aristocrat':cipherType), searchParams, keys);
 
         return {
             props: {

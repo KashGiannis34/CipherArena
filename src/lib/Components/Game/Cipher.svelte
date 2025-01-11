@@ -5,28 +5,23 @@
     import {isLetter} from "$lib/util/CipherUtil";
     import Popup from "../General/Popup.svelte";
     import {Confetti} from 'svelte-confetti';
+    import { cipherTypes } from "$lib/util/CipherTypes";
 
-    let {quote, hash, cipherType, autoFocus, k} = $props();
+    let {quote, hash, cipherType, autoFocus, k, keys, spacing} = $props();
     let startTime = Date.now()/1000;
     let visibility=$state(false);
     let feedbackMessage=$state('');
     let solved=$state(false);
 
     let info = $state({
-        cipherText: quote,
+        cipherText: initQuote(quote, cipherTypes[cipherType]['spacing']),
         cipherTextTrim: quote.split(" ").join(""),
         letterInputs: initLetterInputs(),
         letterFocus: initLetterFocus(),
         inputs: []
     });
 
-    // info["cipherText"]=quote;
-    // info["cipherTextTrim"]=quote.split(" ").join("");
-    // info["letterInputs"]=initLetterInputs();
-    // info["letterFocus"]=initLetterFocus();
-
     let lettersWithIndices = initLWI();
-    let directMapCiphers = ['Aristocrat', 'Patristocrat', 'Caesar', 'Atbash'];
     let directMap = initDirectMap(cipherType);
 
     function onArrow(key, index) {
@@ -82,6 +77,26 @@
         }
     }
 
+    function initQuote(quote, spacing) {
+        if (spacing == -1)
+            return quote;
+        else {
+            let res = '';
+            let count = 0;
+            for (let letter of quote) {
+                if (isLetter(letter)) {
+                    res+=letter;
+                    count++;
+                } else {
+                    continue;
+                }
+                if (res != '' && spacing != 0 && count % spacing == 0)
+                    res += ' ';
+            }
+            return res;
+        }
+    }
+
     function initLetterInputs() {
         const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         const letterInputs = {};
@@ -101,7 +116,7 @@
     }
 
     function initDirectMap(type) {
-        return directMapCiphers.includes(type);
+        return cipherTypes[cipherType]['directMap'];
     }
 
     function initLWI() {
@@ -166,7 +181,11 @@
 <Container>
     <div class="info">
         <h3>Solve this <span class="highlight">{cipherType}</span> cipher.</h3>
-        <!-- <h3>Key: <span class="highlight">HELLO</span> </h3> -->
+        {#each keys as key, index}
+            {#if cipherTypes[cipherType]['keys'][index] != '!'}
+                <h4>{cipherTypes[cipherType]['keys'][index]} is <span class="highlight">{key}</span>. </h4>
+            {/if}
+        {/each}
 
     </div>
     <div class="cipher">
@@ -180,7 +199,7 @@
             </div>
         {/each}
     </div>
-    {#if cipherType=="Aristocrat"}
+    {#if cipherTypes[cipherType]['addOn']=="freqTable"}
         <FreqTable bind:info={info} solved={solved} autoFocus={autoFocus}
         k={k}/>
     {/if}

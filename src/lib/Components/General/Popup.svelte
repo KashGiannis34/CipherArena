@@ -16,10 +16,22 @@
         };
     }
 
+    function fade(node, {duration = 400}) {
+        return {
+            duration,
+            css: t => {
+                const eased = cubicOut(t); // Apply easing
+                return `
+                    opacity: ${eased};
+                `;
+            }
+        };
+    }
+
 </script>
 
 {#if visibility}
-    <div class='background' onclick={() => {exit();}} onkeydown={() => {}}></div>
+    <div class='background' onclick={() => {exit();}} onkeydown={() => {}} in:fade out:fade></div>
     <div class='modal' in:zoom out:zoom>
         <Container --paddingTop=25px --maxWidth=min(50vw,300px) --bgcolor="#e4e0ff" --color="black">
             <i class="fa-solid fa-xmark" onclick={() => {exit();}} onkeydown={() => {}}></i>
@@ -39,7 +51,7 @@
 
     .background {
         position: fixed;
-        z-index: 99;
+        z-index: 90;
         top: 0;
         left: 0;
         width: 100vw;

@@ -1,7 +1,7 @@
 <script>
     import {isLetter, numberToLetter} from "$lib/util/CipherUtil";
 
-    let {inputs=$bindable(), letterInputs, cipherLetter, index, inputValue, autoFocus, onArrow, onFocus, onChange, solved, info} = $props();
+    let {inputs=$bindable(), letterInputs=$bindable(), cipherLetter, index, inputValue, autoFocus, onArrow, onFocus, onChange, onDelete, solved} = $props();
     let error = $state(false);
     let focus = $state(false);
 
@@ -21,7 +21,7 @@
 
         if (deleteKeys.includes(event.key)) {
             onFocus(inputValue, false);
-            onChange(inputValue, '', index);
+            onDelete(cipherLetter, index);
             return;
         }
 
@@ -66,8 +66,6 @@
     }
 
     function handleBlur() {
-        console.log($state.snapshot(info.letterFocus));
-        console.log(cipherLetter);
         onFocus(inputValue, false);
         focus = false;
     }

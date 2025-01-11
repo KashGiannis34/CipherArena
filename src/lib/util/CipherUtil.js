@@ -1,5 +1,5 @@
 export function isLetter(character) {
-    return character != '' && /^[a-zA-Z]*$/.test(character);
+    return character !== '' && character !== ' ' && /^[a-zA-Z]*$/.test(character);
 }
 
 export function letterToNumber(char) {
@@ -24,17 +24,12 @@ export function numberToLetter(num) {
 }
 
 function shiftArray(arr, shiftAmount) {
-    // Create a copy of the array to avoid modifying original
-    const copy = arr.slice();
+    const length = arr.length;
+    shiftAmount = ((shiftAmount % length) + length) % length; // Handle negative shifts
 
-    // Calculate the effective shift amount by taking modulo of array length
-    shiftAmount = shiftAmount % copy.length;
+    if (shiftAmount === 0) return arr.slice(); // No shift needed
 
-    // Use splice to 'cut' the part to be shifted and add it to the end
-    const shiftedPart = copy.splice(0, shiftAmount);
-    copy.push(...shiftedPart);
-
-    return copy;
+    return arr.slice(-shiftAmount).concat(arr.slice(0, -shiftAmount));
 }
 
 function checkSelfDecode(arr) {
@@ -46,68 +41,110 @@ function checkSelfDecode(arr) {
 }
 
 export function encodeQuote(plaintext, cipherType, searchParams, keys) {
-    var ciphertext = '';
+    let ciphertext = '';
     if (cipherType == 'Aristocrat') {
         ciphertext = encodeAristocrat(plaintext, searchParams, keys[0]);
     } else if (cipherType == 'Porta') {
         ciphertext = encodePorta(plaintext, keys[0]);
+    } else if (cipherType == 'Caesar') {
+        ciphertext = encodeCaesar(plaintext);
+    } else if (cipherType == 'Atbash') {
+        ciphertext = encodeAtbash(plaintext);
     } else {
         ciphertext = encodeAristocrat(plaintext, searchParams);
     }
     return ciphertext;
 }
 
-function encodeAristocrat(plaintext, searchParams, key) {
-    var freqTable = (searchParams.get('k') == null) ? freqTableInit('0'):freqTableInit(searchParams.get('k'), key);
-    var ciphertext = '';
+function encodeCaesar(plaintext) {
+    let res = '';
+    let shift = (Math.random() * 25)+1;
     for (let letter of plaintext) {
-        if (isLetter(letter) == false) {
-            ciphertext += letter;
+        const num = letterToNumber(letter);
+        if (num == -1)
+            res += letter;
+        else
+            res += numberToLetter((num+shift) % 26);
+    }
+    return res;
+}
+
+function encodeAtbash(plaintext) {
+    let res = '';
+    for (let letter of plaintext) {
+        const num = letterToNumber(letter);
+        if (num == -1)
+            res += letter
+        else
+            res += numberToLetter(25-letterToNumber(letter));
+    }
+    return res;
+}
+
+function encodeAristocrat(plaintext, searchParams, key) {
+    const freqTable = freqTableInit(searchParams.get('k') || '0', key);
+    let ciphertext = '';
+    const useInverseMapping = searchParams.get('k') === '1' || searchParams.get('k') === '3';
+    let upperPlaintext = plaintext.toUpperCase();
+
+    for (let letter of upperPlaintext) {
+        if (!isLetter(letter)) {
+            ciphertext += letter; // Directly append non-letters
         } else {
-            if (searchParams.get('k') == '1' || searchParams.get('k') == '3')
-                ciphertext += numberToLetter(freqTable.indexOf(letter.toUpperCase()));
-            else
-                ciphertext += freqTable[letterToNumber(letter)];
+            const index = letterToNumber(letter);
+            ciphertext += useInverseMapping
+                ? numberToLetter(freqTable.indexOf(letter.toUpperCase()))
+                : freqTable[index];
         }
     }
     return ciphertext;
 }
 
 function encodePorta(plaintext, key) {
-    // var freqTable = (searchParams.get('k') == null) ? freqTableInit('0'):freqTableInit(searchParams.get('k'));
-    // var ciphertext = '';
-    // for (let letter of plaintext) {
-    //     if (letterToNumber(letter) == -1) {
-    //         ciphertext += letter;
-    //     } else {
-    //         ciphertext += freqTable[letterToNumber(letter)];
-    //     }
-    // }
-    return plaintext;
+    let ciphertext = '';
+    let count = 0;
+    let length = key.length;
+    for (let letter of plaintext) {
+        const num = letterToNumber(letter);
+        if (num == -1) {
+            ciphertext += letter;
+        } else {
+            const k = letterToNumber(key[count % length]);
+            const res = numberToLetter(num < 13 ? (num + Math.floor(k/2))%13 + 13 : (num - Math.floor(k/2))%13);
+            ciphertext += res;
+            count++;
+        }
+    }
+    return ciphertext;
+}
+
+function setArray(key) {
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    let freqTable = [];
+    let count = 0;
+    for (let i = 0; i < key.length; i++) {
+        if (freqTable.includes(key[i]))
+            continue;
+        else {
+            freqTable[count] = key[i];
+            count++;
+        }
+    }
+    for (let letter of alphabet) {
+        if (freqTable.includes(letter))
+            continue;
+        else {
+            freqTable[count] = letter;
+            count++;
+        }
+    }
+    return freqTable;
 }
 
 function freqTableInit(k, key) {
     if (k=='1' || k=='2') {
-        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-        var freqTable = [];
-        var count = 0;
-        for (let i = 0; i < key.length; i++) {
-            if (freqTable.includes(key[i]))
-                continue;
-            else {
-                freqTable[count] = key[i];
-                count++;
-            }
-        }
-        for (let letter of alphabet) {
-            if (freqTable.includes(letter))
-                continue;
-            else {
-                freqTable[count] = letter;
-                count++;
-            }
-        }
-        var selfDecode = false;
+        let freqTable = setArray(key);
+        let selfDecode = false;
         do {
             const shift = (Math.random() * 26);
             freqTable = shiftArray(freqTable, shift);
@@ -116,7 +153,24 @@ function freqTableInit(k, key) {
 
         return freqTable;
     } else if (k=='3') {
+        let freqTable = setArray(key);
+        let freqTable2 = freqTable;
+        let finalTable = [];
+        let selfDecode = false;
 
+        do {
+            finalTable = [];
+            const shift1 = (Math.random() * 26);
+            const shift2 = (Math.random() * 26);
+            freqTable = shiftArray(freqTable, shift1);
+            freqTable2 = shiftArray(freqTable2, shift2);
+            for (let n = 0; n < 26; n++) {
+                finalTable[n] = freqTable2[freqTable.indexOf(numberToLetter(n))];
+            }
+            selfDecode = checkSelfDecode(finalTable);
+        } while (selfDecode);
+
+        return finalTable;
     } else {
         const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         for (let i = alphabet.length - 1; i > 0; i--) {
@@ -130,7 +184,7 @@ function freqTableInit(k, key) {
 }
 
 export function stripQuote(text) {
-    var stripped = '';
+    let stripped = '';
     for (let letter of text) {
         if (isLetter(letter)) {
             stripped += letter.toUpperCase();

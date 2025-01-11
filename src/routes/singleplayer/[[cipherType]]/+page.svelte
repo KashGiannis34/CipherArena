@@ -15,7 +15,7 @@
     {:else}
         <Cipher quote={data['props']['quote']} hash={data['props']['hash']}
         cipherType={data['props']['cipherType']} autoFocus={options['Auto Focus']}
-        k={data['props']['k']}/>
+        k={data['props']['k']} keys={JSON.parse(data['props']['keys'])}/>
     {/if}
 </div>
 
