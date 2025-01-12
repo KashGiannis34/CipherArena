@@ -33,7 +33,6 @@
 
     function exit() {
         toggle();
-        console.log(visibility);
     }
 
 </script>

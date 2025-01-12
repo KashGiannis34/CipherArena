@@ -1,6 +1,6 @@
 @supports (-webkit-appearance: none) or (-moz-appearance: none) {
     .checkbox input[type=checkbox] {
-        --active: #275EFE;
+        --active: linear-gradient(45deg, #8d2fff 0%, #5619f0  51%, #2f2fff  100%);;
         --active-inner: #fff;
         --focus: 2px rgba(39, 94, 254, .3);
         --border: #BBC1E1;

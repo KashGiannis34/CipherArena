@@ -40,7 +40,7 @@ function checkSelfDecode(arr) {
     return false;
 }
 
-export function encodeQuote(plaintext, cipherType, searchParams, keys) {
+export function encodeQuote(plaintext, cipherType, keys, searchParams) {
     let ciphertext = '';
     if (cipherType == 'Aristocrat') {
         ciphertext = encodeAristocrat(plaintext, searchParams, keys[0]);
@@ -82,9 +82,9 @@ function encodeAtbash(plaintext) {
 }
 
 function encodeAristocrat(plaintext, searchParams, key) {
-    const freqTable = freqTableInit(searchParams.get('k') || '0', key);
+    const freqTable = freqTableInit(searchParams.get('K') || '0', key);
     let ciphertext = '';
-    const useInverseMapping = searchParams.get('k') === '1' || searchParams.get('k') === '3';
+    const useInverseMapping = searchParams.get('K') === '1' || searchParams.get('K') === '3';
     let upperPlaintext = plaintext.toUpperCase();
 
     for (let letter of upperPlaintext) {

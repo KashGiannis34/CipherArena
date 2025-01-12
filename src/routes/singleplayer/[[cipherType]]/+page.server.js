@@ -19,6 +19,9 @@ export async function load({params, url}) {
     }
 
     try {
+        let p = {};
+        p['K'] = (searchParams.get('K') == null ? '-1' : searchParams.get('K'));
+        p['Solve'] = (searchParams.get('Solve') == null ? 'Decode' : searchParams.get('Solve'));
         const randomQuote = await findRandomEntry(Quote, {length: {$gte: cipherTypes[cipherType]['length'][0], $lte: cipherTypes[cipherType]['length'][1]}});
 
         const keyCount = cipherTypes[params['cipherType']]['keys'];
@@ -31,7 +34,7 @@ export async function load({params, url}) {
             keys.push(randomWord["text"].toUpperCase());
         }
 
-        const encodedQuote = encodeQuote(randomQuote["text"], (cipherType == 'Patristocrat' ? 'Aristocrat':cipherType), searchParams, keys);
+        const encodedQuote = p['Solve'] == "Decode" ? encodeQuote(randomQuote["text"], (cipherType == 'Patristocrat' ? 'Aristocrat':cipherType), keys, searchParams) : randomQuote["text"];
 
         return {
             props: {
@@ -39,7 +42,7 @@ export async function load({params, url}) {
                 quote: encodedQuote,
                 hash: randomQuote["_id"].toString(),
                 keys: JSON.stringify(keys),
-                k: (searchParams.get('k') == null ? '0' : searchParams.get('k'))
+                params: p
             }
         };
     } catch (error) {

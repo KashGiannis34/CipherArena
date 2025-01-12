@@ -17,7 +17,7 @@
     })
 </script>
 
-<!-- {#if mounted} -->
+{#if mounted || Object.keys(data.props)[0] == 'error'}
     <div class="mainContainer" transition:fade>
         <Options options={options} onOptionChange={onOptionChange}/>
         {#if Object.keys(data.props)[0] == 'error'}
@@ -25,10 +25,11 @@
         {:else}
             <Cipher quote={data['props']['quote']} hash={data['props']['hash']}
             cipherType={data['props']['cipherType']} autoFocus={options['AutoFocus']}
-            autoSwitch={options['AutoSwitch']} k={data['props']['k']} keys={JSON.parse(data['props']['keys'])}/>
+            autoSwitch={options['AutoSwitch']} params={data['props']['params']} keys={JSON.parse(data['props']['keys'])}/>
         {/if}
     </div>
-<!-- {/if} -->
+{/if}
+
 
 <style>
     .mainContainer {

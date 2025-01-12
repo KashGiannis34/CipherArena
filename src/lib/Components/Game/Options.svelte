@@ -1,6 +1,6 @@
 <script>
     import Container from "../General/Container.svelte";
-    import Nestdown from "../General/Nestdown.svelte";
+    import Cipherdown from "../General/Cipherdown.svelte";
 
     let {options, onOptionChange} = $props();
     function handleClick(event) {
@@ -10,7 +10,7 @@
 </script>
 
     <Container --flexDir="row" >
-        <Nestdown />
+        <Cipherdown/>
         {#each Object.entries(options) as [option, value]}
             <div class="option checkbox">
                 <input type="checkbox" id={option} checked={options[option]} name={option} onchange={handleClick}/>

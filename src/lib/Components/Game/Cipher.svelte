@@ -3,11 +3,11 @@
     import Letter from "./Letter.svelte";
     import FreqTable from "./FreqTable.svelte";
     import Container from "../General/Container.svelte";
-    import {isLetter} from "$lib/util/CipherUtil";
+    import {encodeQuote, isLetter} from "$lib/util/CipherUtil";
     import {Confetti} from 'svelte-confetti';
     import { cipherTypes } from "$lib/util/CipherTypes";
 
-    let {quote, hash, cipherType, autoFocus, autoSwitch, k, keys, spacing} = $props();
+    let {quote, hash, cipherType, autoFocus, autoSwitch, params, keys, spacing} = $props();
     let startTime = Date.now()/1000;
     let visibility=$state(false);
     let feedbackMessage=$state('');
@@ -23,6 +23,24 @@
 
     let lettersWithIndices = initLWI();
     let directMap = initDirectMap(cipherType);
+    let paramString = paramToString(params);
+
+    function paramToString(obj) {
+        let key = Object.keys(obj)[0];
+        let val = Object.values(obj)[0];
+        if (val == "Random") {
+            return val + " ";
+        } else {
+            let res = key+val;
+            if (res == "K0") {
+                return "Random ";
+            } else if (res == "K-1") {
+                return "";
+            } else {
+                return res + " ";
+            }
+        }
+    }
 
     function onArrow(key, index) {
         let inc;
@@ -156,8 +174,12 @@
         window.location.href = window.location.href;
     }
 
-    async function checkDecodedQuote() {
+    async function checkQuote() {
         let i = getInputText();
+        if (params["Solve"] == "Encode") {
+            i = encodeQuote(i, cipherType, keys);
+        }
+
         try {
             const response = await fetch('/api/validate-quote', {
                 method: 'POST',
@@ -185,10 +207,10 @@
 
 <Container>
     <div class="info">
-        <h3>Solve this <span class="highlight">{cipherType}</span> cipher.</h3>
+        <h3>{params["Solve"]} this <span class="highlight" style="border-radius: 3px; padding: 3px;">{paramString + cipherType}</span> cipher.</h3>
         {#each keys as key, index}
             {#if cipherTypes[cipherType]['keys'][index] != '!'}
-                <h4>{cipherTypes[cipherType]['keys'][index]} is <span class="highlight">{key}</span>. </h4>
+                <h4>{cipherTypes[cipherType]['keys'][index]} is <span class="highlight" style="border-radius: 3px; padding: 3px;">{key}</span>. </h4>
             {/if}
         {/each}
 
@@ -206,9 +228,9 @@
     </div>
     {#if cipherTypes[cipherType]['addOn']=="freqTable"}
         <FreqTable bind:info={info} solved={solved} autoFocus={autoFocus}
-        k={k}/>
+        k={params['K']}/>
     {/if}
-    <button class="button" onclick={solved ? newProblem:checkDecodedQuote}>{solved ? 'New Problem' : 'Submit'}</button>
+    <button class="button" onclick={solved ? newProblem:checkQuote}>{solved ? 'New Problem' : 'Submit'}</button>
 </Container>
 
 <Popup visibility={visibility} toggle={toggle}>
