@@ -47,8 +47,6 @@
                 {:else}
                     <DropdownItem onclick={() => {link(cipher)}}>{cipher}</DropdownItem>
                 {/if}
-                {console.log(cipher)}
-                {console.log(props)}
             {/each}
         </DropdownMenu>
     </Dropdown>

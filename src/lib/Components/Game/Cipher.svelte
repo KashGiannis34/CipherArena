@@ -176,14 +176,11 @@
 
     async function checkQuote() {
         let i = getInputText();
-        if (params["Solve"] == "Encode") {
-            i = encodeQuote(i, cipherType, keys);
-        }
 
         try {
             const response = await fetch('/api/validate-quote', {
                 method: 'POST',
-                body: JSON.stringify({'input':i, 'id':hash}),
+                body: JSON.stringify({'input':i, 'id':hash, 'cipherType':cipherType, 'keys':keys, 'solve':params['Solve']}),
                 headers: {
                     'content-type': 'application/json'
                 }
