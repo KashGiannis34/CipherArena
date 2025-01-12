@@ -1,13 +1,13 @@
 <script>
+    import Popup from "../General/Popup.svelte";
     import Letter from "./Letter.svelte";
     import FreqTable from "./FreqTable.svelte";
     import Container from "../General/Container.svelte";
     import {isLetter} from "$lib/util/CipherUtil";
-    import Popup from "../General/Popup.svelte";
     import {Confetti} from 'svelte-confetti';
     import { cipherTypes } from "$lib/util/CipherTypes";
 
-    let {quote, hash, cipherType, autoFocus, k, keys, spacing} = $props();
+    let {quote, hash, cipherType, autoFocus, autoSwitch, k, keys, spacing} = $props();
     let startTime = Date.now()/1000;
     let visibility=$state(false);
     let feedbackMessage=$state('');
@@ -145,6 +145,17 @@
         return text;
     }
 
+    function toggle() {
+        if (visibility && solved && autoSwitch) {
+            newProblem();
+        }
+        visibility = !visibility;
+    }
+
+    function newProblem() {
+        window.location.href = window.location.href;
+    }
+
     async function checkDecodedQuote() {
         let i = getInputText();
         try {
@@ -159,22 +170,16 @@
             const time = (Date.now()/1000)-startTime;
             const strTime = Math.floor(time/60).toString().padStart(2,'0')+':'+Math.round(time%60, 0).toString().padStart(2,'0');
             if (answer) {
-                feedbackMessage = "<h2>Congratulations!</h2><p style=margin-top:8px>The cipher was solved in " + strTime + "!</p>";
+                feedbackMessage = "Congratulations! The cipher was solved in " + strTime + "!";
                 solved = true;
             } else {
-                feedbackMessage = "<p>Sorry, your answer isn't correct. Giannis hopes you get it on the next try!</p>";
+                feedbackMessage = "Sorry, your answer isn't correct. Giannis hopes you get it on the next try!";
             }
-            visibility = true;
+            toggle();
         } catch (error) {
-            feedbackMessage = '<p>An error occurred while checking the quote.</p>';
+            feedbackMessage = 'An error occurred while checking the quote.';
         }
         return feedbackMessage;
-    }
-
-    function newQuote() {
-        visibility = false;
-        if (solved)
-            window.location.href = window.location.href;
     }
 </script>
 
@@ -203,11 +208,13 @@
         <FreqTable bind:info={info} solved={solved} autoFocus={autoFocus}
         k={k}/>
     {/if}
-    <button class="button" onclick={checkDecodedQuote}>Submit</button>
+    <button class="button" onclick={solved ? newProblem:checkDecodedQuote}>{solved ? 'New Problem' : 'Submit'}</button>
 </Container>
-<Popup bind:visibility={visibility} exit={newQuote}>
+
+<Popup visibility={visibility} toggle={toggle}>
     {@html feedbackMessage}
 </Popup>
+
 {#if solved}
     <div style="
     position: fixed;

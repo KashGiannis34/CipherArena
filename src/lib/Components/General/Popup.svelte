@@ -1,7 +1,8 @@
 <script>
     import { cubicOut } from "svelte/easing";
     import Container from "./Container.svelte";
-    let {children, visibility=$bindable(), exit} = $props();
+
+    let {children, visibility, toggle} = $props();
 
     function zoom(node, { duration = 300 }) {
         return {
@@ -9,8 +10,10 @@
             css: t => {
                 const eased = cubicOut(t); // Apply easing
                 return `
-                    transform: scale(${eased});
+                    transform: translate(-50%, 0%) scale(${eased});
                     opacity: ${eased};
+                    top: 30%;
+                    left: 50%;
                 `;
             }
         };
@@ -28,15 +31,20 @@
         };
     }
 
+    function exit() {
+        toggle();
+        console.log(visibility);
+    }
+
 </script>
 
 {#if visibility}
-    <div class='background' onclick={() => {exit();}} onkeydown={() => {}} in:fade out:fade></div>
+    <div class='background' onclick={exit} onkeydown={() => {}} in:fade out:fade></div>
     <div class='modal' in:zoom out:zoom>
         <Container --paddingTop=25px --maxWidth=min(50vw,300px) --bgcolor="#e4e0ff" --color="black">
-            <i class="fa-solid fa-xmark" onclick={() => {exit();}} onkeydown={() => {}}></i>
+            <i class="fa-solid fa-xmark" onclick={exit} onkeydown={() => {}}></i>
             {@render children?.()}
-            <button class='button' onclick={() => {exit();}}>Ok</button>
+            <button class='button' onclick={exit}>Ok</button>
         </Container>
     </div>
 {/if}
@@ -60,21 +68,28 @@
     }
 
     .modal {
+        max-height: 200px;
+        max-width: min(50vw,300px);
+        display: flex;
+        justify-content: center;
         z-index: 100;
-        position: fixed;
         top: 30%;
+        left: 50%;
+        transform: translate(-50%, 0);
         filter: drop-shadow(0 0 20px #333);
+        transition: transform 0.3s ease-in, opacity 0.3s ease;
     }
 
-    .modal {
-        transition: transform 0.3s ease-in, opacity 0.3s ease;
+    .container {
+        display:block;
+        z-index: 100;
+        min-height: 20vw;
     }
 
     i {
         position: absolute;
-        top: 10px;
-        right: 13px;
-        padding-left: 5px;
+        top:5%;
+        right: 5%;
     }
 
     i:hover {

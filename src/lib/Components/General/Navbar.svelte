@@ -8,16 +8,24 @@
 
 <nav>
     <div class="logo">CipherArena</div>
-    <div class="menu-icon" on:click={toggleMenu} on:keydown={() => {}}>
+    <div class={"menu-icon unselectable"} on:click={toggleMenu} on:keydown={() => {}}>
       ☰
     </div>
     <div class="links {isMenuOpen ? 'open' : ''}">
-      <a href="/home">Home</a>
-      <a href="/singleplayer">Singleplayer</a>
+      <a href="/home" class="unselectable">Home</a>
+      <a href="/singleplayer" class="unselectable">Singleplayer</a>
     </div>
 </nav>
 
 <style>
+    .unselectable {
+        -moz-user-select: -moz-none;
+        -khtml-user-select: none;
+        -webkit-user-select: none;
+
+        -ms-user-select: none;
+        user-select: none;
+    }
     nav {
         z-index: 1;
         display: flex;
@@ -56,11 +64,26 @@
         color: #c2d3ff; /* Slightly lighter text on hover */
     }
 
+    .links a:active {
+        scale: 97%;
+    }
+
     .menu-icon {
         display: none;
         font-size: 1.8rem;
         cursor: pointer;
         color: #ffffff;
+        border-radius: 5px;
+        padding: 3px;
+    }
+
+    .menu-icon:hover {
+        background: rgba(255, 255, 255, 0.2); /* Soft hover highlight */
+        color: #c2d3ff; /* Slightly lighter text on hover */
+    }
+
+    .menu-icon:active {
+        scale: 97%;
     }
 
     @media (max-width: 768px) {

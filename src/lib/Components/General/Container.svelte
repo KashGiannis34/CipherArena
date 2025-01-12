@@ -8,9 +8,10 @@
 
 <style>
     .Container {
+        position: relative;
         display: flex;
-        flex-direction: column; /* Stack items vertically */
-        justify-content: flex-start; /* Center items within the container */
+        flex-direction: var(--flexDir, column); /* Stack items vertically */
+        justify-content: center; /* Center items within the container */
         align-items: center; /* Align items horizontally */
         width: 100%;
         min-width: var(--minWidth, none);
