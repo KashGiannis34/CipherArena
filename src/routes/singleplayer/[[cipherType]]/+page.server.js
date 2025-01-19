@@ -8,20 +8,16 @@ import { browser } from '$app/environment';
 
 /** @type {import('./$types').PageLoad} */
 export async function load({params, url}) {
-    let cipherType = 'Aristocrat';
-    let searchParams = url.searchParams;
-    if (Object.keys(params).length == 0)
-        redirect('307', '/singleplayer/Aristocrat');
-    else if (Object.keys(cipherTypes).includes(params['cipherType'])) {
-        cipherType = params['cipherType'];
-    } else {
-        redirect('307', '/singleplayer/Aristocrat');
+    const cipherType = params['cipherType'] && cipherTypes[params['cipherType']] ? params['cipherType'] : 'Redirect';
+    if (cipherType === 'Redirect') {
+        return redirect(307, '/singleplayer/Aristocrat');
     }
 
     try {
+        const searchParams = url.searchParams;
         let p = {};
-        p['K'] = (searchParams.get('K') == null ? '-1' : searchParams.get('K'));
-        p['Solve'] = (searchParams.get('Solve') == null ? 'Decode' : searchParams.get('Solve'));
+        p['K'] = searchParams.get('K') || '-1';
+        p['Solve'] = searchParams.get('Solve') || 'Decode';
         const randomQuote = await findRandomEntry(Quote, {length: {$gte: cipherTypes[cipherType]['length'][0], $lte: cipherTypes[cipherType]['length'][1]}});
 
         const keyCount = cipherTypes[params['cipherType']]['keys'];
@@ -34,7 +30,9 @@ export async function load({params, url}) {
             keys.push(randomWord["text"].toUpperCase());
         }
 
-        const encodedQuote = p['Solve'] == "Decode" ? encodeQuote(randomQuote["text"], (cipherType == 'Patristocrat' ? 'Aristocrat':cipherType), keys, searchParams) : randomQuote["text"];
+        const encodedQuote = p['Solve'] == "Decode" ?
+            encodeQuote(randomQuote["text"], (cipherType == 'Patristocrat' ? 'Aristocrat':cipherType), keys, searchParams)
+            : randomQuote["text"];
 
         return {
             props: {
