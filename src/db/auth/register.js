@@ -10,9 +10,13 @@ export async function verify_email(email) {
 	if (!email.match(email_regexp))
 		return "Please enter a valid email.";
 
-	const previous_user = await UserAuth.findOne({ 'email': email });
-
-	if (previous_user) "There is already an account with this email.";
+    try {
+        const previous_user = await UserAuth.findOne({ $exists: email });
+    } catch (err) {
+        if (err.code === 11000) {
+            throw new Error("There is already an account with this email.");
+        }
+    }
 
 	return "";
 }
@@ -54,7 +58,7 @@ function verify_password(password, confirmPass) {
 }
 
 export async function verify_username(name) {
-	if (!name) return "username is required.";
+	if (!name) return "Username is required.";
 
 	if (name.length < 5)
 		return "Username has to be at least 5 characters.";

@@ -1,15 +1,24 @@
 import { MONGO_URL } from "$env/static/private";
 import { mongoose } from 'mongoose'
 
-const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true, useNewUrlParser: true, useUnifiedTopology: true } };
+const clientOptions = {serverApi: { version: '1', strict: true, deprecationErrors: true } };
 export async function start_mongo() {
   try {
-    // Create a Mongoose client with a MongoClientOptions object to set the Stable API version
-    if (!mongoose.connection.readyState) {
-        await mongoose.connect(MONGO_URL, clientOptions);
+    if (!mongoose.connection.readyState == 1) {
+      console.log("Connecting to MongoDB...");
+      await mongoose.connect(MONGO_URL, clientOptions);
+      console.log("MongoDB connected!");
     }
-    await mongoose.connection.db.admin().command({ ping: 1 });
+
+    // Ensure the `db` object is ready
+    const db = mongoose.connection.db;
+    if (!db) {
+      throw new Error("Database connection is not initialized");
+    }
+
+    await db.admin().command({ ping: 1 });
+    console.log("MongoDB connection verified with ping!");
   } catch (err) {
-    console.log(err);
+    console.error("Error connecting to MongoDB:", err);
   }
 }

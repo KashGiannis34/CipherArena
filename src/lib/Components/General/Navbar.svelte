@@ -95,6 +95,11 @@
         scale: 97%;
     }
 
+    form {
+        margin: 0;
+        padding: 0;
+    }
+
     .links form button {
         text-decoration: none;
         color: #ffffff;
@@ -104,6 +109,7 @@
         font-weight: bold;
         padding: 0.5rem 1rem;
         border-radius: 5px;
+        border-width: 0px;
         transition: background 0.3s ease, color 0.3s ease;
     }
 

@@ -4,21 +4,20 @@ import { redirect } from "@sveltejs/kit";
 
 
 export const handle = async ({ event, resolve }) => {
-  const is_protected =
-		event.url.pathname.startsWith("/home")
+	const is_protected = event.url.pathname.startsWith("/home")
 
 	const auth = authenticate(event.cookies);
 
 	if (is_protected && !auth) {
-		throw redirect(307, "/");
+		throw redirect(308, "/");
 	}
 
 	if (auth && event.url.pathname=='/') {
-		throw redirect(307, "/home");
+		throw redirect(303, "/home");
 	}
 
-  await start_mongo();
-  const response = await resolve(event);
+	await start_mongo();
+	const response = await resolve(event);
 
-  return response;
+	return response;
 };

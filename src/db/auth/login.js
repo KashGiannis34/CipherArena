@@ -16,12 +16,14 @@ async function get_user(email, password) {
 
     const user = await UserAuth.findOne({ email });
 
-    if (!user) {
-        return { error: "Email could not be found." };
-    }
+
 
     if (!password) {
         return { error: "Password is required." };
+    }
+
+    if (!user) {
+        return { error: "Email OR Password is not correct." };
     }
 
     let password_is_correct = false;
@@ -32,7 +34,7 @@ async function get_user(email, password) {
     }
 
     if (!password_is_correct) {
-        return { error: "Password is not correct." };
+        return { error: "Email OR Password is not correct." };
     }
 
     const id = user._id.toString();

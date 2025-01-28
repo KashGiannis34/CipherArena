@@ -27,6 +27,6 @@
 
 {#if mounted}
     <div transition:fade style="all:inherit; padding:0 !important;">
-        <Auth login={login.val} {toggleLogin} {form}/>
+        <Auth login={login.val} {toggleLogin} />
     </div>
 {/if}

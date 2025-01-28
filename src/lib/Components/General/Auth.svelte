@@ -2,41 +2,56 @@
     import { fade } from "svelte/transition";
     import Container from "./Container.svelte";
     import { enhance } from "$app/forms";
+    import { redirect } from "@sveltejs/kit";
 
-    let {login, toggleLogin, form} = $props();
+    let {login, toggleLogin} = $props();
     let authenticating = $state(false);
-    let handleAuth = $state(false);
     let username = $state("");
     let email = $state("");
     let password = $state("");
     let confirmPass = $state("");
+    let feedback = $state({});
 
-    function handleAuthFinish() {
-        $state.snapshot("handleauth: "+handleAuth);
-        $state.snapshot("authenticating: "+authenticating);
-        authenticating = false;
-        if (!login && form?.message) {
-            login = true;
-            sessionStorage.setItem('login', JSON.stringify(true));
-            username = "";
-            email = "";
-            password = "";
-            confirmPass = "";
-        }
-        handleAuth = true;
+    function clearInfo() {
+        feedback = {};
+        username = "";
+        email = "";
+        password = "";
+        confirmPass = "";
     }
 
-    $effect(() => {
-        if (!handleAuth && (form?.message || form?.error)) {
-            handleAuthFinish();
-        }
-    })
 </script>
 
 {#key login}
     <div in:fade out:fade style="all: inherit;">
         <Container --maxWidth=min(80vw,600px)>
-            <form method="POST" action={"?/"+(login ? "login":"register")} use:enhance>
+            <form method="POST" action={"?/"+(login ? "login":"register")} onsubmit={() => {authenticating=true; feedback={};}} use:enhance={async () => {
+                return({result}) => {
+                    if (result['type'] === 'redirect') {
+                        window.location.href = window.location.href;
+                    }
+
+                    authenticating = false;
+                    feedback = result['data'];
+                    if (feedback != undefined ) {
+                        if ('message' in feedback && !login) {
+                            username = "";
+                            email = "";
+                            password = "";
+                            confirmPass = "";
+                            login = true;
+                            sessionStorage.setItem('login', JSON.stringify(true));
+                        }
+                        if ('error' in feedback && feedback['error'].includes('MongoServerError: E11000')) {
+                            if (feedback['error'].includes('email')) {
+                                feedback['error'] = "There is already an account using that email.";
+                            } else {
+                                feedback['error'] = "There is already an account using that username.";
+                            }
+                        }
+                    }
+                }
+            }}>
                 <h1>{login ? "Login":"Sign Up"}</h1>
 
                 {#if !login}
@@ -58,11 +73,17 @@
                 {#if !login}
                     <label>
                         <i class="fas fa-lock"></i>
-                        <input bind:value={confirmPass} name="confirmPassword" type="confirmPassword" placeholder="Confirm Password" />
+                        <input bind:value={confirmPass} name="confirmPassword" type="password" placeholder="Confirm Password" />
                     </label>
                 {/if}
 
-                <button type="submit" class="button" onclick={() => {authenticating=true; handleAuth=false;}}>
+                {#if feedback != undefined && 'error' in feedback}
+                    <p class='error' transition:fade>{feedback['error']}</p>
+                {:else if feedback != undefined && 'message' in feedback}
+                    <p class='message' transition:fade>{feedback['message']}</p>
+                {/if}
+
+                <button type="submit" class="button">
                     {#if authenticating}
                         <i class="fa-solid fa-spinner spin"></i>
                     {:else if !login}
@@ -71,24 +92,18 @@
                         Login
                     {/if}
                 </button>
-
-                {#if form?.error}
-                    <p style="color: coral;">{form.error}</p>
-                {:else if form?.message}
-                    <p style="color: #41c899;">{form.message}</p>
-                {/if}
             </form>
             <div class="options">
                 <p>Or</p>
                 {#if !login}
                     <div>
                         <p>Already have an account?</p>
-                        <p onclick={() => {toggleLogin()}} onkeydown={() => {}}>Login</p>
+                        <p onclick={() => {toggleLogin(); clearInfo();}} onkeydown={() => {}}>Login</p>
                     </div>
                 {:else}
                     <div>
                         <p>Don't have an account?</p>
-                        <p onclick={() => {toggleLogin()}} onkeydown={() => {}}>Register</p>
+                        <p onclick={() => {toggleLogin(); clearInfo();}} onkeydown={() => {}}>Register</p>
                     </div>
                 {/if}
             </div>
@@ -227,5 +242,13 @@
 
     .options div p:last-of-type:active {
         font-size: 95%;
+    }
+
+    .error {
+        color: coral;
+    }
+
+    .message {
+        color: aquamarine;
     }
 </style>

@@ -10,11 +10,12 @@ export const actions = {
     login: async ({cookies, request}) => {
         const data = await request.formData();
 
-		const email = (data.get("email"))?.trim();
+		const email = data.get("email");
 		const password = data.get("password");
-        const user = login_user(email, password);
 
         const user_data = await login_user(email, password);
+        console.log(user_data);
+
 
 		if ("error" in user_data) {
 			return fail(400, { email, error: user_data.error });
@@ -32,7 +33,7 @@ export const actions = {
             cookies.set("email", user.email, cookie_options);
             cookies.set("username", user.username, cookie_options);
 
-            return redirect(307, '/home');
+            return redirect(303, '/home');
 		}
     },
     register: async ({request}) => {
@@ -43,7 +44,6 @@ export const actions = {
         const confirmPass = data.get('confirmPassword');
 
 		const { error } = await register_user(username, email, password, confirmPass);
-        console.log(error);
 
 		if (error) {
 			return fail(400, { error });
