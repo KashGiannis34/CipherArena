@@ -1,19 +1,36 @@
 <script>
-    let isMenuOpen = false;
+    import {login} from "$lib/Components/General/Info.svelte.js";
+
+    let isMenuOpen = $state(false);
+    let {authenticated} = $props();
 
     function toggleMenu() {
       isMenuOpen = !isMenuOpen;
+    }
+
+    function updateStorage(newVal) {
+        sessionStorage.setItem('login', JSON.stringify(newVal));
+        login.val = newVal;
     }
 </script>
 
 <nav>
     <div class="logo">CipherArena</div>
-    <div class={"menu-icon unselectable"} on:click={toggleMenu} on:keydown={() => {}}>
+    <div class={"menu-icon unselectable"} onclick={toggleMenu} onkeydown={() => {}}>
       ☰
     </div>
     <div class="links {isMenuOpen ? 'open' : ''}">
-      <a href="/home" class="unselectable">Home</a>
-      <a href="/singleplayer" class="unselectable">Singleplayer</a>
+      {#if !authenticated}
+        <a href="/singleplayer" class="unselectable">Singleplayer</a>
+        <a href="/" onclick={() => {updateStorage(true)}} class="unselectable">Login</a>
+        <a href="/" onclick={() => {updateStorage(false)}} class="unselectable main">Sign up</a>
+      {:else}
+        <a href="/home" class="unselectable">Home</a>
+        <a href="/singleplayer" class="unselectable">Singleplayer</a>
+        <form action="/logout" method="POST">
+            <button class="unselectable">Logout</button>
+        </form>
+      {/if}
     </div>
 </nav>
 
@@ -27,14 +44,13 @@
         user-select: none;
     }
     nav {
-        z-index: 1;
+        z-index: 0;
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 1rem 2rem;
-        background: linear-gradient(180deg, #2d33a7, #1a23c7e5); /* Gradient complementing container */
+        background: linear-gradient(135deg, #6a11cb, #2575fc); /* Gradient complementing container */
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8); /* Deeper shadow for contrast */
-        border-bottom: 2px solid rgba(255, 255, 255, 0.2); /* Subtle border for depth */
     }
 
     .logo {
@@ -45,8 +61,9 @@
     }
 
     .links {
+        z-index: 10;
         display: flex;
-        gap: 1.5rem;
+        gap: 0.5rem;
     }
 
     .links a {
@@ -59,12 +76,43 @@
         transition: background 0.3s ease, color 0.3s ease;
     }
 
+    .main {
+        background: rgba(228, 236, 255, 0.49) !important;
+        color: #243f84 !important;
+    }
+
+    .main:hover {
+        background: rgba(251, 252, 255, 0.568) !important;
+        color: #3156b2 !important;
+    }
+
     .links a:hover {
         background: rgba(255, 255, 255, 0.2); /* Soft hover highlight */
         color: #c2d3ff; /* Slightly lighter text on hover */
     }
 
     .links a:active {
+        scale: 97%;
+    }
+
+    .links form button {
+        text-decoration: none;
+        color: #ffffff;
+        background-color: transparent;
+        border-color: transparent;
+        font-size: 1rem;
+        font-weight: bold;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .links form button:hover {
+        background: rgba(255, 255, 255, 0.2); /* Soft hover highlight */
+        color: #c2d3ff; /* Slightly lighter text on hover */
+    }
+
+    .links form button:active {
         scale: 97%;
     }
 

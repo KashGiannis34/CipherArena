@@ -9,7 +9,6 @@ export async function start_mongo() {
         await mongoose.connect(MONGO_URL, clientOptions);
     }
     await mongoose.connection.db.admin().command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } catch (err) {
     console.log(err);
   }

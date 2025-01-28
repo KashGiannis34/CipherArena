@@ -58,7 +58,7 @@
 
     .background {
         position: fixed;
-        z-index: 90;
+        z-index: 15;
         top: 0;
         left: 0;
         width: 100vw;
@@ -67,11 +67,11 @@
     }
 
     .modal {
-        max-height: 200px;
+        max-height: min(30vw, 200px);
         max-width: min(50vw,300px);
         display: flex;
         justify-content: center;
-        z-index: 100;
+        z-index: 20;
         top: 30%;
         left: 50%;
         transform: translate(-50%, 0);
@@ -81,7 +81,7 @@
 
     .container {
         display:block;
-        z-index: 100;
+        z-index: 20;
         min-height: 20vw;
     }
 

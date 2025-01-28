@@ -23,5 +23,8 @@
         color: var(--color, #ffffff);
         text-align: left;
         padding-top: var(--paddingTop, 20px);
+        margin-bottom: 24px;
+
+        flex-shrink: 0;
     }
 </style>

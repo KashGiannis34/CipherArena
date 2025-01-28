@@ -20,9 +20,12 @@
 	},
 	"dependencies": {
 		"@sveltestrap/sveltestrap": "^6.2.7",
+		"argon2": "^0.41.1",
+		"bcrypt": "^5.1.1",
 		"cors": "^2.8.5",
 		"express": "^4.21.2",
 		"fast-json-parse": "^1.0.3",
+		"jsonwebtoken": "^9.0.2",
 		"mongodb": "^6.12.0"
 	}
 }

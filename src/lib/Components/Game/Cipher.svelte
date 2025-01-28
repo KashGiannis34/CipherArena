@@ -237,7 +237,7 @@
 {#if solved}
     <div style="
     position: fixed;
-    z-index: 101;
+    z-index: 5;
     top: -3vh;
     left: 0;
     height: 100vh;

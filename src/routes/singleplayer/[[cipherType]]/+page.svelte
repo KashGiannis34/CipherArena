@@ -18,7 +18,7 @@
 </script>
 
 {#if mounted || Object.keys(data.props)[0] == 'error'}
-    <div class="mainContainer" transition:fade>
+    <div transition:fade>
         <Options options={options} onOptionChange={onOptionChange}/>
         {#if Object.keys(data.props)[0] == 'error'}
             <p>There was an error in retrieving the quote.</p>
@@ -32,15 +32,4 @@
 
 
 <style>
-    .mainContainer {
-        display: flex;
-        flex-direction: column; /* Stack items vertically */
-        justify-content: flex-start; /* Center items within the container */
-        align-items: center; /* Align items horizontally */
-        min-height: 100vh;
-        gap: 24px;
-        padding: 24px;
-        width: 100%;
-        margin: 0 auto;
-    }
 </style>

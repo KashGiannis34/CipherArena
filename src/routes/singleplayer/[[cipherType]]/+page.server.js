@@ -5,6 +5,7 @@ import { cipherTypes } from '$lib/util/CipherTypes';
 import { encodeQuote } from '$lib/util/CipherUtil';
 import { findRandomEntry } from '$db/dbUtil';
 import { browser } from '$app/environment';
+import { start_mongo } from '$db/mongo';
 
 /** @type {import('./$types').PageLoad} */
 export async function load({params, url}) {
