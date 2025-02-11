@@ -19,7 +19,7 @@
 
 {#if mounted || Object.keys(data.props)[0] == 'error'}
     <div transition:fade>
-        <Options options={options} onOptionChange={onOptionChange}/>
+        <Options options={options} onOptionChange={onOptionChange} cipherType={data['props']['cipherType']}/>
         {#if Object.keys(data.props)[0] == 'error'}
             <p>There was an error in retrieving the quote.</p>
         {:else}

@@ -6,7 +6,7 @@
 </script>
 
 <div style="overflow-x: hidden;">
-    <Navbar authenticated={!!data.username && !!data.email}/>
+    <Navbar authenticated={!!data.username && !!data.email} verified={data.verified}/>
     <div class="mainContainer">
         {@render children?.()}
     </div>

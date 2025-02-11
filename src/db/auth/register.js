@@ -93,10 +93,13 @@ export async function register_user(name, email, password, confirmPass) {
 
 	const hashed_password = await argon2.hash(password);
 
+    let now = new Date();
+
 	const user = new UserAuth({
         'username': name,
 		'email': email,
 		password: hashed_password,
+        lastVerificationRequest: now
 	});
 
 	try {

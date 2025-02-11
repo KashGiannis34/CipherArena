@@ -39,7 +39,8 @@ async function get_user(email, password) {
 
     const id = user._id.toString();
     const username = user.username;
-    return { id, email, username };
+    const verified = user.verified;
+    return { id, email, username, verified };
 }
 
 export async function login_user(email, password) {

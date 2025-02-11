@@ -6,4 +6,4 @@ const QuoteSchema = new mongoose.Schema({
     length: {type: Number, required: true}
 }, { collection: 'quotes' });
 
-export const Quote = mongoose.model('Quote', QuoteSchema);
+export const Quote = mongoose.models.Quote || mongoose.model('Quote', QuoteSchema);

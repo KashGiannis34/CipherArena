@@ -2,7 +2,7 @@
     import {login} from "$lib/Components/General/Info.svelte.js";
 
     let isMenuOpen = $state(false);
-    let {authenticated} = $props();
+    let {authenticated, verified} = $props();
 
     function toggleMenu() {
       isMenuOpen = !isMenuOpen;
@@ -15,7 +15,7 @@
 </script>
 
 <nav>
-    <div class="logo">CipherArena</div>
+    <div class="logo unselectable" onclick={() => {updateStorage(true); window.location.href="/";}}>CipherArena</div>
     <div class={"menu-icon unselectable"} onclick={toggleMenu} onkeydown={() => {}}>
       ☰
     </div>
@@ -25,6 +25,9 @@
         <a href="/" onclick={() => {updateStorage(true)}} class="unselectable">Login</a>
         <a href="/" onclick={() => {updateStorage(false)}} class="unselectable main">Sign up</a>
       {:else}
+        {#if verified=="false"}
+            <a onclick={() => {window.location.href = '/resend-verification'}} class="unselectable main">Verify Account</a>
+        {/if}
         <a href="/home" class="unselectable">Home</a>
         <a href="/singleplayer" class="unselectable">Singleplayer</a>
         <form action="/logout" method="POST">

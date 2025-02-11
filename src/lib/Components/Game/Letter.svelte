@@ -29,7 +29,9 @@
             return;
         }
 
-        if (event.key !== undefined && isLetter(event.key) && inputValue !== '' && event.key.length == 1) {
+        // && inputValue !== ''
+
+        if (event.key !== undefined && isLetter(event.key) && event.key.length == 1) {
             onChange(cipherLetter, event.key.toUpperCase(), index);
             event.preventDefault();
             return;
@@ -41,10 +43,10 @@
             return;
 
         let character = event.data;
+
         if (character != null && isLetter(character)) {
             character = character.toUpperCase();
         }
-
         onChange(cipherLetter, character, index);
     }
 

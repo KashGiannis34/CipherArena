@@ -1,8 +1,8 @@
 <script>
-	let { children } = $props();
+	let { children, style } = $props();
 </script>
 
-<div class="Container">
+<div class="Container" style={style}>
     {@render children?.()}
 </div>
 
@@ -11,6 +11,7 @@
         position: relative;
         display: flex;
         flex-direction: var(--flexDir, column); /* Stack items vertically */
+        flex-wrap: wrap;
         justify-content: center; /* Center items within the container */
         align-items: center; /* Align items horizontally */
         width: 100%;

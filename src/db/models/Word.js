@@ -5,4 +5,4 @@ const WordSchema = new mongoose.Schema({
     length: { type: Number, required: true }
 }, { collection: 'words' });
 
-export const Word = mongoose.model('Word', WordSchema);
+export const Word = mongoose.models.Word || mongoose.model('Word', WordSchema);

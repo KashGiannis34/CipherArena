@@ -113,6 +113,10 @@
 
 <style>
     @import "$lib/css/Button";
+    p {
+      text-align: center;
+    }
+
     form {
         display: flex;
         flex-direction: column;

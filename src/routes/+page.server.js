@@ -1,9 +1,12 @@
 import { register_user } from '$db/auth/register';
+import { UserAuth } from '$db/models/UserAuth';
 import {login_user} from '$db/auth/login';
 import { fail } from '@sveltejs/kit';
 import { Cookies } from "@sveltejs/kit";
 import { cookie_options } from '$db/dbUtil';
 import { redirect } from '@sveltejs/kit';
+import { createVerificationToken } from '$db/auth/verify';
+import { sendVerificationEmail } from '$db/auth/mailer';
 
 /** @satisfies {import('./$types').Actions} */
 export const actions = {
@@ -14,7 +17,6 @@ export const actions = {
 		const password = data.get("password");
 
         const user_data = await login_user(email, password);
-        console.log(user_data);
 
 
 		if ("error" in user_data) {
@@ -32,6 +34,7 @@ export const actions = {
             cookies.set("auth-token", token, cookie_options);
             cookies.set("email", user.email, cookie_options);
             cookies.set("username", user.username, cookie_options);
+            cookies.set("verified", user.verified, cookie_options);
 
             return redirect(303, '/home');
 		}
@@ -47,9 +50,22 @@ export const actions = {
 
 		if (error) {
 			return fail(400, { error });
-		} else {
-			const message = "Registration successful! You can now login.";
-			return { message };
 		}
+
+        try {
+            const user = await UserAuth.findOne({email});
+            // Generate verification token
+            const token = await createVerificationToken(user);
+
+            // Send verification email
+            await sendVerificationEmail(email, token);
+
+            return {
+                message: "Registration successful! Check " + email + " to verify your account before logging in. Check your inbox and spam folder."
+            };
+        } catch (err) {
+            console.error("Error sending verification email:", err);
+            return fail(500, { error: "Registration successful, but failed to send verification email. Please try again later." });
+        }
     }
 };

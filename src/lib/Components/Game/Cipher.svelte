@@ -7,7 +7,11 @@
     import {Confetti} from 'svelte-confetti';
     import { cipherTypes } from "$lib/util/CipherTypes";
 
-    let {quote, hash, cipherType, autoFocus, autoSwitch, params, keys, spacing} = $props();
+    function reloadPage() {
+        window.location.reload();
+    }
+
+    let {quote, hash, cipherType, autoFocus, autoSwitch, params, keys} = $props();
     let startTime = Date.now()/1000;
     let visibility=$state(false);
     let feedbackMessage=$state('');
@@ -67,15 +71,15 @@
         info.letterFocus[letter] = focus;
     }
 
-    function onChange(letter, value, index) {
+    function onChange(letter, val, index) {
         if (!directMap) {
-            info.inputs[index].value = value;
+            info.inputs[index].value = val;
         }
         else {
-            info.letterInputs[letter] = value;
+            info.letterInputs[letter] = val;
         }
 
-        if (autoFocus && value != '') {
+        if (autoFocus && val != '') {
             let currIndex = index;
             while (currIndex + 1 < info.inputs.length) {
                 currIndex++;
@@ -171,7 +175,7 @@
     }
 
     function newProblem() {
-        window.location.href = window.location.href;
+        reloadPage();
     }
 
     async function checkQuote() {
@@ -237,7 +241,7 @@
 {#if solved}
     <div style="
     position: fixed;
-    z-index: 5;
+    z-index: 25;
     top: -3vh;
     left: 0;
     height: 100vh;
