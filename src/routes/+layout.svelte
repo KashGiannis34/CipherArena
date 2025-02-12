@@ -2,6 +2,14 @@
     import Navbar from "$lib/Components/General/Navbar.svelte";
     import { page } from '$app/stores';
     import { fade } from "svelte/transition";
+    import { io } from 'socket.io-client'
+
+    const socket = io()
+
+    socket.on('eventFromServer', (message) => {
+        console.log(message)
+    })
+
     let {data, children} = $props();
 </script>
 

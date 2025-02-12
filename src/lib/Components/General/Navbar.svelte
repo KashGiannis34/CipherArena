@@ -15,8 +15,8 @@
 </script>
 
 <nav>
-    <div class="logo unselectable" onclick={() => {updateStorage(true); window.location.href="/";}}>CipherArena</div>
-    <div class={"menu-icon unselectable"} onclick={toggleMenu} onkeydown={() => {}}>
+    <div class="logo unselectable" onclick={() => {updateStorage(true); window.location.href="/";}} onkeydown={() => {}} tabindex=-1 role="button">CipherArena</div>
+    <div class={"menu-icon unselectable"} onclick={toggleMenu} onkeydown={() => {}} tabindex=-1 role="button">
       ☰
     </div>
     <div class="links {isMenuOpen ? 'open' : ''}">
@@ -26,7 +26,7 @@
         <a href="/" onclick={() => {updateStorage(false)}} class="unselectable main">Sign up</a>
       {:else}
         {#if verified=="false"}
-            <a onclick={() => {window.location.href = '/resend-verification'}} class="unselectable main">Verify Account</a>
+            <button onclick={() => {window.location.href = '/resend-verification'}} onkeydown={() => {}} class="unselectable main">Verify Account</button>
         {/if}
         <a href="/home" class="unselectable">Home</a>
         <a href="/singleplayer" class="unselectable">Singleplayer</a>
@@ -77,6 +77,21 @@
         padding: 0.5rem 1rem;
         border-radius: 5px;
         transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .links button {
+        text-decoration: none;
+        color: #ffffff; /* White text for links */
+        font-size: 1rem;
+        font-weight: bold;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        border: 0px;
+        transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .links button:active {
+        scale: 97%;
     }
 
     .main {

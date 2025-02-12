@@ -98,12 +98,12 @@
                 {#if !login}
                     <div>
                         <p>Already have an account?</p>
-                        <p onclick={() => {toggleLogin(); clearInfo();}} onkeydown={() => {}}>Login</p>
+                        <a href="/" onclick={() => {toggleLogin(); clearInfo();}} onkeydown={() => {}} tabindex=0>Login</a>
                     </div>
                 {:else}
                     <div>
                         <p>Don't have an account?</p>
-                        <p onclick={() => {toggleLogin(); clearInfo();}} onkeydown={() => {}}>Register</p>
+                        <a href="/" onclick={() => {toggleLogin(); clearInfo();}} onkeydown={() => {}} tabindex=0>Register</a>
                     </div>
                 {/if}
             </div>
@@ -212,7 +212,6 @@
         position: absolute;
         content:"";
         top: 50%;
-        tranform: translateY(-50%);
         width: 100vw;
         height: 1.5px;
         background: white;
@@ -233,18 +232,25 @@
         justify-content: center;
     }
 
-    .options div p:last-of-type {
+    .options div a {
+        position: relative;
+        text-align: center;
+        width: fit-content;
+        margin: 0;
+        padding-bottom: 16px;
+
         color: rgb(93, 239, 255);
         cursor: pointer;
         transition: 0.5s ease;
+        text-decoration: none;
     }
 
-    .options div p:last-of-type:hover {
+    .options div a:hover {
         color: rgba(68, 202, 255, 0.562);
         cursor: pointer;
     }
 
-    .options div p:last-of-type:active {
+    .options div a:active {
         font-size: 95%;
     }
 

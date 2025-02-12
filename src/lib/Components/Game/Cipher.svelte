@@ -255,8 +255,6 @@
 {/if}
 
 <style>
-    @import "$lib/css/Button";
-
     .word {
         display: flex;
         flex-direction: row;

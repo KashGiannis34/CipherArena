@@ -38,10 +38,10 @@
 </script>
 
 {#if visibility}
-    <div class='background' onclick={exit} onkeydown={() => {}} in:fade out:fade></div>
+    <div class='background' onclick={exit} onkeydown={() => {}} role="button" tabindex=-1 in:fade out:fade></div>
     <div class='modal' in:zoom out:zoom>
         <Container --paddingTop=25px --maxWidth=min(50vw,300px) --bgcolor="#e4e0ff" --color="black">
-            <i class="fa-solid fa-xmark" onclick={exit} onkeydown={() => {}}></i>
+            <i class="fa-solid fa-xmark" onclick={exit} onkeydown={() => {}} role="button" tabindex=0></i>
             {@render children?.()}
             <button class='button' onclick={exit}>Ok</button>
         </Container>
@@ -77,12 +77,6 @@
         transform: translate(-50%, 0);
         filter: drop-shadow(0 0 20px #333);
         transition: transform 0.3s ease-in, opacity 0.3s ease;
-    }
-
-    .container {
-        display:block;
-        z-index: 20;
-        min-height: 20vw;
     }
 
     i {

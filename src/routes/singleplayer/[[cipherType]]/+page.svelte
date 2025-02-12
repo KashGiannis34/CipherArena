@@ -29,7 +29,3 @@
         {/if}
     </div>
 {/if}
-
-
-<style>
-</style>
