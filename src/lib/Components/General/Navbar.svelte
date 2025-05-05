@@ -30,6 +30,8 @@
         {/if}
         <a href="/home" class="unselectable">Home</a>
         <a href="/singleplayer" class="unselectable">Singleplayer</a>
+        <a href="/private-lobby" class="unselectable">Private Lobby</a>
+        <a href="/public-lobby" class="unselectable">Public Lobby</a>
         <form action="/logout" method="POST">
             <button class="unselectable">Logout</button>
         </form>
@@ -61,6 +63,7 @@
         font-weight: bold;
         color: #ffffff;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6); /* Subtle text shadow */
+        margin-right: 10px;
     }
 
     .links {
@@ -158,7 +161,7 @@
         scale: 97%;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 850px) {
         .links {
             display: none;
             flex-direction: column;

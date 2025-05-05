@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
  * @param {string} email - User's email address
  * @param {string} token - Verification token
  */
-export async function sendVerificationEmail(email, token) {
+export async function sendVerificationEmail(email, token, limit) {
   const verificationLink = `${APP_URL}/verify?token=${token}`;
 
   const mailOptions = {
@@ -24,7 +24,7 @@ export async function sendVerificationEmail(email, token) {
     subject: "Cipher Arena: Verify Your Email",
     html: `
       <h1>Email Verification</h1>
-      <p>Click the link below to verify your email. This link will expire in 20 minutes.</p>
+      <p>Click the link below to verify your email. This link will expire in ${limit} minutes.</p>
       <a href="${verificationLink}">${verificationLink}</a>
       <p>If you did not request this, please ignore this email.</p>
     `,

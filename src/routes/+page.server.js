@@ -53,12 +53,13 @@ export const actions = {
 		}
 
         try {
+            const limit = 20; // minutes
             const user = await UserAuth.findOne({email});
             // Generate verification token
-            const token = await createVerificationToken(user);
+            const token = await createVerificationToken(user, limit);
 
             // Send verification email
-            await sendVerificationEmail(email, token);
+            await sendVerificationEmail(email, token, limit);
 
             return {
                 message: "Registration successful! Check " + email + " to verify your account before logging in. Check your inbox and spam folder."

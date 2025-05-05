@@ -75,7 +75,7 @@
 </script>
 
 <div class="letter-container">
-    <div class="cipher-letter">{cipherLetter.toUpperCase()}</div>
+    <div class="cipher-letter unselectable">{cipherLetter.toUpperCase()}</div>
     {#if isLetter(cipherLetter)}
         <input
             bind:this={inputs[index]}
@@ -96,6 +96,15 @@
 </div>
 
 <style>
+    .unselectable {
+        -moz-user-select: -moz-none;
+        -khtml-user-select: none;
+        -webkit-user-select: none;
+
+        -ms-user-select: none;
+        user-select: none;
+    }
+
     .letter-container {
         display: inline-block;
         text-align: center;

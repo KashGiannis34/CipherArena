@@ -14,8 +14,7 @@
         flex-wrap: wrap;
         justify-content: center; /* Center items within the container */
         align-items: center; /* Align items horizontally */
-        width: 100%;
-        min-width: var(--minWidth, none);
+        min-width: var(--minWidth, 90vw);
         max-width: var(--maxWidth, 90vw);
         padding: 20px;
         border-radius: 15px;

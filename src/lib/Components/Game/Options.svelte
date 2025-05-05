@@ -1,42 +1,61 @@
 <script>
-    import Container from "../General/Container.svelte";
     import Cipherdown from "../General/Cipherdown.svelte";
     import { Button, ButtonGroup, DropdownItem } from "@sveltestrap/sveltestrap";
     import {cipherTypes} from '$lib/util/CipherTypes';
 
-    let {options, onOptionChange, cipherType} = $props();
+    let {options, onOptionChange, cipherType, multiplayer=false, cipherOption, changeCipherOption, changeType} = $props();
+
+    let isOptions = $derived(cipherTypes[cipherType]['options'].length != 0);
+
+    function mainTitle() {
+        return (multiplayer) ? cipherType : "Ciphers";
+    }
+
+    function secondTitle() {
+        return (multiplayer) ? cipherOption : cipherType;
+    }
 
     function handleClick(event) {
         onOptionChange(event.srcElement.id);
-        sessionStorage.setItem("options", JSON.stringify(options));
     }
 
     function linkParam(name, option) {
-        const nOption = option[0] === "!" ? option.substring(1) : option;
-        window.location.href = "/singleplayer/" + cipherType + "?" + name + "=" + nOption;
+        if (!multiplayer) {
+            const nOption = (option[0] === "!") ? option.substring(1): option;
+            window.location.href = "/singleplayer/" + cipherType + "?" + name + "=" + nOption;
+        } else {
+            changeCipherOption(option);
+        }
     }
 
     function link(cipher) {
-        window.location.href = "/singleplayer/" + cipher;
+        if (!multiplayer) {
+            window.location.href = "/singleplayer/" + cipher;
+        } else {
+            changeType(cipher);
+            if (isOptions) {
+                changeCipherOption(cipherTypes[cipherType]['options'][1]);
+            }
+        }
     }
 </script>
 
-<Container --flexDir="row" style="gap: 3vw;">
+<div class="options">
     <ButtonGroup>
-        {#if Object.values(cipherTypes[cipherType]['options']).length != 0}
-            <Cipherdown title={cipherType}>
-                {#each Object.values(cipherTypes[cipherType]['options'])[0] as option}
-                    <DropdownItem onclick={() => {linkParam(Object.keys(cipherTypes[cipherType]['options'])[0], option)}}>
+        {#if isOptions || !multiplayer}
+            <Cipherdown title={secondTitle()} isMenu={isOptions} onclick={() => {if (!isOptions) {link(cipherType)}}}>
+                {#each cipherTypes[cipherType]['options'].slice(1) as option}
+                    <DropdownItem onclick={() => {linkParam(cipherTypes[cipherType]['options'][0], option)}}>
                         {#if option[0] === "!"}
                             {option.substring(1)}
                         {:else}
-                            {Object.keys(cipherTypes[cipherType]['options'])[0]+option}
+                            {cipherTypes[cipherType]['options'][0]+option}
                         {/if}
                     </DropdownItem>
                 {/each}
             </Cipherdown>
         {/if}
-        <Cipherdown title="Ciphers">
+        <Cipherdown title={mainTitle()} isMenu={true}>
             {#each Object.entries(cipherTypes) as [cipher, props]}
                     <DropdownItem onclick={() => {link(cipher)}}>{cipher}</DropdownItem>
             {/each}
@@ -48,21 +67,26 @@
             <label for={option}>{option}</label>
         </div>
     {/each}
-</Container>
+</div>
 
 <style>
-    @import "$lib/css/Checkbox.css";
-
-    :global(.btn-group) {
-        box-shadow: 0px 0px 14px -7px #f019e9;
-        background: linear-gradient(45deg, #8d2fff 0%, #5619f0  51%, #2f2fff  100%);
+    .options {
+        flex-wrap: wrap;
+        display: flex;
+        flex-direction: row;
+        justify-content: center; /* Center items within the container */
+        align-items: center; /* Align items horizontally */
+        margin: 10px;
+        gap: 2.5vw;
     }
 
     .option {
         display: flex;
-        flex-direction: row;
-        justify-content: flex-start; /* Center items within the container */
         align-items: center; /* Align items horizontally */
-        margin: 10px;
+
+    }
+
+    label {
+        margin-left: 4px;
     }
 </style>

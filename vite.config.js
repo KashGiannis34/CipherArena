@@ -1,25 +1,16 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
-import { Server } from 'socket.io';
+import {webSocketServer} from './ws/webSocketPluginVite.js';
+import * as dotenv from 'dotenv';
 
-export const webSocketServer = {
-	name: 'webSocketServer',
-	configureServer(server) {
-		if (!server.httpServer) return;
-
-		const io = new Server(server.httpServer, {
-			cors: {
-				origin: "*", // Adjust this in production
-			},
-		});
-
-		io.on('connect', (socket) => {
-			socket.emit('eventFromServer', 'Hello, World');
-		})
-		console.log("Websocket server connected");
-	}
-}
+dotenv.config();
 
 export default defineConfig({
+	server: {
+        port: 3000
+    },
+    preview: {
+        port: 5173
+    },
 	plugins: [sveltekit(), webSocketServer]
 });

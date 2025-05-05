@@ -1,5 +1,5 @@
 import { MONGO_URL } from "$env/static/private";
-import { mongoose } from 'mongoose'
+import mongoose from 'mongoose';
 
 const clientOptions = {serverApi: { version: '1', strict: true, deprecationErrors: true } };
 export async function start_mongo() {

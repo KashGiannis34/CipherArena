@@ -1,6 +1,7 @@
 import { start_mongo } from "$db/mongo";
 import { authenticate } from "$db/auth/authenticate";
 import { redirect } from "@sveltejs/kit";
+import { Cookies } from "@sveltejs/kit";
 
 
 /** @type {import('@sveltejs/kit').ServerInit} */
@@ -9,18 +10,23 @@ export async function init() {
 }
 
 export const handle = async ({ event, resolve }) => {
-	const is_protected = event.url.pathname.startsWith("/home") || event.url.pathname.startsWith("/game");
+	if (is_protected(event.url) || event.url.pathname=='/') {
+		const auth = authenticate(event.cookies.get("auth-token"));
+		if (is_protected(event.url) && !auth) {
+			throw redirect(308, "/");
+		}
 
-	const auth = authenticate(event.cookies);
-	if (is_protected && !auth) {
-		throw redirect(308, "/");
-	}
-
-	if (auth && event.url.pathname=='/') {
-		throw redirect(308, "/home");
+		if (auth && event.url.pathname=='/') {
+			throw redirect(308, "/home");
+		}
 	}
 
 	const response = await resolve(event);
 
 	return response;
 };
+
+function is_protected(url) {
+	const protected_paths = ["/home", "/game","/private-lobby", "/public-lobby"];
+	return protected_paths.some((path) => url.pathname.startsWith(path));
+}

@@ -160,8 +160,11 @@
     function getInputText() {
         let text = '';
         for (let input of info.inputs) {
-            if (input != undefined && input.value != '') {
-                text += input.value;
+            if (input != undefined ) {
+                if (input.value != '')
+                    text += input.value;
+                else
+                    text += ' ';
             }
         }
         return text;
@@ -288,11 +291,5 @@
         margin-left: 10px;
         margin-right: 10px;
     }
-
-
-    /* .cipherContainer:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-    } */
 
 </style>

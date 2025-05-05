@@ -1,9 +1,7 @@
 import jwt from "jsonwebtoken";
-import { SECRET_JWT_KEY } from "$env/static/private";
-import { Cookies } from "@sveltejs/kit";
+const SECRET_JWT_KEY = process.env.SECRET_JWT_KEY;
 
-export function authenticate(cookies) {
-	let token = cookies.get("auth-token");
+export function authenticate(token) {
 	if (!token) return undefined;
 	try {
 		const auth = jwt.verify(token, SECRET_JWT_KEY);

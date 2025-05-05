@@ -40,10 +40,11 @@ function checkSelfDecode(arr) {
     return false;
 }
 
-export function encodeQuote(plaintext, cipherType, keys, searchParams) {
+export function encodeQuote(plaintext, cipherType, keys, params) {
     let ciphertext = '';
     if (cipherType == 'Aristocrat') {
-        ciphertext = encodeAristocrat(plaintext, searchParams, keys[0]);
+        const k = params['K'] == '-1' ? '0' : params['K'];
+        ciphertext = encodeAristocrat(plaintext, k, keys[0]);
     } else if (cipherType == 'Porta') {
         ciphertext = encodePorta(plaintext, keys[0]);
     } else if (cipherType == 'Caesar') {
@@ -51,7 +52,7 @@ export function encodeQuote(plaintext, cipherType, keys, searchParams) {
     } else if (cipherType == 'Atbash') {
         ciphertext = encodeAtbash(plaintext);
     } else {
-        ciphertext = encodeAristocrat(plaintext, searchParams);
+        ciphertext = encodeAristocrat(plaintext, '0');
     }
     return ciphertext;
 }
@@ -81,10 +82,10 @@ function encodeAtbash(plaintext) {
     return res;
 }
 
-function encodeAristocrat(plaintext, searchParams, key) {
-    const freqTable = freqTableInit(searchParams.get('K') || '0', key);
+function encodeAristocrat(plaintext, k, key) {
+    const freqTable = freqTableInit(k || '0', key);
     let ciphertext = '';
-    const useInverseMapping = searchParams.get('K') === '1' || searchParams.get('K') === '3';
+    const useInverseMapping = k === '1' || k === '3';
     let upperPlaintext = plaintext.toUpperCase();
 
     for (let letter of upperPlaintext) {

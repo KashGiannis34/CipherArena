@@ -6,6 +6,7 @@ const UserAuthSchema = new mongoose.Schema({
 	password: { type: String, required: true },
     verified: { type: Boolean, default: false },
     lastVerificationRequest: { type: Date },
+    currentGame: { type: mongoose.Schema.Types.ObjectId, ref: 'Game', default: null },
 }, { collection: 'users_auth' });
 
 export const UserAuth = mongoose.models.UserAuth || mongoose.model("UserAuth", UserAuthSchema);

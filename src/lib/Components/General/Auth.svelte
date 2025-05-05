@@ -24,7 +24,7 @@
 
 {#key login}
     <div in:fade out:fade style="all: inherit;">
-        <Container --maxWidth=min(80vw,600px)>
+        <Container --minWidth=none --maxWidth=min(80vw,600px)>
             <form method="POST" action={"?/"+(login ? "login":"register")} onsubmit={() => {authenticating=true; feedback={};}} use:enhance={async () => {
                 return({result}) => {
                     if (result['type'] === 'redirect') {
@@ -112,7 +112,7 @@
 {/key}
 
 <style>
-    @import "$lib/css/Button";
+    @import "$lib/css/Button.css";
     p {
       text-align: center;
     }

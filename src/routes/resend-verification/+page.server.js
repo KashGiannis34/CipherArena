@@ -4,7 +4,8 @@ import { createVerificationToken } from '$db/auth/verify';
 import { sendVerificationEmail } from '$db/auth/mailer';
 import { Cookies } from "@sveltejs/kit";
 
-const RATE_LIMIT_MINUTES = 5;
+const RATE_LIMIT_MINUTES = 0;
+const EXPIRE_LIMIT_MINUTES = 20;
 
 /** @type {import('./$types').PageLoad} */
 export async function load({cookies}) {
@@ -26,10 +27,10 @@ export async function load({cookies}) {
         }
 
         // Generate new verification token
-        const token = await createVerificationToken(user);
+        const token = await createVerificationToken(user, EXPIRE_LIMIT_MINUTES);
 
         // Send email
-        await sendVerificationEmail(user.email, token);
+        await sendVerificationEmail(user.email, token, EXPIRE_LIMIT_MINUTES);
 
         // Update last verification request timestamp
         user.lastVerificationRequest = now;

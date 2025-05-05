@@ -7,6 +7,11 @@ import { stripQuote, encodeQuote } from '$lib/util/CipherUtil';
 export async function POST({ request }) {
     try {
         const req = await request.json();
+
+        if (req['input'].includes(' ')) {
+            return json(false);
+        }
+
         const quote = await Quote.findOne({_id: new ObjectId(req['id'])});
         const ansText = stripQuote(quote["text"]);
         if (req['solve'] == 'Encode') {

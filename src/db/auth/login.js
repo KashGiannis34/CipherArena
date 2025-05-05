@@ -37,19 +37,16 @@ async function get_user(email, password) {
         return { error: "Email OR Password is not correct." };
     }
 
-    const id = user._id.toString();
-    const username = user.username;
-    const verified = user.verified;
-    return { id, email, username, verified };
+    return { user };
 }
 
 export async function login_user(email, password) {
-    const user = await get_user(email, password);
+    const info = await get_user(email, password);
 
-    if ("error" in user) {
-		return { error: user.error };
+    if ("error" in info) {
+		return { error: info.error };
 	}
 
-    const token = jwt.sign({ id: user.id }, SECRET_JWT_KEY);
-	return { token, user };
+    const token = jwt.sign({ id: info.user.id }, SECRET_JWT_KEY);
+	return { token, user: info.user };
 }

@@ -40,16 +40,31 @@
 {#if visibility}
     <div class='background' onclick={exit} onkeydown={() => {}} role="button" tabindex=-1 in:fade out:fade></div>
     <div class='modal' in:zoom out:zoom>
-        <Container --paddingTop=25px --maxWidth=min(50vw,300px) --bgcolor="#e4e0ff" --color="black">
+        <div class='innerModal'>
             <i class="fa-solid fa-xmark" onclick={exit} onkeydown={() => {}} role="button" tabindex=0></i>
             {@render children?.()}
             <button class='button' onclick={exit}>Ok</button>
-        </Container>
+        </div>
     </div>
 {/if}
 
 <style>
     @import '$lib/css/Button.css';
+    /* --paddingTop=25px --maxWidth=min(50vw,300px) --bgcolor="#e4e0ff" --color="black" */
+
+    .innerModal {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        padding: 25px 30px 10px 30px;
+        background-color: #e4e0ff;
+        color: black;
+        max-width: min(50vw,300px);
+        max-height: min(30vw, 200px);
+        border-radius: 10px;
+    }
 
     .button {
         padding: 10px 20px;

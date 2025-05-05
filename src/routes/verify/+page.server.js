@@ -25,7 +25,7 @@ export async function load({params, url, cookies}) {
         }
 
         // Find the user and mark as verified
-        const user = await UserAuth.findById(verificationToken.userId);
+        const user = await UserAuth.findOne({ _id: verificationToken.userId });
         if (!user) return { message: "User Not Found.", isSuccess: false };
 
         user.verified = true;
