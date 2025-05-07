@@ -1,10 +1,11 @@
 import { authenticate } from '$db/auth/authenticate';
-import { UserAuth } from '$db/models/UserAuth';
 import { Game } from '$db/models/Game';
 import { json, redirect } from '@sveltejs/kit';
 import { ObjectId } from 'mongodb';
 import { generateQuote } from '$db/GenerateQuote';
 import { Cookies } from "@sveltejs/kit";
+import { UserGame } from '$db/models/UserGame';
+import { UserAuth } from '$db/models/UserAuth';
 
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function POST({ request, cookies }) {
@@ -15,12 +16,13 @@ export async function POST({ request, cookies }) {
 
         if (!auth) return json({success: false, message: "Unauthorized"});
 
-        const user = await UserAuth.findById(new ObjectId(auth['id']));
-        if (!user) return json({success: false, message: "Unauthorized"});
+        const userGame = await UserGame.findById(new ObjectId(auth['id']));
+        const userAuth = await UserAuth.findById(new ObjectId(auth['id']));
+        if (!userGame || !userAuth) return json({success: false, message: "Unauthorized"});
 
-        if (user.currentGame) return json({success: false, message: "You are already in a game. Leave the current game before creating or joining another."});
+        if (userGame.currentGame) return json({success: false, message: "You are already in a game. Leave the current game before creating or joining another.", leaveGame: userGame.currentGame?.toString()});
 
-        if (user.verified == false) return json({success: false, message: "Must verify email to create private games."});
+        if (userAuth.verified == false) return json({success: false, message: "Must verify email to create private games."});
 
         const params = {
             K: req.options.K || '-1',
@@ -38,7 +40,7 @@ export async function POST({ request, cookies }) {
                 encodedText: quote.quote
             },
             mode: req.mode,
-            users: [user._id] // Add user references here
+            users: [userGame._id] // Add user references here
         });
 
         await newGame.save();

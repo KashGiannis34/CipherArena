@@ -1,55 +1,86 @@
 import { Server } from 'socket.io';
-import { UserAuth } from '../src/db/models/UserAuth.js';
 import { Game } from '../src/db/models/Game.js';
 import { ObjectId } from 'mongodb';
 import { authenticate } from '../src/db/auth/authenticate.js';
+import { UserGame } from '../src/db/models/UserGame.js';
 
 export default async function injectSocketIO(server) {
     if (!server.httpServer) return;
 
     const io = new Server(server.httpServer, {
         cors: {
-            origin: "*", // Adjust this in production
+            origin: 'http://localhost:5173',
+            credentials: true
         },
     });
     globalThis.io = io;
 
-    io.on('connection', async (socket) => {
-        const auth = extractAuthToken(socket.handshake.headers.cookie);
-        console.log('Auth token:', auth);
-        if (!auth) {
-            console.log('No auth-token found in cookies');
-            socket.disconnect(); // Disconnect the socket if no auth-token is found
-            return;
-        }
-        const user = await UserAuth.findById(new ObjectId(auth['id']));
-        console.log(user._id);
-
-        socket.on('join-room', (roomID) => {
-            socket.join(roomID);
-            console.log(`User ${user._id} joined room ${roomID}`);
-        })
-
-        socket.on('disconnect', async () => {
-            console.log(`User disconnected: ${socket.id}`);
-            const game = await Game.findById(user.currentGame);
-            if (game) {
-                // Remove user from game users array
-                game.users = game.users.filter(userId => !userId.equals(user._id));
-                if (game.users.length === 0) {
-                    // If no users left, delete the game
-                    console.log('No users left in game, deleting game:', game._id);
-                    await game.deleteOne().catch(err => console.error('Error deleting game:', err));
-                } else {
-                    // Save the game after removing the user
-                    game.save().catch(err => console.error('Error saving game:', err));
-                }
+    io.use(async (socket, next) => {
+        // Authenticate socket before allowing connection
+        try {
+            const auth = extractAuthToken(socket.handshake.headers.cookie);
+            const connectToken = socket.handshake.auth.connectToken;
+            if (!auth) {
+                next(new Error('Unauthorized'));
+            }
+            const user = await UserGame.findById(auth['id']);
+            if (!user) {
+                next(new Error('Unauthorized'));
             }
 
-            user.currentGame = null; // Clear the current game on disconnect
-            user.save().catch(err => console.error('Error saving user on disconnect:', err));
+            socket.userId = auth['id'];
+            next();
+        } catch (err) {
+            console.error('Socket authentication error:', err);
+            return next(new Error(err.toString()));
+        }
+    });
 
+    io.on('connection', async (socket) => {
+        const userId = socket.userId;
+        const socketId = socket.id;
 
+        try {
+            const user = await UserGame.findById(new ObjectId(userId));
+            const oldSocketId = user.currentSocketId;
+
+            if (oldSocketId && oldSocketId !== socketId) {
+                const oldSocket = io.sockets.sockets.get(oldSocketId);
+                if (oldSocket) {
+                    oldSocket.emit('error', 'You were disconnected due to a new login.');
+                    oldSocket.disconnect();
+                }
+            }
+        } catch (err) {
+            console.error('Socket error:', err);
+        }
+
+        // Update the user's active socket in the DB
+        await UserGame.findByIdAndUpdate(userId, { currentSocketId: socketId });
+
+        socket.on('join-room', (roomId) => {
+            socket.join(roomId);
+            console.log(`User joined room ${roomId}`);
+
+            // Broadcast to all in room to re-fetch players
+            io.to(roomId).emit('players-changed');
+        })
+
+        socket.on('leave-room', async (roomId) => {
+            io.to(roomId).emit('players-changed');
+        });
+
+        socket.onAny((event, ...args) => {
+            console.log('📡 Received event:', event, args);
+        });
+
+        socket.on('disconnect', async () => {
+            // Clear currentSocketId only if it matches
+            const latest = await UserGame.findById(userId);
+            if (latest?.currentSocketId === socketId) {
+                await UserGame.findByIdAndUpdate(userId, { currentSocketId: null });
+                console.log(`User ${userId} disconnected from ${socketId}`);
+            }
         });
     });
 
@@ -61,7 +92,7 @@ function extractAuthToken(cookieString) {
     const cookies = cookieString.split("; ");
     for (const cookie of cookies) {
         const [key, value] = cookie.split("=");
-        if (key === "auth-token") {
+        if (key == "auth-token") {
             const auth = authenticate(value);
             return auth;
         }

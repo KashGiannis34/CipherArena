@@ -1,4 +1,5 @@
 import { UserAuth } from "$db/models/UserAuth";
+import { UserGame } from "$db/models/UserGame";
 import pkg from 'argon2';
 const argon2 = pkg;
 
@@ -102,8 +103,13 @@ export async function register_user(name, email, password, confirmPass) {
         lastVerificationRequest: now
 	});
 
+    const userGame = new UserGame({
+        _id: user._id,
+    });
+
 	try {
 		await user.save();
+        await userGame.save();
 		return { error: "" };
 	} catch (err) {
 		return {error: err.toString()};

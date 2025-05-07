@@ -49,7 +49,7 @@
         user-select: none;
     }
     nav {
-        z-index: 0;
+        z-index: 5;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -80,6 +80,7 @@
         padding: 0.5rem 1rem;
         border-radius: 5px;
         transition: background 0.3s ease, color 0.3s ease;
+        text-align: center;
     }
 
     .links button {
@@ -91,6 +92,7 @@
         border-radius: 5px;
         border: 0px;
         transition: background 0.3s ease, color 0.3s ease;
+        text-align: center;
     }
 
     .links button:active {
