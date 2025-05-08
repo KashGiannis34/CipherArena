@@ -105,6 +105,7 @@ export async function register_user(name, email, password, confirmPass) {
 
     const userGame = new UserGame({
         _id: user._id,
+        'username': name,
     });
 
 	try {

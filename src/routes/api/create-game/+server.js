@@ -45,6 +45,9 @@ export async function POST({ request, cookies }) {
 
         await newGame.save();
 
+        userGame.currentGame = newGame._id;
+        await userGame.save();
+
         return json({
             success: true,
             gameId: newGame._id.toString(),

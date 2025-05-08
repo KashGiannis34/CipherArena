@@ -17,37 +17,42 @@ export default async function injectSocketIO(server) {
 
     io.use(async (socket, next) => {
         // Authenticate socket before allowing connection
-        try {
-            const auth = extractAuthToken(socket.handshake.headers.cookie);
-            const connectToken = socket.handshake.auth.connectToken;
-            if (!auth) {
-                next(new Error('Unauthorized'));
-            }
-            const user = await UserGame.findById(auth['id']);
-            if (!user) {
-                next(new Error('Unauthorized'));
-            }
+        const token = socket.handshake.auth.token;
 
-            socket.userId = auth['id'];
-            next();
-        } catch (err) {
-            console.error('Socket authentication error:', err);
-            return next(new Error(err.toString()));
+        if (!token) {
+            console.error('No token provided in socket handshake');
+            return next(new Error("No token"));
         }
+
+        console.log("Token:", token);
+        const auth = authenticate(token); // runs jwt.verify
+        if (auth == undefined) {
+            console.log("No AUTH");
+            return next(new Error("Invalid token"));
+        }
+
+        const connectToken = socket.handshake.auth.connectToken;
+        const user = await UserGame.findById(auth.id);
+        if (!user) {
+            return next(new Error('Unauthorized'));
+        }
+
+        socket.userId = auth.id;
+        return next();
     });
 
     io.on('connection', async (socket) => {
         const userId = socket.userId;
         const socketId = socket.id;
+        let user;
 
         try {
-            const user = await UserGame.findById(new ObjectId(userId));
+            user = await UserGame.findById(new ObjectId(userId));
             const oldSocketId = user.currentSocketId;
 
             if (oldSocketId && oldSocketId !== socketId) {
                 const oldSocket = io.sockets.sockets.get(oldSocketId);
                 if (oldSocket) {
-                    oldSocket.emit('error', 'You were disconnected due to a new login.');
                     oldSocket.disconnect();
                 }
             }
@@ -57,16 +62,20 @@ export default async function injectSocketIO(server) {
 
         // Update the user's active socket in the DB
         await UserGame.findByIdAndUpdate(userId, { currentSocketId: socketId });
+        io.to(socketId).emit('ready');
 
         socket.on('join-room', (roomId) => {
-            socket.join(roomId);
-            console.log(`User joined room ${roomId}`);
-
-            // Broadcast to all in room to re-fetch players
-            io.to(roomId).emit('players-changed');
+            try {
+                socket.join(roomId.toString());
+                socket.currentRoom = roomId.toString();
+                console.log(`✅ ${user._id} joined room ${roomId}`);
+                io.to(roomId).emit('players-changed');
+            } catch (err) {
+                console.error('join-room error:', err);
+            }
         })
 
-        socket.on('leave-room', async (roomId) => {
+        socket.on('leave-room', (roomId) => {
             io.to(roomId).emit('players-changed');
         });
 
@@ -75,27 +84,17 @@ export default async function injectSocketIO(server) {
         });
 
         socket.on('disconnect', async () => {
-            // Clear currentSocketId only if it matches
             const latest = await UserGame.findById(userId);
             if (latest?.currentSocketId === socketId) {
                 await UserGame.findByIdAndUpdate(userId, { currentSocketId: null });
-                console.log(`User ${userId} disconnected from ${socketId}`);
+            }
+
+            const roomId = socket.currentRoom;
+            if (roomId) {
+                io.to(roomId).emit('players-changed');
             }
         });
     });
 
     console.log('SocketIO injected');
-}
-
-// Function to extract the auth-token
-function extractAuthToken(cookieString) {
-    const cookies = cookieString.split("; ");
-    for (const cookie of cookies) {
-        const [key, value] = cookie.split("=");
-        if (key == "auth-token") {
-            const auth = authenticate(value);
-            return auth;
-        }
-    }
-    return null; // Return null if auth-token is not found
 }

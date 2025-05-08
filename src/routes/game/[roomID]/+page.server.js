@@ -27,7 +27,7 @@ export async function load({cookies, params}) {
 
         user.currentGame = game._id;
         await user.save();
-        return {roomID: params['roomID']};
+        return {roomID: params['roomID'], authToken: cookies.get("auth-token")};
     } catch (error) {
         return redirect(307, '/')
     }

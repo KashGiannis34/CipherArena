@@ -8,8 +8,9 @@ export async function GET({ url }) {
 
   if (!game) return json([], { status: 404 });
 
-  const players = game.users.map(u => ({
+  const players = await game.users.map(u => ({
     username: u.username,
+    connected: u.currentSocketId ? true : false,
   }));
 
   return json(players);

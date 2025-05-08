@@ -39,7 +39,6 @@ export async function POST({ request, cookies }) {
 
         game.users.push(userGame._id);
         await game.save();
-
         userGame.currentGame = game._id;
         await userGame.save();
 

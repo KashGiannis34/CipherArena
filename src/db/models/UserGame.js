@@ -6,6 +6,10 @@ const UserGameSchema = new mongoose.Schema({
       ref: 'UserAuth',
       required: true
     },
+    username: {
+      type: String, required: true,
+      unique: true,
+    },
     elo: {
       type: Number,
       default: 1200

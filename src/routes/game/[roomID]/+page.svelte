@@ -5,22 +5,25 @@
     import { goto } from "$app/navigation";
     import "$lib/css/Button.css";
     import LoadingOverlay from '$lib/Components/General/LoadingOverlay.svelte';
+    import { fade } from 'svelte/transition';
 
     let { data } = $props();
     let stopListening;
     let isLeaving = $state(false);
-    const socket = io();
+    let socket;
     let gameState = $state("idle");
     let players = $state([]);
 
     async function leaveGame() {
         isLeaving = true;
         try {
-            await fetch('/api/leave-current-game', { method: 'POST' });
+            const res = await fetch('/api/leave-current-game', { method: 'POST' });
+            console.log('Leave response:', await res.json());
         } catch (e) {
             console.error('Leave failed:', e);
         } finally {
-            socket.disconnect();
+            socket?.emit('leave-room', data.roomID);
+            socket?.disconnect();
             goto('/private-lobby');
         }
     }
@@ -33,35 +36,45 @@
 
 
     function startGame() {
-        socket.emit('start-game', data['roomID']);
+        socket?.emit('start-game', data['roomID']);
     }
 
-    socket.on('connect', (message) => {
-        console.log('You are connected with id', socket.id);
-        socket.emit('join-room', data['roomID']);
-        console.log('Joining room', data['roomID']);
-        gameState = "waiting";
-    });
-
-    socket.on('disconnect', (message) => {
-        console.log('You are now disconnected from the server', message);
-        gameState = "disconnected";
-    });
-
-    socket.on('players-changed', () => {
-        console.log('Players changed');
-        fetchPlayers();
-    });
-
     onMount(() => {
-        fetchPlayers();
-        stopListening = listenForTabEvents(['leave-game'], ({ type, payload }) => {
-            if (payload.gameId === data['roomID']) {
-                socket.disconnect();
-                console.log('Handled leave-game from another tab');
-                goto('/');
-            }
-        });
+
+      socket = io({
+        auth: {
+          token: decodeURIComponent(data['authToken'])
+        }
+      });
+
+      socket.on('connect', () => {
+        console.log('You are connected with id', socket.id);
+        gameState = "waiting";
+      });
+
+      socket.on('ready', () => {
+        socket.emit('join-room', data['roomID']);
+        console.log('join-room emitted');
+      });
+
+      stopListening = listenForTabEvents(['leave-game'], ({ type, payload }) => {
+          if (payload.gameId === data['roomID']) {
+              socket.disconnect();
+              console.log('Handled leave-game from another tab');
+              goto('/');
+          }
+      });
+
+      socket.on('disconnect', (message) => {
+          console.log('You are now disconnected from the server', message);
+          socket?.emit('left-room', data['roomID']);
+          gameState = "disconnected";
+      });
+
+      socket.on('players-changed', () => {
+          console.log('Players changed');
+          fetchPlayers();
+      });
     });
 
     onDestroy(() => {
@@ -73,18 +86,22 @@
   <LoadingOverlay />
 {/if}
 {#if gameState === "disconnected"}
-    <div>Disconnected. You are currently accessing this game from a different window.</div>
+    <div transition:fade>Disconnected.</div>
 {:else if gameState === "waiting"}
     <div class="waiting-container">
         <div class="waiting-title">Waiting to Start Game</div>
 
         <div class="player-list">
-            {#each players as player}
-            <div class="player-card">
-                <div class="player-name">{player.username}</div>
-                <div class="player-elo">ELO: {player.elo}</div>
+          {#each players as player (player.username)}
+            <div class="player-card" transition:fade>
+              <div class="player-name" style={player.connected ? "color: #ffffff;" : "color: #ff5d5d;"}>
+                {player.username + (!player.connected ? " (DISCONNECTED)" : "")}
+              </div>
+              <div class="player-elo" style={player.connected ? "color: #ffffff;" : "color: #ff5d5d;"}>
+                ELO: {player.elo}
+              </div>
             </div>
-            {/each}
+          {/each}
         </div>
 
         <div class="button-row">
@@ -139,12 +156,10 @@
     .player-name {
       font-weight: 500;
       font-size: 1rem;
-      color: #ffffff;
     }
 
     .player-elo {
       font-size: 0.9rem;
-      color: #f2e6ff;
     }
 
     .button-row {
