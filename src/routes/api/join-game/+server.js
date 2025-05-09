@@ -44,6 +44,6 @@ export async function POST({ request, cookies }) {
 
         return json({ success: true, gameId: game._id.toString() });
     } catch (error) {
-        return json({ success: false, message: error.message || "Failed to join game" });
+        return json({ success: false, message: "Invalid Code" });
     }
 }

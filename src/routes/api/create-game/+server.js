@@ -40,7 +40,8 @@ export async function POST({ request, cookies }) {
                 encodedText: quote.quote
             },
             mode: req.mode,
-            users: [userGame._id] // Add user references here
+            users: [userGame._id],
+            host: userGame._id
         });
 
         await newGame.save();

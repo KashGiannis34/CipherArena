@@ -12,6 +12,7 @@
     let feedbackCreate = $state('');
     let authenticating = $state(false);
     let showLeaveGameButton = $state(false);
+    let showLeaveGameButton2 = $state(false);
     let joinCode = $state('');
     let feedbackJoin = $state('');
 
@@ -87,7 +88,11 @@
                 feedbackJoin = res.message;
             }
 
-            showLeaveGameButton = !!res.leaveGame;
+            if (res['leaveGame']) {
+                showLeaveGameButton2 = true;
+            } else {
+                showLeaveGameButton2 = false;
+            }
         } catch (error) {
             authenticating = false;
             feedbackJoin = error.toString();
@@ -99,10 +104,20 @@
         const data = await res.json();
 
         if (data.success) {
-            showLeaveGameButton = false;
-            feedbackCreate = "You left your previous game. Now retry creating or joining.";
+            if (showLeaveGameButton) {
+                showLeaveGameButton = false;
+                feedbackCreate = "You left your previous game. Now retry creating or joining.";
+            } else {
+                showLeaveGameButton2 = false;
+                feedbackJoin = "You left your previous game. Now retry creating or joining.";
+            }
+
         } else {
-            feedbackCreate = data.message;
+            if (showLeaveGameButton) {
+                feedbackCreate = data.message;
+            } else {
+                feedbackJoin = data.message;
+            }
         }
 
         if (data.disconnectSocket) {
@@ -138,7 +153,14 @@
         <label class="input-container">
             <input type="text" placeholder="Room Code" bind:value={joinCode} />
         </label>
-        <button class="button" onclick={joinGame}>Join Game</button>
+
+        <div class="button-row">
+            <button class="button" onclick={joinGame}>Join Game</button>
+
+            {#if showLeaveGameButton2}
+                <button class="button" onclick={leaveGame} style="color: #fa6969;">Leave Current Game</button>
+            {/if}
+        </div>
     </div>
 
     {#if feedbackJoin}

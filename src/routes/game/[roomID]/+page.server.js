@@ -22,13 +22,12 @@ export async function load({cookies, params}) {
         const game = await Game.findById(new ObjectId(params['roomID']));
         if (!game) return redirect(307, '/');
 
-        if (user.currentGame != null && user.currentGame.toString() != game._id.toString())  return redirect(307, '/game/' + game._id);
+        if (user.currentGame != null && user.currentGame.toString() != game._id.toString())  return redirect(307, '/game/' + user.currentGame._id);
         if (!game.users.includes(user._id)) return redirect(307, '/'); // already in game
 
-        user.currentGame = game._id;
-        await user.save();
         return {roomID: params['roomID'], authToken: cookies.get("auth-token")};
     } catch (error) {
+        console.error('Error loading game:', error);
         return redirect(307, '/')
     }
 }
