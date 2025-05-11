@@ -1,4 +1,4 @@
-// src/db/game/leaveGameAndCleanup.js
+// src/db/game/leaveGameCleanup.js
 import { Game } from './models/Game';
 import { UserGame } from './models/UserGame';
 import { ObjectId } from 'mongodb';

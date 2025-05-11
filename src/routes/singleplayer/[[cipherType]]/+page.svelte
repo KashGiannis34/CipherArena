@@ -14,7 +14,7 @@
     }
 
     onMount(() => {
-        options = sessionStorage.getItem('options') ? JSON.parse(sessionStorage.getItem('options')) : {'AutoFocus':true, 'AutoSwitch':false};
+        options = sessionStorage.getItem('options') ? JSON.parse(sessionStorage.getItem('options')) : {'AutoFocus':true, 'AutoSwitch':false, 'Test':false};
         mounted = true;
     })
 </script>

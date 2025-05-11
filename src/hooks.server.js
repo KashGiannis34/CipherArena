@@ -13,11 +13,11 @@ export const handle = async ({ event, resolve }) => {
 	if (is_protected(event.url) || event.url.pathname=='/') {
 		const auth = authenticate(event.cookies.get("auth-token"));
 		if (is_protected(event.url) && !auth) {
-			throw redirect(308, "/");
+			throw redirect(303, "/");
 		}
 
 		if (auth && event.url.pathname=='/') {
-			throw redirect(308, "/home");
+			throw redirect(303, "/home");
 		}
 	}
 
@@ -27,6 +27,6 @@ export const handle = async ({ event, resolve }) => {
 };
 
 function is_protected(url) {
-	const protected_paths = ["/home", "/game","/private-lobby", "/public-lobby"];
+	const protected_paths = ["/home", "/game/","/private-lobby", "/public-lobby"];
 	return protected_paths.some((path) => url.pathname.startsWith(path));
 }

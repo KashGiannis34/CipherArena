@@ -57,6 +57,7 @@ export default async function injectSocketIO(server) {
                 const oldSocket = io.sockets.sockets.get(oldSocketId);
                 if (oldSocket) {
                     oldSocket.disconnectReason = 'replaced';
+                    oldSocket.emit('replaced');
                     oldSocket.disconnect();
                 }
             }

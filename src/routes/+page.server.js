@@ -4,7 +4,6 @@ import {login_user} from '$db/auth/login';
 import { fail } from '@sveltejs/kit';
 import { Cookies } from "@sveltejs/kit";
 import { cookie_options } from '$db/dbUtil';
-import { redirect } from '@sveltejs/kit';
 import { createVerificationToken } from '$db/auth/verify';
 import { sendVerificationEmail } from '$db/auth/mailer';
 
@@ -36,7 +35,7 @@ export const actions = {
             cookies.set("username", user.username, cookie_options);
             cookies.set("verified", user.verified, cookie_options);
 
-            return redirect(303, '/home');
+            return {redirect: "/home"};
 		}
     },
     register: async ({request}) => {

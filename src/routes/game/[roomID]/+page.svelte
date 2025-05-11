@@ -36,7 +36,7 @@
     }
 
     function copyGameLink() {
-      const link = `${window.location.origin}/game/${data.roomID}`;
+      const link = `${window.location.origin}/game-lobby/${data.roomID}`;
       navigator.clipboard.writeText(link).then(() => {
         showTooltip('link', 'Link copied!');
       });
@@ -65,8 +65,6 @@
     async function fetchPlayers() {
       const res = await fetch(`/api/game-players?gameId=${data.roomID}`);
       players = await res.json(); // array of { username, elo }
-      console.log($state.snapshot(players));
-      console.log(isHost);
     }
 
 
@@ -113,6 +111,11 @@
 
       socket.on('kicked', () => {
         alert('You have been kicked from the game.');
+        goto('/private-lobby');
+      });
+
+      socket.on('replaced', () => {
+        alert('You account has joined a game from a different tab.');
         goto('/private-lobby');
       });
     });

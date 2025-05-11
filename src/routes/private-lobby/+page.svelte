@@ -6,7 +6,7 @@
     import { broadcastTabEvent } from "$lib/util/crossTabEvents";
     import LoadingOverlay from "$lib/Components/General/LoadingOverlay.svelte";
 
-    let options = $state({'AutoFocus':false, 'AutoSwitch':false});
+    let options = $state({'AutoFocus':false});
     let cipherType = $state('Aristocrat');
     let cipherOption = $state('Random');
     let feedbackCreate = $state('');
@@ -100,6 +100,7 @@
     }
 
     async function leaveGame() {
+        authenticating = true;
         const res = await fetch('/api/leave-current-game', { method: 'POST' });
         const data = await res.json();
 
@@ -123,6 +124,7 @@
         if (data.disconnectSocket) {
             broadcastTabEvent('leave-game', { gameId: data.gameId });
         }
+        authenticating = false;
     }
 </script>
 

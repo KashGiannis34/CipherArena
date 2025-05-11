@@ -6,7 +6,7 @@ import { generateQuote } from '$db/GenerateQuote';
 export async function load({params, url}) {
     const cipherType = params['cipherType'] && cipherTypes[params['cipherType']] ? params['cipherType'] : 'Redirect';
     if (cipherType === 'Redirect') {
-        return redirect(307, '/singleplayer/Aristocrat');
+        return redirect(303, '/singleplayer/Aristocrat');
     }
 
     try {

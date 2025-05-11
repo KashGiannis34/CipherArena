@@ -22,7 +22,7 @@ export async function POST({ request, cookies }) {
 
         if (userGame.currentGame) return json({success: false, message: "You are already in a game. Leave the current game before creating or joining another.", leaveGame: userGame.currentGame?.toString()});
 
-        if (userAuth.verified == false) return json({success: false, message: "Must verify email to create private games."});
+        if (userAuth.verified == false) return json({success: false, message: "Must verify email to create games."});
 
         const params = {
             K: req.options.K || '-1',

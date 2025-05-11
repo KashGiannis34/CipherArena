@@ -4,7 +4,7 @@
     import { enhance } from "$app/forms";
     import { redirect } from "@sveltejs/kit";
 
-    let {login, toggleLogin} = $props();
+    let {login, roomId, toggleLogin, toggleAvailable} = $props();
     let authenticating = $state(false);
     let username = $state("");
     let email = $state("");
@@ -19,7 +19,6 @@
         password = "";
         confirmPass = "";
     }
-
 </script>
 
 {#key login}
@@ -27,8 +26,9 @@
         <Container --minWidth=none --maxWidth=min(80vw,600px)>
             <form method="POST" action={"?/"+(login ? "login":"register")} onsubmit={() => {authenticating=true; feedback={};}} use:enhance={async () => {
                 return({result}) => {
-                    if (result['type'] === 'redirect') {
-                        window.location.href = window.location.href;
+                    console.log(result);
+                    if (result.data?.redirect) {
+                        window.location.href = result.data.redirect;
                     }
 
                     authenticating = false;
@@ -39,7 +39,9 @@
                             email = "";
                             password = "";
                             confirmPass = "";
-                            login = true;
+                            if (toggleAvailable) {
+                                login = true;
+                            }
                             sessionStorage.setItem('login', JSON.stringify(true));
                         }
                         if ('error' in feedback && feedback['error'].includes('MongoServerError: E11000')) {
@@ -59,6 +61,10 @@
                         <i class="fas fa-user"></i>
                         <input bind:value={username} name="username" type="username" placeholder="Username" />
                     </label>
+                {/if}
+
+                {#if roomId}
+                    <input type="hidden" name="roomId" value={roomId} />
                 {/if}
 
                 <label>
@@ -93,20 +99,22 @@
                     {/if}
                 </button>
             </form>
-            <div class="options">
-                <p>Or</p>
-                {#if !login}
-                    <div>
-                        <p>Already have an account?</p>
-                        <a href="/" onclick={() => {toggleLogin(); clearInfo();}} onkeydown={() => {}} tabindex=0>Login</a>
-                    </div>
-                {:else}
-                    <div>
-                        <p>Don't have an account?</p>
-                        <a href="/" onclick={() => {toggleLogin(); clearInfo();}} onkeydown={() => {}} tabindex=0>Register</a>
-                    </div>
-                {/if}
-            </div>
+            {#if toggleAvailable}
+                <div class="options">
+                    <p>Or</p>
+                    {#if !login}
+                        <div>
+                            <p>Already have an account?</p>
+                            <a href="/" onclick={() => {toggleLogin(); clearInfo();}} onkeydown={() => {}} tabindex=0>Login</a>
+                        </div>
+                    {:else}
+                        <div>
+                            <p>Don't have an account?</p>
+                            <a href="/" onclick={() => {toggleLogin(); clearInfo();}} onkeydown={() => {}} tabindex=0>Register</a>
+                        </div>
+                    {/if}
+                </div>
+            {/if}
         </Container>
     </div>
 {/key}
