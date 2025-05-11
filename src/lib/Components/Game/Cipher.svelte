@@ -1,21 +1,16 @@
 <script>
-    import Popup from "../General/Popup.svelte";
     import Letter from "./Letter.svelte";
     import FreqTable from "./FreqTable.svelte";
     import Container from "../General/Container.svelte";
     import {encodeQuote, isLetter} from "$lib/util/CipherUtil";
     import {Confetti} from 'svelte-confetti';
     import { cipherTypes } from "$lib/util/CipherTypes";
+    import LoadingOverlay from "../General/LoadingOverlay.svelte";
 
-    function reloadPage() {
-        window.location.reload();
-    }
-
-    let {quote, hash, cipherType, autoFocus, autoSwitch, params, keys} = $props();
+    let {quote, hash, cipherType, autoFocus, params, keys, onAttempt, mode, newProblem} = $props();
     let startTime = Date.now()/1000;
-    let visibility=$state(false);
-    let feedbackMessage=$state('');
     let solved=$state(false);
+    let isChecking=$state(false);
 
     let info = $state({
         cipherText: initQuote(quote, cipherTypes[cipherType]['spacing']),
@@ -28,6 +23,15 @@
     let lettersWithIndices = initLWI();
     let directMap = initDirectMap(cipherType);
     let paramString = paramToString(params);
+
+    function clearQuote() {
+        info.letterInputs = initLetterInputs();
+        for (let input of info.inputs) {
+            if (input != undefined) {
+                input.value = '';
+            }
+        }
+    }
 
     function paramToString(obj) {
         let key = Object.keys(obj)[0];
@@ -170,19 +174,10 @@
         return text;
     }
 
-    function toggle() {
-        if (visibility && solved && autoSwitch) {
-            newProblem();
-        }
-        visibility = !visibility;
-    }
-
-    function newProblem() {
-        reloadPage();
-    }
-
     async function checkQuote() {
         let i = getInputText();
+        let feedbackMessage = '';
+        isChecking = true;
 
         try {
             const response = await fetch('/api/validate-quote', {
@@ -201,13 +196,17 @@
             } else {
                 feedbackMessage = "Sorry, your answer isn't correct. Giannis hopes you get it on the next try!";
             }
-            toggle();
         } catch (error) {
             feedbackMessage = 'An error occurred while checking the quote.';
         }
-        return feedbackMessage;
+        isChecking = false;
+        onAttempt(feedbackMessage, solved);
     }
 </script>
+
+{#if isChecking}
+    <LoadingOverlay/>
+{/if}
 
 <Container>
     <div class="info">
@@ -234,12 +233,11 @@
         <FreqTable bind:info={info} solved={solved} autoFocus={autoFocus}
         k={params['K']}/>
     {/if}
-    <button class="button" onclick={solved ? newProblem:checkQuote}>{solved ? 'New Problem' : 'Submit'}</button>
+    <div class="buttons">
+        <button class="button" onclick={clearQuote}>Clear</button>
+        <button class="button" onclick={(solved && mode=="singleplayer") ? newProblem:checkQuote}>{(solved && mode=="singleplayer") ? 'New Problem' : 'Submit'}</button>
+    </div>
 </Container>
-
-<Popup visibility={visibility} toggle={toggle}>
-    {@html feedbackMessage}
-</Popup>
 
 {#if solved}
     <div style="
@@ -290,6 +288,23 @@
     .word {
         margin-left: 10px;
         margin-right: 10px;
+    }
+
+    .buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* center on small screens */
+    gap: 1rem;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+    .buttons .button {
+        flex: 1 1 auto;
+        max-width: 200px;
+        min-width: 120px;
+        padding: 0.75rem 1.25rem;
+        font-size: clamp(0.9rem, 1.5vw, 1.1rem);
     }
 
 </style>

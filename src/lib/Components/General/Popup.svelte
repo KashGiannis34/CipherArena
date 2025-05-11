@@ -2,7 +2,7 @@
     import { cubicOut } from "svelte/easing";
     import Container from "./Container.svelte";
 
-    let {children, visibility, toggle} = $props();
+    let {children, visibility, onExit} = $props();
 
     function zoom(node, { duration = 300 }) {
         return {
@@ -31,19 +31,15 @@
         };
     }
 
-    function exit() {
-        toggle();
-    }
-
 </script>
 
 {#if visibility}
-    <div class='background' onclick={exit} onkeydown={() => {}} role="button" tabindex=-1 in:fade out:fade></div>
+    <div class='background' onclick={onExit} onkeydown={() => {}} role="button" tabindex=-1 in:fade out:fade></div>
     <div class='modal' in:zoom out:zoom>
         <div class='innerModal'>
-            <i class="fa-solid fa-xmark" onclick={exit} onkeydown={() => {}} role="button" tabindex=0></i>
+            <i class="fa-solid fa-xmark" onclick={onExit} onkeydown={() => {}} role="button" tabindex=0></i>
             {@render children?.()}
-            <button class='button' onclick={exit}>Ok</button>
+            <button class='button' onclick={onExit}>Ok</button>
         </div>
     </div>
 {/if}
