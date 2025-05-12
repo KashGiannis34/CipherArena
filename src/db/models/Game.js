@@ -2,24 +2,25 @@ import mongoose from "mongoose";
 import {cipherTypes} from "../../lib/util/CipherTypes.js";
 
 const GameSchema = new mongoose.Schema({
-    cipherType: {
-        type: String,
-        enum: Object.keys(cipherTypes),
-        required: true
-    },
-    cipherOption: {
-        type: String,
-        required: true
-    },
-    options: {
-        AutoFocus: {
-            type: Boolean,
-            default: false
+    params: {
+        cipherType: {
+            type: String,
+            enum: Object.keys(cipherTypes),
+            required: true
         },
-        AutoSwitch: {
-            type: Boolean,
-            default: false
+        K: {
+            type: String,
+            default: '-1'
+        },
+        Solve: {
+            type: String,
+            enum: ['Decode', 'Encode'],
+            default: 'Decode'
         }
+    },
+    autoFocus: {
+        type: Boolean,
+        default: false
     },
     quote: {
         id: {
@@ -29,6 +30,10 @@ const GameSchema = new mongoose.Schema({
         },
         encodedText: {
             type: String,
+            required: true
+        },
+        keys: {
+            type: [String],
             required: true
         }
     },

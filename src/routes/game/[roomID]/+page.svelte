@@ -6,6 +6,7 @@
     import "$lib/css/Button.css";
     import LoadingOverlay from '$lib/Components/General/LoadingOverlay.svelte';
     import { fade } from 'svelte/transition';
+  import Cipher from '$lib/Components/Game/Cipher.svelte';
 
     let { data } = $props();
     let stopListening;
@@ -19,6 +20,19 @@
     let isHost = $derived.by(() => {
       return players.some(player => player.username === data.username && player.host);
     });
+    let cipherData = $state({});
+
+    function onAttempt(message, isCorrect) {
+      if (isCorrect) {
+        socket.emit('cipher-solved', { gameId: data.roomID, message });
+      } else {
+        socket.emit('cipher-attempt', { gameId: data.roomID, message });
+      }
+    }
+
+    function newProblem() {
+      socket.emit('new-problem', { gameId: data.roomID });
+    }
 
     function kickPlayer(username) {
       if (confirm(`Are you sure you want to kick ${username}?`)) {
@@ -118,6 +132,15 @@
         alert('You account has joined a game from a different tab.');
         goto('/private-lobby');
       });
+
+      socket.on('start-game', (params, autoFocus, quote) => {
+        console.log('Game started');
+        cipherData.params = params;
+        cipherData.autoFocus = autoFocus;
+        cipherData.quote = quote;
+        console.log('cipherData:', $state.snapshot(cipherData));
+        gameState = "started";
+      });
     });
 
     onDestroy(() => {
@@ -196,10 +219,30 @@
       </div>
 
       <div class="button-row">
+        {#if isHost}
           <button class="button start-button" onclick={startGame}>Start Game</button>
+        {/if}
           <button class="button leave-button" onclick={leaveGame}>Leave Game</button>
       </div>
     </div>
+{:else if gameState === "started"}
+    <div transition:fade>
+      <Cipher
+        quote={cipherData.quote.encodedText}
+        hash={cipherData.quote.id}
+        cipherType={cipherData.params.cipherType}
+        autoFocus={cipherData.autoFocus}
+        params={cipherData.params}
+        keys={cipherData.keys}
+        onAttempt={onAttempt}
+        mode="multiplayer"
+        {newProblem}
+      />
+
+      <button class="button leave-button" onclick={leaveGame}>Leave Game</button>
+    </div>
+{:else}
+    <LoadingOverlay />
 {/if}
 
 <style>

@@ -9,6 +9,7 @@
     let options = $state({'AutoFocus':false});
     let cipherType = $state('Aristocrat');
     let cipherOption = $state('Random');
+    let cipherOptionObj = {'K':'Random'};
     let feedbackCreate = $state('');
     let authenticating = $state(false);
     let showLeaveGameButton = $state(false);
@@ -17,7 +18,8 @@
     let feedbackJoin = $state('');
 
 
-    function changeCipherOption(option) {
+    function changeCipherOption(option, optionObj) {
+        console.log("optionObj", $state.snapshot(optionObj));
         let nOption;
         if (option[0] === "!") {
             nOption = option.substring(1);
@@ -26,6 +28,7 @@
         }
 
         cipherOption = nOption;
+        cipherOptionObj = optionObj;
     }
 
     function changeType(type) {
@@ -43,7 +46,7 @@
             feedbackCreate = '';
             const response = await fetch('/api/create-game', {
                 method: 'POST',
-                body: JSON.stringify({cipherType, cipherOption, options, mode:"private"}),
+                body: JSON.stringify({cipherType, cipherOptionObj, options, mode:"private"}),
                 headers: {
                     'content-type': 'application/json'
                 }

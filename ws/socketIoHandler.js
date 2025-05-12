@@ -57,7 +57,6 @@ export default async function injectSocketIO(server) {
                 const oldSocket = io.sockets.sockets.get(oldSocketId);
                 if (oldSocket) {
                     oldSocket.disconnectReason = 'replaced';
-                    oldSocket.emit('replaced');
                     oldSocket.disconnect();
                 }
             }
@@ -131,6 +130,20 @@ export default async function injectSocketIO(server) {
             } catch (err) {
                 console.error('kick-player error:', err);
                 socket.emit('error', 'Internal error during kick');
+            }
+        });
+
+        socket.on('start-game', async () => {
+            try {
+                const game = await Game.findById(new ObjectId(user.currentGame));
+                if (!game.host.equals(user._id)) {
+                    console.log("Only host can start the game");
+                    return socket.emit('error', 'Only the host can start the game');
+                }
+
+                io.to(socket.currentRoom).emit('start-game', game.params, game.autoFocus, game.quote);
+            } catch (err) {
+                console.error('start-game error:', err);
             }
         });
 

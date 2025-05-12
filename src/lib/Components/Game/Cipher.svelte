@@ -23,6 +23,8 @@
     let lettersWithIndices = initLWI();
     let directMap = initDirectMap(cipherType);
     let paramString = paramToString(params);
+    console.log("Params", $state.snapshot(params));
+    console.log("cipherType", cipherType);
 
     function clearQuote() {
         info.letterInputs = initLetterInputs();
@@ -34,19 +36,14 @@
     }
 
     function paramToString(obj) {
-        let key = Object.keys(obj)[0];
-        let val = Object.values(obj)[0];
-        if (val == "Random") {
-            return val + " ";
+        let val = obj.K;
+        let res = "K"+val;
+        if (res == "K0") {
+            return "Random ";
+        } else if (res == "K1" || res == "K2" || res == "K3") {
+            return res + " ";
         } else {
-            let res = key+val;
-            if (res == "K0") {
-                return "Random ";
-            } else if (res == "K-1") {
-                return "";
-            } else {
-                return res + " ";
-            }
+            return "";
         }
     }
 

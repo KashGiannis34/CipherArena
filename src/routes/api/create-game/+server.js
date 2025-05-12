@@ -25,19 +25,21 @@ export async function POST({ request, cookies }) {
         if (userAuth.verified == false) return json({success: false, message: "Must verify email to create games."});
 
         const params = {
-            K: req.options.K || '-1',
-            Solve: req.options.Solve || 'Decode',
+            K: req.cipherOptionObj.K || '-1',
+            Solve: req.cipherOptionObj.Solve || 'Decode',
             cipherType: req.cipherType
         };
+        console.log("Params: ", params);
+        console.log("req.cipherOption: ", req.cipherOptionObj);
         const quote = await generateQuote(params);
 
         const newGame = new Game({
-            cipherType: req.cipherType,
-            cipherOption: req.cipherOption,
-            options: req.options,
+            params: params,
+            autoFocus: req.options.AutoFocus,
             quote: {
                 id: quote.id,
-                encodedText: quote.quote
+                encodedText: quote.quote,
+                keys: quote.keys
             },
             mode: req.mode,
             users: [userGame._id],

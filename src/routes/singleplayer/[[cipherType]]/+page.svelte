@@ -38,6 +38,10 @@
 		} finally {
 			loading = false;
 		}
+
+		console.log("quoteData", $state.snapshot(quoteData));
+		console.log("params", $state.snapshot(params));
+		console.log("options", $state.snapshot(options));
 	}
 
 	function onAttempt(message, solvedState) {
@@ -95,7 +99,7 @@
 			hash={quoteData.id}
 			cipherType={params.cipherType}
 			autoFocus={options.AutoFocus}
-			{params}
+			params={params}
 			keys={quoteData.keys}
 			onAttempt={onAttempt}
 			mode="singleplayer"

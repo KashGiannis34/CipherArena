@@ -20,11 +20,11 @@
     }
 
     function linkParam(name, option) {
+        const nOption = (option[0] === "!") ? option.substring(1): option;
         if (!multiplayer) {
-            const nOption = (option[0] === "!") ? option.substring(1): option;
             window.location.href = "/singleplayer/" + cipherType + "?" + name + "=" + nOption;
         } else {
-            changeCipherOption(option);
+            changeCipherOption(option, {[name]: nOption});
         }
     }
 
@@ -34,7 +34,10 @@
         } else {
             changeType(cipher);
             if (isOptions) {
-                changeCipherOption(cipherTypes[cipherType]['options'][1]);
+                const name = cipherTypes[cipher]['options'][0];
+                const option = cipherTypes[cipher]['options'][1];
+                const nOption = (option[0] === "!") ? option.substring(1): option;
+                changeCipherOption(option, {[name]: nOption});
             }
         }
     }
