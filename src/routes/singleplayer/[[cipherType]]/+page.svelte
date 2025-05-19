@@ -23,6 +23,31 @@
 		cipherType: data.props.cipherType
 	};
 
+	async function checkQuote(i, hash, cipherType, keys, solve, startTime) {
+		let solved = false;
+        try {
+            const response = await fetch('/api/validate-quote', {
+                method: 'POST',
+                body: JSON.stringify({'input':i, 'id':hash, 'cipherType':cipherType, 'keys':keys, 'solve':solve}),
+                headers: {
+                    'content-type': 'application/json'
+                }
+		    });
+            const answer = await response.json();
+            const time = (Date.now()/1000)-startTime;
+            const strTime = Math.floor(time/60).toString().padStart(2,'0')+':'+Math.round(time%60, 0).toString().padStart(2,'0');
+            if (answer) {
+                feedbackMessage = "Congratulations! The cipher was solved in " + strTime + "!";
+                solved = true;
+            } else {
+                feedbackMessage = "Sorry, your answer isn't correct. Giannis hopes you get it on the next try!";
+            }
+        } catch (error) {
+            feedbackMessage = 'An error occurred while checking the quote.';
+        }
+        return {feedbackMessage, solved};
+    }
+
 	async function fetchQuote() {
 		try {
 			const res = await fetch('/api/generate-quote', {
@@ -38,15 +63,11 @@
 		} finally {
 			loading = false;
 		}
-
-		console.log("quoteData", $state.snapshot(quoteData));
-		console.log("params", $state.snapshot(params));
-		console.log("options", $state.snapshot(options));
 	}
 
-	function onAttempt(message, solvedState) {
-        solved = solvedState;
-		feedbackMessage = message;
+	function onSolved(answer) {
+        solved = answer.solved;
+		feedbackMessage = answer.feedbackMessage;
 		toggle();
 	}
 
@@ -101,9 +122,10 @@
 			autoFocus={options.AutoFocus}
 			params={params}
 			keys={quoteData.keys}
-			onAttempt={onAttempt}
+			onSolved={onSolved}
 			mode="singleplayer"
 			{newProblem}
+			fetchAnswerStatus={checkQuote}
 		/>
 
 		<Popup {visibility} onExit={toggle}>

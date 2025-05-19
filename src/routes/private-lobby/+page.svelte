@@ -6,7 +6,7 @@
     import { broadcastTabEvent } from "$lib/util/crossTabEvents";
     import LoadingOverlay from "$lib/Components/General/LoadingOverlay.svelte";
 
-    let options = $state({'AutoFocus':false});
+    let options = $state({'AutoFocus':true});
     let cipherType = $state('Aristocrat');
     let cipherOption = $state('Random');
     let cipherOptionObj = {'K':'Random'};
@@ -76,7 +76,7 @@
             feedbackJoin = '';
             const response = await fetch('/api/join-game', {
                 method: 'POST',
-                body: JSON.stringify({ roomCode: joinCode }),
+                body: JSON.stringify({ roomCode: joinCode.toUpperCase() }),
                 headers: {
                     'content-type': 'application/json'
                 }

@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 import {cipherTypes} from "../../lib/util/CipherTypes.js";
 
 const GameSchema = new mongoose.Schema({
+    _id: {
+        type: String,
+        required: true
+    },
     params: {
         cipherType: {
             type: String,
@@ -39,7 +43,7 @@ const GameSchema = new mongoose.Schema({
     },
     mode: {
         type: String,
-        enum: ['private', 'public'],
+        enum: ['private', 'public', 'ranked'],
         required: true
     },
     users: {
@@ -58,6 +62,27 @@ const GameSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
+    state: {
+        type: String,
+        enum: ['waiting', 'started', 'finished'],
+        default: 'waiting'
+    },
+    lastMatchResult: {
+        type: {
+            winner: String,
+            players: [
+            {
+                username: String,
+                elo: Number
+            }
+            ],
+            eloChanges: {
+            type: Map,
+            of: Number
+            }
+        },
+        default: null
+    }
 }, { collection: 'games' });
 
 function arrayLimit(val) {

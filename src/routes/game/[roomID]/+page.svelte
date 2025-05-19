@@ -6,13 +6,15 @@
     import "$lib/css/Button.css";
     import LoadingOverlay from '$lib/Components/General/LoadingOverlay.svelte';
     import { fade } from 'svelte/transition';
-  import Cipher from '$lib/Components/Game/Cipher.svelte';
+    import Cipher from '$lib/Components/Game/Cipher.svelte';
+    import CipherModal from '$lib/Components/Game/CipherModal.svelte';
 
     let { data } = $props();
     let stopListening;
-    let isLeaving = $state(false);
     let socket;
-    let gameState = $state("idle");
+    let gameState = $state(data.state);
+    let cipherRetrieved = $state(false);
+    let resultRetrieved = $state(false);
     let players = $state([]);
     let tooltipVisible = $state(null); // 'link' or 'code'
     let tooltipText = $state('');
@@ -21,17 +23,16 @@
       return players.some(player => player.username === data.username && player.host);
     });
     let cipherData = $state({});
+    let matchResult = $state({});
+    let rematchVoters = $state([]);
 
-    function onAttempt(message, isCorrect) {
-      if (isCorrect) {
-        socket.emit('cipher-solved', { gameId: data.roomID, message });
-      } else {
-        socket.emit('cipher-attempt', { gameId: data.roomID, message });
-      }
-    }
-
-    function newProblem() {
-      socket.emit('new-problem', { gameId: data.roomID });
+    function checkQuote(quote, hash, cipherType, keys, solve, startTime) {
+      return new Promise((resolve) => {
+        socket.emit('check-quote', data.roomID, quote, hash, cipherType, keys, solve, startTime, result => {
+          console.log("Solved (from callback):", result);
+          resolve({ solved: result });
+        });
+      });
     }
 
     function kickPlayer(username) {
@@ -49,6 +50,10 @@
       }, 2000);
     }
 
+    function requestRematch() {
+      socket.emit('rematch-request');
+    }
+
     function copyGameLink() {
       const link = `${window.location.origin}/game-lobby/${data.roomID}`;
       navigator.clipboard.writeText(link).then(() => {
@@ -63,7 +68,7 @@
     }
 
     async function leaveGame() {
-        isLeaving = true;
+        gameState = "leavingGame";
         try {
             const res = await fetch('/api/leave-current-game', { method: 'POST' });
             console.log('Leave response:', await res.json());
@@ -79,6 +84,25 @@
     async function fetchPlayers() {
       const res = await fetch(`/api/game-players?gameId=${data.roomID}`);
       players = await res.json(); // array of { username, elo }
+
+      if (gameState === 'finished' && matchResult.players) {
+        console.log("CHANGE MATCH RESULT");
+        const activeMap = new Map(players.map(p => [p.username, p]));
+
+        // Enrich matchResult.players with updated status or mark as left
+        matchResult = {
+          ...matchResult,
+          players: matchResult.players.map(p => {
+            const active = activeMap.get(p.username);
+            return {
+              ...p,
+              connected: active?.connected ?? false,
+              left: active ? false : true
+            };
+          })
+        };
+        console.log("MATCH RESULT: ", $state.snapshot(matchResult));
+      }
     }
 
 
@@ -96,12 +120,33 @@
 
       socket.on('connect', () => {
         console.log('You are connected with id', socket.id);
-        gameState = "waiting";
       });
 
       socket.on('ready', () => {
         socket.emit('join-room', data['roomID']);
         console.log('join-room emitted');
+        if (gameState == 'started') {
+          socket.emit('get-cipher-info', info => {
+            cipherData.params = info.params;
+            cipherData.autoFocus = info.autoFocus;
+            cipherData.quote = info.quote;
+            cipherRetrieved = true;
+          })
+        }
+        if (gameState === 'finished') {
+          socket.emit('get-match-result', result => {
+            if (result) {
+              matchResult = {
+                won: result.winner === data.username,
+                winner: result.winner,
+                players: result.players,
+                ranked: !!result.eloChanges,
+                eloChanges: result.eloChanges ?? {}
+              };
+              resultRetrieved = true;
+            }
+          });
+        }
       });
 
       stopListening = listenForTabEvents(['leave-game'], ({ type, payload }) => {
@@ -138,9 +183,26 @@
         cipherData.params = params;
         cipherData.autoFocus = autoFocus;
         cipherData.quote = quote;
-        console.log('cipherData:', $state.snapshot(cipherData));
         gameState = "started";
+        cipherRetrieved = true;
       });
+
+      socket.on('cipher-solved', ({ winner, eloChanges }) => {
+        matchResult = {
+          won: winner === data.username,
+          winner: winner,
+          players: [...players],
+          ranked: !!eloChanges, // only show ranked UI if Elo changes exist
+          eloChanges: eloChanges ?? {}
+        };
+        gameState = "finished";
+        resultRetrieved = true;
+      });
+
+      socket.on('rematch-votes', (votes) => {
+        rematchVoters = votes;
+      });
+
     });
 
     onDestroy(() => {
@@ -148,101 +210,112 @@
     });
 </script>
 
-{#if isLeaving}
-  <LoadingOverlay />
-{/if}
 {#if gameState === "disconnected"}
-    <div transition:fade>Disconnected.</div>
+  <div transition:fade>Disconnected.</div>
+{:else if gameState === "leavingGame"}
+  <LoadingOverlay />
 {:else if gameState === "waiting"}
-    <div class="waiting-container">
-      <div class="top-bar">
-        <div
-          class="copy-box"
-          onclick={copyGameLink}
-          onmouseenter={() => {
-            tooltipVisible = 'link';
-            tooltipText = 'Copy link to share';
-          }}
-          onmouseleave={() => tooltipVisible = null}
-          onkeydown={() => {}}
-          tabindex=0
-          role="button"
-        >
-          🔗 Copy Game Link
-          {#if tooltipVisible === 'link'}
-            <div class="tooltip" transition:fade>
-              {tooltipText || 'Copy link to share'}
-            </div>
-          {/if}
-        </div>
-
-        <div
-          class="copy-box"
-          onclick={copyRoomCode}
-          onmouseenter={() => {
-            tooltipVisible = 'code';
-            tooltipText = 'Click to copy';
-          }}
-          onmouseleave={() => tooltipVisible = null}
-          onkeydown={() => {}}
-          tabindex=0
-          role="button"
-        >
-          📋 Room Code: {data.roomID}
-          {#if tooltipVisible === 'code'}
-            <div class="tooltip" transition:fade>
-              {tooltipText || 'Click to copy'}
-            </div>
-          {/if}
-        </div>
-      </div>
-
-      <div class="waiting-title">Waiting to Start Game</div>
-
-      <div class="player-list">
-        {#each players as player (player.username)}
-          <div class="player-card" transition:fade>
-            {#if isHost && player.username !== data.username}
-              <div class="kick-left-wrapper" onclick={() => kickPlayer(player.username)} tabindex=0 role="button" onkeydown={() => {}}>
-                <div class="kick-left-icon">✖</div>
-                <div class="kick-left-tooltip">Kick Player</div>
-              </div>
-            {/if}
-            <div class="player-name" style={(player.connected ? "color: #ffffff;" : "color: #ff7d7d;") + (player.username === data.username ? " font-weight: 700;" : "font-weight: 200;")}>
-              {player.username + (!player.connected ? " (DISCONNECTED)" : "") + (player.host ? " (HOST)" : "")}
-            </div>
-            <div class="player-elo" style={(player.connected ? "color: #ffffff;" : "color: #ff7d7d;") + (player.username === data.username ? " font-weight: 700;" : "font-weight: 200;")}>
-              ELO: {player.elo}
-            </div>
+  <div class="waiting-container">
+    <div class="top-bar">
+      <div
+        class="copy-box"
+        onclick={copyGameLink}
+        onmouseenter={() => {
+          tooltipVisible = 'link';
+          tooltipText = 'Copy link to share';
+        }}
+        onmouseleave={() => tooltipVisible = null}
+        onkeydown={() => {}}
+        tabindex=0
+        role="button"
+      >
+        🔗 Copy Game Link
+        {#if tooltipVisible === 'link'}
+          <div class="tooltip" transition:fade>
+            {tooltipText || 'Copy link to share'}
           </div>
-        {/each}
-      </div>
-
-      <div class="button-row">
-        {#if isHost}
-          <button class="button start-button" onclick={startGame}>Start Game</button>
         {/if}
-          <button class="button leave-button" onclick={leaveGame}>Leave Game</button>
+      </div>
+
+      <div
+        class="copy-box"
+        onclick={copyRoomCode}
+        onmouseenter={() => {
+          tooltipVisible = 'code';
+          tooltipText = 'Click to copy';
+        }}
+        onmouseleave={() => tooltipVisible = null}
+        onkeydown={() => {}}
+        tabindex=0
+        role="button"
+      >
+        📋 Room Code: {data.roomID}
+        {#if tooltipVisible === 'code'}
+          <div class="tooltip" transition:fade>
+            {tooltipText || 'Click to copy'}
+          </div>
+        {/if}
       </div>
     </div>
-{:else if gameState === "started"}
-    <div transition:fade>
-      <Cipher
-        quote={cipherData.quote.encodedText}
-        hash={cipherData.quote.id}
-        cipherType={cipherData.params.cipherType}
-        autoFocus={cipherData.autoFocus}
-        params={cipherData.params}
-        keys={cipherData.keys}
-        onAttempt={onAttempt}
-        mode="multiplayer"
-        {newProblem}
-      />
 
-      <button class="button leave-button" onclick={leaveGame}>Leave Game</button>
+    <div class="waiting-title">Waiting to Start Game</div>
+
+    <div class="player-list">
+      {#each players as player (player.username)}
+        <div class="player-card" transition:fade>
+          {#if isHost && player.username !== data.username}
+            <div class="kick-left-wrapper" onclick={() => kickPlayer(player.username)} tabindex=0 role="button" onkeydown={() => {}}>
+              <div class="kick-left-icon">✖</div>
+              <div class="kick-left-tooltip">Kick Player</div>
+            </div>
+          {/if}
+          <div class="player-name" style={(player.connected ? "color: #ffffff;" : "color: #ff7d7d;") + (player.username === data.username ? " font-weight: 700;" : "font-weight: 200;")}>
+            {player.username + (!player.connected ? " (DISCONNECTED)" : "") + (player.host ? " (HOST)" : "")}
+          </div>
+          <div class="player-elo" style={(player.connected ? "color: #ffffff;" : "color: #ff7d7d;") + (player.username === data.username ? " font-weight: 700;" : "font-weight: 200;")}>
+            ELO: {player.elo}
+          </div>
+        </div>
+      {/each}
     </div>
+
+    <div class="button-row">
+      {#if isHost}
+        <button class="button start-button" onclick={startGame}>Start Game</button>
+      {/if}
+        <button class="button leave-button" onclick={leaveGame}>Leave Game</button>
+    </div>
+  </div>
+{:else if gameState === "started" && cipherRetrieved}
+  <div transition:fade>
+    <Cipher
+      quote={cipherData.quote.encodedText}
+      hash={cipherData.quote.id}
+      cipherType={cipherData.params.cipherType}
+      autoFocus={cipherData.autoFocus}
+      params={cipherData.params}
+      keys={cipherData.quote.keys}
+      mode="multiplayer"
+      fetchAnswerStatus={checkQuote}
+    />
+
+    <button class="button leave-button leave-button-game-start" onclick={leaveGame}>Leave Game</button>
+  </div>
+{:else if gameState === "finished"}
+  {#if matchResult.players}
+    <CipherModal
+      won={matchResult.won}
+      winnerUsername={matchResult.winner}
+      players={matchResult.players}
+      ranked={matchResult.ranked}
+      eloChanges={matchResult.eloChanges}
+      onRematch={requestRematch}
+      onLeaveGame={leaveGame}
+      rematchVoters={rematchVoters}
+    />
+  {/if}
 {:else}
-    <LoadingOverlay />
+  <LoadingOverlay />
 {/if}
 
 <style>
@@ -314,6 +387,11 @@
   .start-button,
   .leave-button {
     color: white;
+  }
+
+  .leave-button-game-start {
+    display: block; /* Ensure it's a block element */
+    margin: 0 auto; /* Center it */
   }
 
   .copy-box {

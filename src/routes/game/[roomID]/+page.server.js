@@ -16,16 +16,16 @@ export async function load({cookies, params}) {
     }
 
     try {
-        const user = await UserGame.findById(new ObjectId(auth['id']));
+        const user = await UserGame.findById(new ObjectId(auth.id));
         if (!user) return redirect(303, '/');
 
-        const game = await Game.findById(new ObjectId(params['roomID']));
+        const game = await Game.findById(params.roomID);
         if (!game) return redirect(303, '/');
 
-        if (!user.currentGame.equals(game._id) || !game.users.includes(user._id)) {
+        if (user.currentGame != game._id || !game.users.includes(user._id)) {
             return redirect(303, '/');
         } else {
-            return {roomID: params['roomID'], authToken: cookies.get("auth-token")};
+            return {roomID: game._id, authToken: cookies.get("auth-token"), state: game.state};
         }
     } catch (error) {
         console.error('Error loading game:', error);

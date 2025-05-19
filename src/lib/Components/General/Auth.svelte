@@ -56,10 +56,15 @@
             }}>
                 <h1>{login ? "Login":"Sign Up"}</h1>
 
+                <label>
+                    <i class="fas fa-envelope"></i>
+                    <input bind:value={email} name="email" type="email" placeholder="Email" autocomplete="email"/>
+                </label>
+
                 {#if !login}
                     <label>
                         <i class="fas fa-user"></i>
-                        <input bind:value={username} name="username" type="username" placeholder="Username" />
+                        <input bind:value={username} name="username" type="username" placeholder="Username" autocomplete="username"/>
                     </label>
                 {/if}
 
@@ -67,10 +72,6 @@
                     <input type="hidden" name="roomId" value={roomId} />
                 {/if}
 
-                <label>
-                    <i class="fas fa-envelope"></i>
-                    <input bind:value={email} name="email" type="email" placeholder="Email" />
-                </label>
                 <label>
                     <i class="fas fa-unlock"></i>
                     <input bind:value={password} name="password" type="password" placeholder="Password" />

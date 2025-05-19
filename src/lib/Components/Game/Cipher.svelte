@@ -6,11 +6,13 @@
     import {Confetti} from 'svelte-confetti';
     import { cipherTypes } from "$lib/util/CipherTypes";
     import LoadingOverlay from "../General/LoadingOverlay.svelte";
+    import { fade } from "svelte/transition";
 
-    let {quote, hash, cipherType, autoFocus, params, keys, onAttempt, mode, newProblem} = $props();
+    let {quote, hash, cipherType, autoFocus, params, keys, onSolved, mode, newProblem, fetchAnswerStatus} = $props();
     let startTime = Date.now()/1000;
     let solved=$state(false);
     let isChecking=$state(false);
+    let submissionError=$state(false);
 
     let info = $state({
         cipherText: initQuote(quote, cipherTypes[cipherType]['spacing']),
@@ -23,8 +25,6 @@
     let lettersWithIndices = initLWI();
     let directMap = initDirectMap(cipherType);
     let paramString = paramToString(params);
-    console.log("Params", $state.snapshot(params));
-    console.log("cipherType", cipherType);
 
     function clearQuote() {
         info.letterInputs = initLetterInputs();
@@ -176,28 +176,30 @@
         let feedbackMessage = '';
         isChecking = true;
 
-        try {
-            const response = await fetch('/api/validate-quote', {
-                method: 'POST',
-                body: JSON.stringify({'input':i, 'id':hash, 'cipherType':cipherType, 'keys':keys, 'solve':params['Solve']}),
-                headers: {
-                    'content-type': 'application/json'
-                }
-		    });
-            const answer = await response.json();
-            const time = (Date.now()/1000)-startTime;
-            const strTime = Math.floor(time/60).toString().padStart(2,'0')+':'+Math.round(time%60, 0).toString().padStart(2,'0');
-            if (answer) {
-                feedbackMessage = "Congratulations! The cipher was solved in " + strTime + "!";
-                solved = true;
-            } else {
-                feedbackMessage = "Sorry, your answer isn't correct. Giannis hopes you get it on the next try!";
-            }
-        } catch (error) {
-            feedbackMessage = 'An error occurred while checking the quote.';
+        const answer = await fetchAnswerStatus(i, hash, cipherType, keys, params.Solve, startTime);
+        if (mode == 'singleplayer') {
+            feedbackMessage = answer.feedbackMessage;
+            solved = answer.solved;
+        } else {
+            solved = answer.solved;
         }
+        console.log("Cipher solved: ", solved);
         isChecking = false;
-        onAttempt(feedbackMessage, solved);
+
+        if (solved) {
+            if (mode == 'singleplayer') {
+                onSolved(answer);
+            }
+        } else {
+            triggerFailUI();
+        }
+    }
+
+    function triggerFailUI() {
+        submissionError = true;
+        setTimeout(() => {
+            submissionError = false;
+        }, 2000); // error disappears after 2 seconds
     }
 </script>
 
@@ -234,6 +236,11 @@
         <button class="button" onclick={clearQuote}>Clear</button>
         <button class="button" onclick={(solved && mode=="singleplayer") ? newProblem:checkQuote}>{(solved && mode=="singleplayer") ? 'New Problem' : 'Submit'}</button>
     </div>
+    {#if submissionError}
+        <div class="cipher-error" transition:fade>
+            ❌ Incorrect submission. Try again!
+        </div>
+    {/if}
 </Container>
 
 {#if solved}
@@ -288,13 +295,13 @@
     }
 
     .buttons {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center; /* center on small screens */
-    gap: 1rem;
-    width: 100%;
-    margin-top: 1rem;
-}
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center; /* center on small screens */
+        gap: 1rem;
+        width: 100%;
+        margin-top: 1rem;
+    }
 
     .buttons .button {
         flex: 1 1 auto;
@@ -304,4 +311,31 @@
         font-size: clamp(0.9rem, 1.5vw, 1.1rem);
     }
 
+    .cipher-error {
+        margin-top: 1rem;
+        color: #ff4d4f;
+        background-color: #2a0000;
+        padding: 0.75rem 1.25rem;
+        border: 1px solid #ff4d4f;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 500;
+        text-align: center;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        20% { transform: translateX(-6px); }
+        40% { transform: translateX(6px); }
+        60% { transform: translateX(-4px); }
+        80% { transform: translateX(4px); }
+        100% { transform: translateX(0); }
+    }
+
+    .cipher-error {
+        animation: shake 0.4s ease;
+    }
 </style>

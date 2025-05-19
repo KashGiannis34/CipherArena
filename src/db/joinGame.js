@@ -19,16 +19,16 @@ export async function joinGame(roomCode, userGameId, { userGame = null, game = n
 			if (!userGame) return { success: false, message: 'Unauthorized' };
 		}
 
-		if (userGame.currentGame && userGame.currentGame.toString() !== roomCode) {
+		if (userGame.currentGame && userGame.currentGame !== roomCode) {
 			return {
 				success: false,
 				message: 'You are already in a game. Leave the current game before joining another.',
-				leaveGame: userGame.currentGame.toString()
+				leaveGame: userGame.currentGame
 			};
 		}
 
 		if (!game) {
-			game = await Game.findById(new ObjectId(roomCode));
+			game = await Game.findById(roomCode);
 			if (!game) return { success: false, message: 'Game not found' };
 		}
 
@@ -38,7 +38,11 @@ export async function joinGame(roomCode, userGameId, { userGame = null, game = n
 				userGame.currentGame = game._id;
 				await userGame.save();
 			}
-			return { success: true, gameId: game._id.toString() };
+			return { success: true, gameId: game._id };
+		}
+
+		if (game.state != 'waiting') {
+			return { success: false, message: 'Game has already started' };
 		}
 
 		// Room full
@@ -52,7 +56,7 @@ export async function joinGame(roomCode, userGameId, { userGame = null, game = n
 		userGame.currentGame = game._id;
 		await userGame.save();
 
-		return { success: true, gameId: game._id.toString() };
+		return { success: true, gameId: game._id };
 	} catch (err) {
 		console.error('joinGame error:', err);
 		return { success: false, message: 'Invalid Code' };

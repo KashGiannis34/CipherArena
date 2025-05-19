@@ -6,6 +6,7 @@ import { generateQuote } from '$db/GenerateQuote';
 import { Cookies } from "@sveltejs/kit";
 import { UserGame } from '$db/models/UserGame';
 import { UserAuth } from '$db/models/UserAuth';
+import { generateShortCode } from '$db/generateShortCode';
 
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function POST({ request, cookies }) {
@@ -20,7 +21,7 @@ export async function POST({ request, cookies }) {
         const userAuth = await UserAuth.findById(new ObjectId(auth['id']));
         if (!userGame || !userAuth) return json({success: false, message: "Unauthorized"});
 
-        if (userGame.currentGame) return json({success: false, message: "You are already in a game. Leave the current game before creating or joining another.", leaveGame: userGame.currentGame?.toString()});
+        if (userGame.currentGame) return json({success: false, message: "You are already in a game. Leave the current game before creating or joining another.", leaveGame: userGame.currentGame});
 
         if (userAuth.verified == false) return json({success: false, message: "Must verify email to create games."});
 
@@ -33,7 +34,17 @@ export async function POST({ request, cookies }) {
         console.log("req.cipherOption: ", req.cipherOptionObj);
         const quote = await generateQuote(params);
 
+        let shortCode;
+        let isTaken = true;
+
+        // Retry until a unique shortCode is found
+        while (isTaken) {
+            shortCode = generateShortCode();
+            isTaken = await Game.exists({ shortCode });
+        }
+
         const newGame = new Game({
+            _id: shortCode,
             params: params,
             autoFocus: req.options.AutoFocus,
             quote: {
@@ -53,7 +64,7 @@ export async function POST({ request, cookies }) {
 
         return json({
             success: true,
-            gameId: newGame._id.toString(),
+            gameId: newGame._id,
             message: "Game created successfully"
         });
     } catch (error) {

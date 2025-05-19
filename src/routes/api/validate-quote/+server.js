@@ -13,7 +13,7 @@ export async function POST({ request }) {
         }
 
         const quote = await Quote.findOne({_id: new ObjectId(req['id'])});
-        const ansText = stripQuote(quote["text"]);
+        let ansText = stripQuote(quote["text"]);
         if (req['solve'] == 'Encode') {
             ansText = encodeQuote(ansText, req['cipherType'], req['keys']);
         }

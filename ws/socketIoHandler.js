@@ -1,9 +1,15 @@
 import { Server } from 'socket.io';
 import { Game } from '../src/db/models/Game.js';
+import { Quote } from '../src/db/models/Quote.js';
+import { encodeQuote, stripQuote } from '../src/lib/util/CipherUtil.js';
 import { ObjectId } from 'mongodb';
 import { authenticate } from '../src/db/auth/authenticate.js';
 import { UserGame } from '../src/db/models/UserGame.js';
 import { leaveGameCleanup } from '../src/db/leaveGameCleanup.js';
+import socketIORateLimiter from '@d3vision/socket.io-rate-limiter';
+import * as wsUtil from './wsUtil.js';
+import { generateQuote } from '../src/db/GenerateQuote.js';
+
 
 export default async function injectSocketIO(server) {
     if (!server.httpServer) return;
@@ -16,6 +22,7 @@ export default async function injectSocketIO(server) {
     });
     globalThis.io = io;
     const activeSockets = new Map(); // userId → socketId
+    const rematchVotesMap = new Map(); // gameId → Set of usernames who requested rematch
 
     io.use(async (socket, next) => {
         // Authenticate socket before allowing connection
@@ -49,6 +56,10 @@ export default async function injectSocketIO(server) {
         let game;
         let oldSocketId;
 
+        socket.use(
+            socketIORateLimiter({ proxy: true, maxBurst: 5, perSecond: 1, gracePeriodInSeconds: 15, emitClientHtmlError: true }, socket)
+        );
+
         try {
             user = await UserGame.findById(new ObjectId(userId));
             oldSocketId = activeSockets.get(userId);
@@ -63,9 +74,12 @@ export default async function injectSocketIO(server) {
 
             activeSockets.set(userId, socketId);
 
-            game = await Game.findById(new ObjectId(user.currentGame)).populate('users').exec();
+            game = await Game.findById(user.currentGame).populate('users').exec();
             if (!game) {
                 console.error('Game not found for user:', userId);
+                socket.emit('error', 'Game not found');
+                socket.disconnect();
+                return;
             }
         } catch (err) {
             console.error('Socket error:', err);
@@ -86,8 +100,8 @@ export default async function injectSocketIO(server) {
                     await Game.findByIdAndUpdate(game._id, { host: userId });
                 }
 
-                socket.join(roomId.toString());
-                socket.currentRoom = roomId.toString();
+                socket.join(roomId);
+                socket.currentRoom = roomId;
                 // console.log(`✅ ${user._id} joined room ${roomId}`);
                 io.to(roomId).emit('players-changed');
             } catch (err) {
@@ -101,17 +115,17 @@ export default async function injectSocketIO(server) {
 
         socket.on('kick-player', async ({ username }) => {
             try {
-                game = await Game.findById(new ObjectId(user.currentGame)).populate('users').exec();
+                game = await Game.findById(user.currentGame).populate('users').exec();
                 if (!game.host.equals(user._id)) {
                     console.log("Only host can kick players");
-                    return socket.emit('error', 'Only the host can kick players');
+                    socket.emit('error', 'Only the host can kick players');
                 }
 
                 const targetUser = game.users.find(user => user.username == username);
                 if (!targetUser) {
-                    return socket.emit('error', 'That player is not in your game');
+                    socket.emit('error', 'That player is not in your game');
                 }
-                if (targetUser._id.equals(user._id)) return socket.emit('error', 'You cannot kick yourself');
+                if (targetUser._id.equals(user._id)) socket.emit('error', 'You cannot kick yourself');
 
                 // 1. Run DB cleanup
                 await leaveGameCleanup(targetUser._id);
@@ -135,15 +149,121 @@ export default async function injectSocketIO(server) {
 
         socket.on('start-game', async () => {
             try {
-                const game = await Game.findById(new ObjectId(user.currentGame));
+                game = await Game.findById(user.currentGame);
+                game.state = 'started';
+                await game.save();
                 if (!game.host.equals(user._id)) {
                     console.log("Only host can start the game");
-                    return socket.emit('error', 'Only the host can start the game');
+                    socket.emit('error', 'Only the host can start the game');
                 }
 
                 io.to(socket.currentRoom).emit('start-game', game.params, game.autoFocus, game.quote);
             } catch (err) {
                 console.error('start-game error:', err);
+            }
+        });
+
+        socket.on('get-cipher-info', async (cb) => {
+            try {
+                game = await Game.findById(user.currentGame);
+                if (!game.state == 'started') {
+                    console.log("Game has not started yet");
+                    socket.emit('error', 'Game has not started yet');
+                } else {
+                    cb({params: game.params, autoFocus: game.autoFocus, quote: game.quote});
+                }
+            } catch (err) {
+                console.error('retrieve info error:', err);
+            }
+        });
+
+        socket.on('check-quote', async (roomId, ans, hash, cipherType, keys, solve, startTime, cb) => {
+            try {
+                const isCorrect = await wsUtil.checkAnswerCorrectness(ans, hash, cipherType, keys, solve);
+                cb(isCorrect);
+                if (!isCorrect) return;
+
+                game = await Game.findById(user.currentGame).populate('users').exec();
+                if (!game || !game.users || game.users.length === 0) return;
+
+                let eloChanges = null;
+                if (game.mode === 'ranked' && game.users.length > 1) {
+                    eloChanges = await wsUtil.updateEloAfterWin(game, user, cipherType);
+                }
+
+                // ✅ Construct and store match result
+                const matchResult = {
+                    winner: user.username,
+                    players: game.users.map(u => ({
+                        username: u.username,
+                        connected: u.currentSocketId ? true : false,
+                        host: game.host.equals(u._id),
+                        elo: u.eloRatings.get(game.params.cipherType) ?? 1200,
+                    })),
+                    eloChanges: eloChanges ?? {}
+                };
+
+                game.state = 'finished';
+                game.lastMatchResult = matchResult; // ✅ Save to DB
+                await game.save();
+
+                io.to(roomId).emit('cipher-solved', matchResult);
+            } catch (error) {
+                console.error('❌ Error in check-quote:', error);
+                socket.emit('error', 'Error validating quote.');
+            }
+        });
+
+        socket.on('get-match-result', async cb => {
+            try {
+                game = await Game.findById(user.currentGame);
+                if (game?.state === 'finished' && game.lastMatchResult) {
+                    cb(game.lastMatchResult);
+                    const rematchSet = rematchVotesMap.get(game._id);
+                    socket.emit('rematch-votes', Array.from(rematchSet));
+                } else {
+                    cb(null);
+                }
+            } catch (err) {
+                console.error('Error retrieving match result:', err);
+                cb(null);
+            }
+        });
+
+        socket.on('rematch-request', async () => {
+            game = await Game.findById(user.currentGame).populate('users').exec();
+            if (!game) return;
+
+            const username = user.username;
+
+            if (!rematchVotesMap.has(game._id)) {
+                rematchVotesMap.set(game._id, new Set());
+            }
+
+            const rematchSet = rematchVotesMap.get(game._id);
+            rematchSet.add(username);
+
+            // Notify all players of current votes
+            io.to(socket.currentRoom).emit('rematch-votes', Array.from(rematchSet));
+
+            // If all players have voted:
+            const allUsernames = game.users.map(u => u.username);
+            const allAgreed = allUsernames.every(name => rematchSet.has(name));
+
+            if (allAgreed) {
+                rematchVotesMap.delete(game._id); // Reset vote tracker
+
+                // Generate a new cipher and reset game
+                const newQuote = await generateQuote(game.params);
+                game.quote = {
+                    id: newQuote.id,
+                    encodedText: newQuote.quote,
+                    keys: newQuote.keys
+                };
+                game.state = 'started';
+                await game.save();
+
+                io.to(socket.currentRoom).emit('start-game', game.params, game.autoFocus, newQuote);
             }
         });
 

@@ -17,14 +17,14 @@ export async function leaveGameCleanup(userId) {
     await user.save();
 
     const game = await Game.findById(gameId).populate('users').exec();
-    if (!game) return { success: true, message: 'Game not found', gameId: gameId?.toString() };
+    if (!game) return { success: true, message: 'Game not found', gameId: gameId };
 
     game.users = game.users.filter(id => !id.equals(user._id));
 
     if (game.users.length === 0) {
         await game.deleteOne();
         console.log(`Deleted game ${game._id} after user left`);
-        return { success: true, message: 'User left and game deleted', gameId: gameId?.toString() };
+        return { success: true, message: 'User left and game deleted', gameId: gameId };
     } else {
         if (game.host.equals(user._id)) {
             const newHost = game.users.find(u => u.currentSocketId != null);
@@ -39,5 +39,5 @@ export async function leaveGameCleanup(userId) {
 
     await game.save();
 
-    return { success: true, message: 'User left and game updated', gameId: gameId?.toString() };
+    return { success: true, message: 'User left and game updated', gameId: gameId };
 }

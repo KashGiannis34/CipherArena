@@ -11,7 +11,8 @@ export async function GET({ url }) {
   const players = await game.users.map(u => ({
     username: u.username,
     connected: u.currentSocketId ? true : false,
-    host: game.host.equals(u._id)
+    host: game.host.equals(u._id),
+    elo: u.eloRatings.get(game.params.cipherType) ?? 1200,
   }));
 
   return json(players);

@@ -18,11 +18,10 @@ export async function load({cookies, params}) {
     let redir = "";
 
     try {
-
         const user = await UserGame.findById(new ObjectId(auth['id']));
         if (!user) return {action: "login", gameId: params.roomID};
 
-        const game = await Game.findById(new ObjectId(params.roomID));
+        const game = await Game.findById(params.roomID);
         if (!game) {
             return {
                 action: "redirect",
@@ -31,8 +30,8 @@ export async function load({cookies, params}) {
             };
         }; // game not found
 
-        if (user.currentGame != null && !user.currentGame?.equals(game._id))  {
-            return {"action":"leaveGame","currentGame": user.currentGame._id.toString(), gameId: params.roomID}; // leave game
+        if (user.currentGame != null && user.currentGame != game._id)  {
+            return {"action":"leaveGame","currentGame": user.currentGame, gameId: params.roomID}; // leave game
         }
 
         if (user.currentGame == game._id && game.users.includes(user._id)) {

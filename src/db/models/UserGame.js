@@ -1,4 +1,9 @@
+import { cipherTypes } from "../../lib/util/CipherTypes.js";
 import mongoose from "mongoose";
+
+const defaultEloRatings = Object.fromEntries(
+  Object.keys(cipherTypes).map(type => [type, 1200])
+);
 
 const UserGameSchema = new mongoose.Schema({
     _id: {
@@ -10,16 +15,17 @@ const UserGameSchema = new mongoose.Schema({
       type: String, required: true,
       unique: true,
     },
-    elo: {
-      type: Number,
-      default: 1200
+    eloRatings: {
+      type: Map,
+      of: Number,
+      default: defaultEloRatings
     },
     currentSocketId: {
       type: String,
       default: null
     },
     currentGame: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       ref: 'Game',
       default: null
     },
