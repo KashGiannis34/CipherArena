@@ -1,5 +1,6 @@
 <script>
   import { cubicOut } from "svelte/easing";
+  import ProfilePicture from "../General/ProfilePicture.svelte";
   let { won, players, ranked, eloChanges, onRematch, onLeaveGame, winnerUsername, rematchVoters = [] } = $props();
 
   function zoom(node, { duration = 300 }) {
@@ -42,7 +43,7 @@
             <div class="player-card
             {player.username === winnerUsername ? 'won-player' : 'lost-player'}
             {player.connected === false ? 'disconnected' : ''}">
-                <img src="/uploads/default-avatar.png" alt="avatar" class="avatar" />
+                <ProfilePicture profilePicture={player.profilePicture}/>
                 <div class="player-info">
                     <div class="player-name">
                         {player.username}
@@ -135,13 +136,6 @@
     .lost-player {
     border-left: 6px solid #ff5757;
     background: linear-gradient(to right, #ffe0e0, #ffd2d2);
-    }
-
-    .avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 1rem;
     }
 
     .player-info {

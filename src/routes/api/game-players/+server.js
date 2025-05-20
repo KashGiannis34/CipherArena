@@ -13,6 +13,7 @@ export async function GET({ url }) {
     connected: u.currentSocketId ? true : false,
     host: game.host.equals(u._id),
     elo: u.eloRatings.get(game.params.cipherType) ?? 1200,
+    profilePicture: u.profilePicture
   }));
 
   return json(players);

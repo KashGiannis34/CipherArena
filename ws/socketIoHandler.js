@@ -57,7 +57,7 @@ export default async function injectSocketIO(server) {
         let oldSocketId;
 
         socket.use(
-            socketIORateLimiter({ proxy: true, maxBurst: 5, perSecond: 1, gracePeriodInSeconds: 15, emitClientHtmlError: true }, socket)
+            socketIORateLimiter({ proxy: true, maxBurst: 10, perSecond: 1, gracePeriodInSeconds: 15, emitClientHtmlError: true }, socket)
         );
 
         try {
@@ -199,9 +199,9 @@ export default async function injectSocketIO(server) {
                     winner: user.username,
                     players: game.users.map(u => ({
                         username: u.username,
-                        connected: u.currentSocketId ? true : false,
                         host: game.host.equals(u._id),
                         elo: u.eloRatings.get(game.params.cipherType) ?? 1200,
+                        profilePicture: u.profilePicture
                     })),
                     eloChanges: eloChanges ?? {}
                 };

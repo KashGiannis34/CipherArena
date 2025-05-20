@@ -8,6 +8,7 @@
     import { fade } from 'svelte/transition';
     import Cipher from '$lib/Components/Game/Cipher.svelte';
     import CipherModal from '$lib/Components/Game/CipherModal.svelte';
+    import ProfilePicture from '$lib/Components/General/ProfilePicture.svelte';
 
     let { data } = $props();
     let stopListening;
@@ -265,11 +266,16 @@
               <div class="kick-left-tooltip">Kick Player</div>
             </div>
           {/if}
-          <div class="player-name" style={(player.connected ? "color: #ffffff;" : "color: #ff7d7d;") + (player.username === data.username ? " font-weight: 700;" : "font-weight: 200;")}>
-            {player.username + (!player.connected ? " (DISCONNECTED)" : "") + (player.host ? " (HOST)" : "")}
-          </div>
-          <div class="player-elo" style={(player.connected ? "color: #ffffff;" : "color: #ff7d7d;") + (player.username === data.username ? " font-weight: 700;" : "font-weight: 200;")}>
-            ELO: {player.elo}
+          <div class="player-info-wrapper">
+            <div class="player-left-group">
+              <ProfilePicture profilePicture={player.profilePicture} size={40} />
+              <div class="player-name" style={(player.connected ? "color: #ffffff;" : "color: #ff7d7d;") + (player.username === data.username ? " font-weight: 700;" : "font-weight: 200;")}>
+                {player.username + (!player.connected ? " (DISCONNECTED)" : "") + (player.host ? " (HOST)" : "")}
+              </div>
+            </div>
+            <div class="player-elo" style={(player.connected ? "color: #ffffff;" : "color: #ff7d7d;") + (player.username === data.username ? " font-weight: 700;" : "font-weight: 200;")}>
+              ELO: {player.elo}
+            </div>
           </div>
         </div>
       {/each}
@@ -352,7 +358,7 @@
   .player-card {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 1rem;
     padding: 1rem 1.5rem;
     background-color: #7555ff;
@@ -517,17 +523,39 @@
   }
 
   .player-name {
-    flex: 1;
     font-weight: 500;
     color: white;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: margin-left 0.2s ease;
   }
 
-  .player-card:hover .kick-left-wrapper ~ .player-name {
-    margin-left: 2rem; /* nudge it over when X appears */
+  .player-info-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1;
+    transition: transform 0.2s ease;
+    will-change: transform;
+  }
+
+  .player-left-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.2s ease;
+  }
+
+  .player-name {
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .player-card:hover .kick-left-wrapper ~ .player-info-wrapper .player-left-group {
+    transform: translateX(2rem);
   }
 
   .player-elo {
