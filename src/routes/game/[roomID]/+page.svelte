@@ -29,7 +29,6 @@
     function checkQuote(quote, hash, cipherType, keys, solve, startTime) {
       return new Promise((resolve) => {
         socket.emit('check-quote', data.roomID, quote, hash, cipherType, keys, solve, startTime, result => {
-          console.log("Solved (from callback):", result);
           resolve({ solved: result });
         });
       });
@@ -71,7 +70,6 @@
         gameState = "leavingGame";
         try {
             const res = await fetch('/api/leave-current-game', { method: 'POST' });
-            console.log('Leave response:', await res.json());
         } catch (e) {
             console.error('Leave failed:', e);
         } finally {
@@ -86,7 +84,6 @@
       players = await res.json(); // array of { username, elo }
 
       if (gameState === 'finished' && matchResult.players) {
-        console.log("CHANGE MATCH RESULT");
         const activeMap = new Map(players.map(p => [p.username, p]));
 
         // Enrich matchResult.players with updated status or mark as left
@@ -101,7 +98,6 @@
             };
           })
         };
-        console.log("MATCH RESULT: ", $state.snapshot(matchResult));
       }
     }
 
@@ -124,7 +120,7 @@
 
       socket.on('ready', () => {
         socket.emit('join-room', data['roomID']);
-        console.log('join-room emitted');
+        console.log('Current game state: ', $state.snapshot(gameState));
         if (gameState == 'started') {
           socket.emit('get-cipher-info', info => {
             cipherData.params = info.params;

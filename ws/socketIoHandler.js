@@ -110,7 +110,10 @@ export default async function injectSocketIO(server) {
         });
 
         socket.on('leave-room', (roomId) => {
-            io.to(roomId).emit('players-changed');
+            if (rematchVotesMap.has(roomId)) {
+                rematchVotesMap.delete(roomId);
+                io.to(roomId).emit('rematch-votes', []); // Notify clients of vote reset
+            }
         });
 
         socket.on('kick-player', async ({ username }) => {
@@ -219,7 +222,7 @@ export default async function injectSocketIO(server) {
                 game = await Game.findById(user.currentGame);
                 if (game?.state === 'finished' && game.lastMatchResult) {
                     cb(game.lastMatchResult);
-                    const rematchSet = rematchVotesMap.get(game._id);
+                    const rematchSet = rematchVotesMap.get(game._id) || new Set();
                     socket.emit('rematch-votes', Array.from(rematchSet));
                 } else {
                     cb(null);
@@ -243,14 +246,14 @@ export default async function injectSocketIO(server) {
             const rematchSet = rematchVotesMap.get(game._id);
             rematchSet.add(username);
 
-            // Notify all players of current votes
-            io.to(socket.currentRoom).emit('rematch-votes', Array.from(rematchSet));
-
             // If all players have voted:
             const allUsernames = game.users.map(u => u.username);
             const allAgreed = allUsernames.every(name => rematchSet.has(name));
 
+            io.to(socket.currentRoom).emit('rematch-votes', Array.from(rematchSet));
+
             if (allAgreed) {
+                console.log("All agreed to rematch!");
                 rematchVotesMap.delete(game._id); // Reset vote tracker
 
                 // Generate a new cipher and reset game
@@ -263,7 +266,8 @@ export default async function injectSocketIO(server) {
                 game.state = 'started';
                 await game.save();
 
-                io.to(socket.currentRoom).emit('start-game', game.params, game.autoFocus, newQuote);
+                io.to(socket.currentRoom).emit('start-game', game.params, game.autoFocus, game.quote);
+                io.to(socket.currentRoom).emit('rematch-votes', []);
             }
         });
 
@@ -292,6 +296,12 @@ export default async function injectSocketIO(server) {
                 await latestUser.save();
             }
 
+            const rematchSet = rematchVotesMap.get(latestUser.currentGame);
+            if (rematchSet) {
+                rematchSet.delete(user.username);
+                io.to(latestUser.currentGame).emit('rematch-votes', Array.from(rematchSet));
+            }
+
             if (!socket.disconnectReason) {
                 console.log(`User ${userId} disconnected no reason`);
                 const latestGame = await Game.findById(latestUser.currentGame).populate('users').exec();
@@ -302,6 +312,7 @@ export default async function injectSocketIO(server) {
                         console.log(`🔁 Host transferred to ${newHost._id.toString()}`);
                     } else {
                         console.log(`🟡 No replacement host found (all players disconnected)`);
+                        rematchVotesMap.delete(latestGame._id);
                     }
                 }
             }
