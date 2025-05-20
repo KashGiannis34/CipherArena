@@ -102,7 +102,7 @@ export default async function injectSocketIO(server) {
 
                 socket.join(roomId);
                 socket.currentRoom = roomId;
-                // console.log(`✅ ${user._id} joined room ${roomId}`);
+                // console.log(`${user._id} joined room ${roomId}`);
                 io.to(roomId).emit('players-changed');
             } catch (err) {
                 console.error('join-room error:', err);
@@ -276,51 +276,62 @@ export default async function injectSocketIO(server) {
         });
 
         socket.on('disconnect', async () => {
+            try {
+                const active = activeSockets.get(userId);
+                if (active?.id === socketId) {
+                    activeSockets.delete(userId);
+                }
 
-            const active = activeSockets.get(userId);
-            if (active?.id === socketId) {
-                activeSockets.delete(userId);
-            }
+                if (socket.disconnectReason === "replaced") {
+                    console.log("replaced:", socketId);
+                }
 
-            if (socket.disconnectReason === "replaced") {
-                console.log("replaced:", socketId);
-            }
+                if (socket.disconnectReason === "kicked") {
+                    console.log("kicked:", socketId);
+                }
 
-            if (socket.disconnectReason === "kicked") {
-                console.log("kicked:", socketId);
-            }
+                const latestUser = await UserGame.findById(userId);
+                if (latestUser?.currentSocketId === socketId && socket.disconnectReason != "replaced") {
+                    latestUser.currentSocketId = null;
+                    await latestUser.save();
+                }
 
-            const latestUser = await UserGame.findById(userId);
-            if (latestUser?.currentSocketId === socketId && socket.disconnectReason != "replaced") {
-                latestUser.currentSocketId = null;
-                await latestUser.save();
-            }
+                const rematchSet = rematchVotesMap.get(latestUser.currentGame);
+                if (rematchSet) {
+                    rematchSet.delete(user.username);
+                    io.to(latestUser.currentGame).emit('rematch-votes', Array.from(rematchSet));
+                }
 
-            const rematchSet = rematchVotesMap.get(latestUser.currentGame);
-            if (rematchSet) {
-                rematchSet.delete(user.username);
-                io.to(latestUser.currentGame).emit('rematch-votes', Array.from(rematchSet));
-            }
-
-            if (!socket.disconnectReason) {
-                console.log(`User ${userId} disconnected no reason`);
-                const latestGame = await Game.findById(latestUser.currentGame).populate('users').exec();
-                if (latestGame && latestGame.host.equals(latestUser._id)) {
-                    const newHost = latestGame.users.find(u => u.currentSocketId != null);
-                    if (newHost) {
-                        await Game.findByIdAndUpdate(game._id, { host: newHost._id });
-                        console.log(`🔁 Host transferred to ${newHost._id.toString()}`);
-                    } else {
-                        console.log(`🟡 No replacement host found (all players disconnected)`);
-                        rematchVotesMap.delete(latestGame._id);
+                if (!socket.disconnectReason) {
+                    console.log(`User ${userId} disconnected no reason`);
+                    const latestGame = await Game.findById(latestUser.currentGame).populate('users').exec();
+                    if (latestGame && latestGame.host.equals(latestUser._id)) {
+                        const newHost = latestGame.users.find(u => u.currentSocketId != null);
+                        if (newHost) {
+                            await Game.findByIdAndUpdate(latestGame._id, { host: newHost._id });
+                            console.log(`🔁 Host transferred to ${newHost._id.toString()}`);
+                        } else {
+                            console.log(`🟡 No replacement host found (all players disconnected)`);
+                            rematchVotesMap.delete(latestGame._id);
+                            if (latestGame.state == 'finished') {
+                                console.log('DELETING GAME EVERYONE DISCONNECTED');
+                                await UserGame.updateMany(
+                                { _id: { $in: latestGame.users }, currentGame: latestGame._id },
+                                { $set: { currentGame: null } }
+                                );
+                                await Game.findByIdAndDelete(latestGame._id);
+                            }
+                        }
                     }
                 }
-            }
 
-            console.log("current room", socket.currentRoom);
-            if (socket.currentRoom) {
-                console.log("PLayers changed", socket.currentRoom);
-                io.to(socket.currentRoom).emit('players-changed');
+                console.log("current room", socket.currentRoom);
+                if (socket.currentRoom) {
+                    console.log("PLayers changed", socket.currentRoom);
+                    io.to(socket.currentRoom).emit('players-changed');
+                }
+            } catch (err) {
+                console.error(`❌ Error during disconnect for user ${userId}:`, err);
             }
         });
     });
