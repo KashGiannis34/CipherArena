@@ -152,13 +152,21 @@ export default async function injectSocketIO(server) {
 
         socket.on('start-game', async () => {
             try {
-                game = await Game.findById(user.currentGame);
-                game.state = 'started';
-                await game.save();
+                const game = await Game.findById(user.currentGame);
+
                 if (!game.host.equals(user._id)) {
                     console.log("Only host can start the game");
                     socket.emit('error', 'Only the host can start the game');
+                    return;
                 }
+
+                game.state = 'started';
+                game.metadata = {
+                    ...(game.metadata ?? {}),
+                    initialUserIds: game.users
+                };
+
+                await game.save();
 
                 io.to(socket.currentRoom).emit('start-game', game.params, game.autoFocus, game.quote);
             } catch (err) {
@@ -180,6 +188,29 @@ export default async function injectSocketIO(server) {
             }
         });
 
+        socket.on('get-initial-players', async cb => {
+            try {
+                game = await Game.findById(user.currentGame).populate('users').exec();
+                if (!game?.metadata?.initialUserIds) return cb([]);
+
+                const initialPlayers = await UserGame.find({ _id: { $in: game.metadata.initialUserIds } });
+
+                const formatted = initialPlayers.map(u => ({
+                    username: u.username,
+                    profilePicture: u.profilePicture,
+                    elo: u.eloRatings.get(game.params.cipherType) ?? 1200,
+                    host: game.host.equals(u._id),
+                    connected: !!u.currentSocketId,
+                    left: !u.currentSocketId
+                }));
+
+                cb(formatted);
+            } catch (err) {
+                console.error('get-initial-players error:', err);
+                cb([]);
+            }
+        });
+
         socket.on('check-quote', async (roomId, ans, hash, cipherType, keys, solve, startTime, cb) => {
             try {
                 const isCorrect = await wsUtil.checkAnswerCorrectness(ans, hash, cipherType, keys, solve);
@@ -190,14 +221,16 @@ export default async function injectSocketIO(server) {
                 if (!game || !game.users || game.users.length === 0) return;
 
                 let eloChanges = null;
-                if (game.mode === 'ranked' && game.users.length > 1) {
-                    eloChanges = await wsUtil.updateEloAfterWin(game, user, cipherType);
+                if (game.mode === 'ranked' && game.metadata?.initialUserIds?.length > 1) {
+                    const initialPlayers = await UserGame.find({ _id: { $in: game.metadata.initialUserIds } });
+                    eloChanges = await wsUtil.updateEloAfterWin(initialPlayers, user, cipherType);
                 }
 
-                // ✅ Construct and store match result
+                const initialPlayers = await UserGame.find({ _id: { $in: game.metadata.initialUserIds } });
+
                 const matchResult = {
                     winner: user.username,
-                    players: game.users.map(u => ({
+                    players: initialPlayers.map(u => ({
                         username: u.username,
                         host: game.host.equals(u._id),
                         elo: u.eloRatings.get(game.params.cipherType) ?? 1200,
@@ -215,6 +248,10 @@ export default async function injectSocketIO(server) {
                 console.error('❌ Error in check-quote:', error);
                 socket.emit('error', 'Error validating quote.');
             }
+        });
+
+        socket.on('progress-update', ({ username, progress }) => {
+            io.to(socket.currentRoom).emit('progress-map-update', { username, progress });
         });
 
         socket.on('get-match-result', async cb => {
@@ -264,6 +301,10 @@ export default async function injectSocketIO(server) {
                     keys: newQuote.keys
                 };
                 game.state = 'started';
+                game.metadata = {
+                    ...(game.metadata ?? {}),
+                    initialUserIds: game.users
+                };
                 await game.save();
 
                 io.to(socket.currentRoom).emit('start-game', game.params, game.autoFocus, game.quote);

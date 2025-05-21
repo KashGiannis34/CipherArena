@@ -7,12 +7,14 @@
     import { cipherTypes } from "$lib/util/CipherTypes";
     import LoadingOverlay from "../General/LoadingOverlay.svelte";
     import { fade } from "svelte/transition";
+    import { onMount, onDestroy } from "svelte";
 
-    let {quote, hash, cipherType, autoFocus, params, keys, onSolved, mode, newProblem, fetchAnswerStatus} = $props();
+    let {quote, hash, cipherType, autoFocus, params, keys, onSolved, mode, newProblem, fetchAnswerStatus, onProgressUpdate} = $props();
     let startTime = Date.now()/1000;
     let solved=$state(false);
     let isChecking=$state(false);
     let submissionError=$state(false);
+    let debouncedProgressUpdate;
 
     let info = $state({
         cipherText: initQuote(quote, cipherTypes[cipherType]['spacing']),
@@ -26,6 +28,14 @@
     let directMap = initDirectMap(cipherType);
     let paramString = paramToString(params);
 
+    function debounce(func, delay) {
+        let timeout;
+        return (...args) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func(...args), delay);
+        };
+    }
+
     function clearQuote() {
         info.letterInputs = initLetterInputs();
         for (let input of info.inputs) {
@@ -33,6 +43,7 @@
                 input.value = '';
             }
         }
+        debouncedProgressUpdate();
     }
 
     function paramToString(obj) {
@@ -97,6 +108,10 @@
                 }
             }
             info.inputs[currIndex]?.focus();
+        }
+
+        if (debouncedProgressUpdate && mode === "multiplayer" && (info.inputs[index].value != val && (val == '' || info.inputs[index].value == ''))) {
+            debouncedProgressUpdate();
         }
     }
 
@@ -201,6 +216,17 @@
             submissionError = false;
         }, 2000); // error disappears after 2 seconds
     }
+
+    onMount(() => {
+        if (mode == "multiplayer") {
+            debouncedProgressUpdate = debounce(() => {
+                const filled = getInputText().replace(/[^A-Za-z]/g, '').length;
+                const total = info.cipherText.replace(/[^A-Za-z]/g, '').length;
+                const percent = Math.floor((filled / total) * 100);
+                onProgressUpdate(percent);
+            }, 250);
+        }
+    });
 </script>
 
 {#if isChecking}

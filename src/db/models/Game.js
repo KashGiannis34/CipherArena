@@ -53,6 +53,9 @@ const GameSchema = new mongoose.Schema({
         }],
         validate: [arrayLimit, 'Games are limited to 2 players.']
     },
+    metadata: {
+        initialUserIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'UserGame' }],
+    },
     host: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'UserGame',

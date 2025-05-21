@@ -1,210 +1,251 @@
 <script>
-    import { io } from 'socket.io-client';
-    import { onDestroy, onMount } from 'svelte';
-    import { listenForTabEvents } from '$lib/util/crossTabEvents.js';
-    import { goto } from "$app/navigation";
-    import "$lib/css/Button.css";
-    import LoadingOverlay from '$lib/Components/General/LoadingOverlay.svelte';
-    import { fade } from 'svelte/transition';
-    import Cipher from '$lib/Components/Game/Cipher.svelte';
-    import CipherModal from '$lib/Components/Game/CipherModal.svelte';
-    import ProfilePicture from '$lib/Components/General/ProfilePicture.svelte';
+  import { io } from 'socket.io-client';
+  import { onDestroy, onMount } from 'svelte';
+  import { listenForTabEvents } from '$lib/util/crossTabEvents.js';
+  import { goto } from "$app/navigation";
+  import "$lib/css/Button.css";
+  import LoadingOverlay from '$lib/Components/General/LoadingOverlay.svelte';
+  import { fade } from 'svelte/transition';
+  import Cipher from '$lib/Components/Game/Cipher.svelte';
+  import CipherModal from '$lib/Components/Game/CipherModal.svelte';
+  import ProfilePicture from '$lib/Components/General/ProfilePicture.svelte';
+  import ProgressDisplay from '$lib/Components/Game/ProgressDisplay.svelte';
 
-    let { data } = $props();
-    let stopListening;
-    let socket;
-    let gameState = $state(data.state);
-    let cipherRetrieved = $state(false);
-    let resultRetrieved = $state(false);
-    let players = $state([]);
-    let tooltipVisible = $state(null); // 'link' or 'code'
-    let tooltipText = $state('');
-    let tooltipTimer;
-    let isHost = $derived.by(() => {
-      return players.some(player => player.username === data.username && player.host);
+  let { data } = $props();
+  let stopListening;
+  let socket;
+  let gameState = $state(data.state);
+  console.log("data.state: ", data.state);
+  let cipherRetrieved = $state(false);
+  let resultRetrieved = $state(false);
+  let players = $state([]);
+  let tooltipVisible = $state(null); // 'link' or 'code'
+  let tooltipText = $state('');
+  let tooltipTimer;
+  let isHost = $derived.by(() => {
+    return players.some(player => player.username === data.username && player.host);
+  });
+  let cipherData = $state({});
+  let matchResult = $state({});
+  let rematchVoters = $state([]);
+  let historicalPlayers = $state([]); // Includes all players, even ones who left
+  let progressMap = $state({}); // { [username]: percentageFilled }
+
+  function checkQuote(quote, hash, cipherType, keys, solve, startTime) {
+    return new Promise((resolve) => {
+      socket.emit('check-quote', data.roomID, quote, hash, cipherType, keys, solve, startTime, result => {
+        resolve({ solved: result });
+      });
     });
-    let cipherData = $state({});
-    let matchResult = $state({});
-    let rematchVoters = $state([]);
+  }
 
-    function checkQuote(quote, hash, cipherType, keys, solve, startTime) {
-      return new Promise((resolve) => {
-        socket.emit('check-quote', data.roomID, quote, hash, cipherType, keys, solve, startTime, result => {
-          resolve({ solved: result });
+  function kickPlayer(username) {
+    if (confirm(`Are you sure you want to kick ${username}?`)) {
+      socket.emit('kick-player', { username });
+    }
+  }
+
+  function showTooltip(type, text) {
+    tooltipVisible = type;
+    tooltipText = text;
+    clearTimeout(tooltipTimer);
+    tooltipTimer = setTimeout(() => {
+      tooltipVisible = null;
+    }, 2000);
+  }
+
+  function requestRematch() {
+    socket.emit('rematch-request');
+  }
+
+  function copyGameLink() {
+    const link = `${window.location.origin}/game-lobby/${data.roomID}`;
+    navigator.clipboard.writeText(link).then(() => {
+      showTooltip('link', 'Link copied!');
+    });
+  }
+
+  function copyRoomCode() {
+    navigator.clipboard.writeText(data.roomID).then(() => {
+      showTooltip('code', 'Room code copied!');
+    });
+  }
+
+  async function leaveGame() {
+      gameState = "leavingGame";
+      try {
+          const res = await fetch('/api/leave-current-game', { method: 'POST' });
+      } catch (e) {
+          console.error('Leave failed:', e);
+      } finally {
+          socket?.emit('leave-room', data.roomID);
+          socket?.disconnect();
+          goto('/private-lobby');
+      }
+  }
+
+  async function fetchPlayers() {
+    const res = await fetch(`/api/game-players?gameId=${data.roomID}`);
+    players = await res.json(); // array of { username, elo }
+
+    if (gameState === 'started') {
+      historicalPlayers = mergePlayerStatus(historicalPlayers, players);
+    }
+    if (gameState === 'finished' && matchResult.players) {
+      const assignedPlayers = new Map(players.map(p => [p.username, p]));
+      const basePlayers = new Map(historicalPlayers.map(p => [p.username, p]));
+
+      matchResult.players = matchResult.players.map(p => {
+        const latest = basePlayers.get(p.username);
+        const current = assignedPlayers.get(p.username);
+        return {
+          ...p,
+          profilePicture: latest?.profilePicture ?? p.profilePicture,
+          connected: current?.connected ?? false,
+          left: !current // if not in `players`, they left
+        };
+      });
+    }
+  }
+
+  function mergePlayerStatus(initial, current) {
+    const currentMap = new Map(current.map(p => [p.username, p]));
+    return initial.map(p => {
+      const currentInfo = currentMap.get(p.username);
+      return {
+        ...p,
+        connected: currentInfo?.connected ?? false,
+        left: currentInfo ? currentInfo.left ?? false : true
+      };
+    });
+  }
+
+  function startGame() {
+      socket?.emit('start-game', data['roomID']);
+  }
+
+  function handleProgressUpdate(percent) {
+    if (socket) {
+      socket.emit('progress-update', {
+        username: data.username,
+        progress: percent
+      });
+    }
+  }
+
+  onMount(() => {
+
+    socket = io({
+      auth: {
+        token: decodeURIComponent(data['authToken'])
+      }
+    });
+
+    socket.on('connect', () => {
+      console.log('You are connected with id', socket.id);
+    });
+
+    socket.on('ready', () => {
+      socket.emit('join-room', data['roomID']);
+      console.log('Current game state: ', $state.snapshot(gameState));
+      if (gameState == 'started') {
+        socket.emit('get-cipher-info', info => {
+          cipherData.params = info.params;
+          cipherData.autoFocus = info.autoFocus;
+          cipherData.quote = info.quote;
+          cipherRetrieved = true;
+        })
+
+        socket.emit('get-initial-players', (initialPlayers) => {
+          historicalPlayers = initialPlayers;
+          fetchPlayers(); // ✅ Then fetch current players and merge
         });
-      });
-    }
-
-    function kickPlayer(username) {
-      if (confirm(`Are you sure you want to kick ${username}?`)) {
-        socket.emit('kick-player', { username });
       }
-    }
-
-    function showTooltip(type, text) {
-      tooltipVisible = type;
-      tooltipText = text;
-      clearTimeout(tooltipTimer);
-      tooltipTimer = setTimeout(() => {
-        tooltipVisible = null;
-      }, 2000);
-    }
-
-    function requestRematch() {
-      socket.emit('rematch-request');
-    }
-
-    function copyGameLink() {
-      const link = `${window.location.origin}/game-lobby/${data.roomID}`;
-      navigator.clipboard.writeText(link).then(() => {
-        showTooltip('link', 'Link copied!');
-      });
-    }
-
-    function copyRoomCode() {
-      navigator.clipboard.writeText(data.roomID).then(() => {
-        showTooltip('code', 'Room code copied!');
-      });
-    }
-
-    async function leaveGame() {
-        gameState = "leavingGame";
-        try {
-            const res = await fetch('/api/leave-current-game', { method: 'POST' });
-        } catch (e) {
-            console.error('Leave failed:', e);
-        } finally {
-            socket?.emit('leave-room', data.roomID);
-            socket?.disconnect();
-            goto('/private-lobby');
-        }
-    }
-
-    async function fetchPlayers() {
-      const res = await fetch(`/api/game-players?gameId=${data.roomID}`);
-      players = await res.json(); // array of { username, elo }
-
-      if (gameState === 'finished' && matchResult.players) {
-        const activeMap = new Map(players.map(p => [p.username, p]));
-
-        // Enrich matchResult.players with updated status or mark as left
-        matchResult = {
-          ...matchResult,
-          players: matchResult.players.map(p => {
-            const active = activeMap.get(p.username);
-            return {
-              ...p,
-              connected: active?.connected ?? false,
-              left: active ? false : true
+      if (gameState === 'finished') {
+        socket.emit('get-match-result', result => {
+          if (result) {
+            matchResult = {
+              won: result.winner === data.username,
+              winner: result.winner,
+              players: result.players,
+              ranked: !!result.eloChanges,
+              eloChanges: result.eloChanges ?? {}
             };
-          })
-        };
-      }
-    }
-
-
-    function startGame() {
-        socket?.emit('start-game', data['roomID']);
-    }
-
-    onMount(() => {
-
-      socket = io({
-        auth: {
-          token: decodeURIComponent(data['authToken'])
-        }
-      });
-
-      socket.on('connect', () => {
-        console.log('You are connected with id', socket.id);
-      });
-
-      socket.on('ready', () => {
-        socket.emit('join-room', data['roomID']);
-        console.log('Current game state: ', $state.snapshot(gameState));
-        if (gameState == 'started') {
-          socket.emit('get-cipher-info', info => {
-            cipherData.params = info.params;
-            cipherData.autoFocus = info.autoFocus;
-            cipherData.quote = info.quote;
-            cipherRetrieved = true;
-          })
-        }
-        if (gameState === 'finished') {
-          socket.emit('get-match-result', result => {
-            if (result) {
-              matchResult = {
-                won: result.winner === data.username,
-                winner: result.winner,
-                players: result.players,
-                ranked: !!result.eloChanges,
-                eloChanges: result.eloChanges ?? {}
-              };
-              resultRetrieved = true;
-            }
-          });
-        }
-      });
-
-      stopListening = listenForTabEvents(['leave-game'], ({ type, payload }) => {
-          if (payload.gameId === data['roomID']) {
-              socket.disconnect();
-              console.log('Handled leave-game from another tab');
-              goto('/');
+            resultRetrieved = true;
           }
-      });
-
-      socket.on('disconnect', (message) => {
-          console.log('You are now disconnected from the server', message);
-          socket?.emit('left-room', data['roomID']);
-          gameState = "disconnected";
-      });
-
-      socket.on('players-changed', () => {
-          console.log('Players changed');
-          fetchPlayers();
-      });
-
-      socket.on('kicked', () => {
-        alert('You have been kicked from the game.');
-        goto('/private-lobby');
-      });
-
-      socket.on('replaced', () => {
-        alert('You account has joined a game from a different tab.');
-        goto('/private-lobby');
-      });
-
-      socket.on('start-game', (params, autoFocus, quote) => {
-        console.log('Game started');
-        cipherData.params = params;
-        cipherData.autoFocus = autoFocus;
-        cipherData.quote = quote;
-        gameState = "started";
-        cipherRetrieved = true;
-      });
-
-      socket.on('cipher-solved', ({ winner, eloChanges }) => {
-        matchResult = {
-          won: winner === data.username,
-          winner: winner,
-          players: [...players],
-          ranked: !!eloChanges, // only show ranked UI if Elo changes exist
-          eloChanges: eloChanges ?? {}
-        };
-        gameState = "finished";
-        resultRetrieved = true;
-      });
-
-      socket.on('rematch-votes', (votes) => {
-        rematchVoters = votes;
-      });
-
+        });
+      }
     });
 
-    onDestroy(() => {
-        stopListening?.();
+    stopListening = listenForTabEvents(['leave-game'], ({ type, payload }) => {
+        if (payload.gameId === data['roomID']) {
+            socket.disconnect();
+            console.log('Handled leave-game from another tab');
+            goto('/');
+        }
     });
+
+    socket.on('disconnect', (message) => {
+        console.log('You are now disconnected from the server', message);
+        socket?.emit('left-room', data['roomID']);
+        gameState = "disconnected";
+    });
+
+    socket.on('players-changed', () => {
+        console.log('Players changed');
+        fetchPlayers();
+    });
+
+    socket.on('kicked', () => {
+      alert('You have been kicked from the game.');
+      goto('/private-lobby');
+    });
+
+    socket.on('replaced', () => {
+      alert('You account has joined a game from a different tab.');
+      goto('/private-lobby');
+    });
+
+    socket.on('start-game', (params, autoFocus, quote) => {
+      console.log('Game started');
+      cipherData.params = params;
+      cipherData.autoFocus = autoFocus;
+      cipherData.quote = quote;
+      gameState = "started";
+      socket.emit('get-initial-players', (initialPlayers) => {
+        historicalPlayers = initialPlayers;
+      });
+      progressMap = {};
+      cipherRetrieved = true;
+    });
+
+    socket.on('progress-map-update', ({ username, progress }) => {
+      progressMap = {
+          ...progressMap,
+          [username]: progress
+      };
+    });
+
+    socket.on('cipher-solved', (result) => {
+      matchResult = {
+        ...result,
+        won: result.winner === data.username,
+        ranked: !!result.eloChanges,
+      };
+      fetchPlayers();
+      gameState = "finished";
+      resultRetrieved = true;
+    });
+
+    socket.on('rematch-votes', (votes) => {
+      rematchVoters = votes;
+    });
+
+  });
+
+  onDestroy(() => {
+      stopListening?.();
+  });
 </script>
 
 {#if gameState === "disconnected"}
@@ -290,6 +331,8 @@
   </div>
 {:else if gameState === "started" && cipherRetrieved}
   <div transition:fade>
+    <ProgressDisplay players={historicalPlayers} progressMap={progressMap} />
+
     <Cipher
       quote={cipherData.quote.encodedText}
       hash={cipherData.quote.id}
@@ -299,6 +342,7 @@
       keys={cipherData.quote.keys}
       mode="multiplayer"
       fetchAnswerStatus={checkQuote}
+      onProgressUpdate={handleProgressUpdate}
     />
 
     <button class="button leave-button leave-button-game-start" onclick={leaveGame}>Leave Game</button>

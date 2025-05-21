@@ -20,15 +20,16 @@ export async function load({cookies, params}) {
         if (!user) return redirect(303, '/');
 
         const game = await Game.findById(params.roomID);
-        if (!game) return redirect(303, '/');
+        if (!game) return redirect(303, '/private-lobby');
 
         if (user.currentGame != game._id || !game.users.includes(user._id)) {
-            return redirect(303, '/');
+            return redirect(303, '/private-lobby');
         } else {
+            console.log('Game state in DB:', game.state);
             return {roomID: game._id, authToken: cookies.get("auth-token"), state: game.state};
         }
     } catch (error) {
         console.error('Error loading game:', error);
-        return redirect(303, '/')
+        return redirect(303, '/');
     }
 }
