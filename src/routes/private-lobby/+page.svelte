@@ -46,7 +46,7 @@
             feedbackCreate = '';
             const response = await fetch('/api/create-game', {
                 method: 'POST',
-                body: JSON.stringify({cipherType, cipherOptionObj, options, mode:"private"}),
+                body: JSON.stringify({cipherType, cipherOptionObj, AutoFocus: options.AutoFocus, mode:"private"}),
                 headers: {
                     'content-type': 'application/json'
                 }
@@ -224,14 +224,6 @@
 
         input {
             width: 100%;
-        }
-    }
-
-    @keyframes spin {
-        from {
-            transform: rotate(0deg);
-        } to {
-            transform: rotate(360deg);
         }
     }
 </style>

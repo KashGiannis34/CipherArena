@@ -16,8 +16,7 @@ const UserGameSchema = new mongoose.Schema({
       unique: true,
     },
     eloRatings: {
-      type: Map,
-      of: Number,
+      type: Object,
       default: defaultEloRatings
     },
     currentSocketId: {

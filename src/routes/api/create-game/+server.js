@@ -30,8 +30,7 @@ export async function POST({ request, cookies }) {
             Solve: req.cipherOptionObj.Solve || 'Decode',
             cipherType: req.cipherType
         };
-        console.log("Params: ", params);
-        console.log("req.cipherOption: ", req.cipherOptionObj);
+
         const quote = await generateQuote(params);
 
         let shortCode;
@@ -46,7 +45,7 @@ export async function POST({ request, cookies }) {
         const newGame = new Game({
             _id: shortCode,
             params: params,
-            autoFocus: req.options.AutoFocus,
+            autoFocus: req.AutoFocus,
             quote: {
                 id: quote.id,
                 encodedText: quote.quote,

@@ -1,7 +1,48 @@
 <script>
   import { cubicOut } from "svelte/easing";
+  import { Tween } from "svelte/motion";
   import ProfilePicture from "../General/ProfilePicture.svelte";
+  import { onMount, tick } from "svelte";
   let { won, players, ranked, eloChanges, onRematch, onLeaveGame, winnerUsername, rematchVoters = [] } = $props();
+
+  let animatedElos = $state({});
+  let animatedChanges = $state({});
+  let isAnimating = $state({});
+  let changed = $state(false);
+
+  onMount(async () => {
+  if (!ranked) return;
+
+  await tick();
+  await new Promise(r => setTimeout(r, 600));
+
+  for (const player of players) {
+    const delta = eloChanges[player.username] ?? 0;
+    const start = player.elo - delta;
+
+    let eloTween = new Tween(start, {
+        duration: 2000,
+        easing: cubicOut
+      });
+
+    let deltaTween = new Tween(delta, {
+      duration: 2000,
+      easing: cubicOut
+    });
+
+    eloTween.target = player.elo;
+    deltaTween.target = 0;
+
+    animatedElos[player.username] = eloTween;
+    animatedChanges[player.username] = deltaTween;
+    isAnimating[player.username] = true;
+
+    setTimeout(() => {
+      isAnimating[player.username] = false;
+    }, 2000);
+  }
+  changed = true;
+});
 
   function zoom(node, { duration = 300 }) {
     return {
@@ -63,12 +104,19 @@
                         {/if}
                     </div>
                     <div class="player-elo">
-                        ELO: {player.elo}
-                        {#if ranked}
-                        <span class="elo-change {eloChanges[player.username] > 0 ? 'up' : 'down'}">
-                            {eloChanges[player.username] > 0 ? `+${eloChanges[player.username]}` : eloChanges[player.username]}
-                        </span>
+                      ELO:
+                      {#if ranked && animatedElos[player.username]}
+                        <span class="elo-main">{animatedElos[player.username].current.toFixed(0)}</span>
+                        {#if isAnimating[player.username] && Math.abs(animatedChanges[player.username].current) > 0.4}
+                          <span
+                            class="elo-change-slide push-in {eloChanges[player.username] > 0 ? 'up' : 'down'}"
+                          >
+                            ({animatedChanges[player.username].current > 0 ? '+' : ''}{animatedChanges[player.username].current.toFixed(0)})
+                          </span>
                         {/if}
+                      {:else}
+                        {changed ? player.elo : player.elo - (eloChanges[player.username] ?? 0)}
+                      {/if}
                     </div>
                 </div>
             </div>
@@ -148,34 +196,55 @@
     }
 
     .player-elo {
-    font-size: 0.95rem;
-    color: #444;
+      font-size: 0.95rem;
+      color: #444;
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+      position: relative;
+      display: inline-flex;
+      gap: 0.25rem;
+      align-items: center;
     }
 
-    .elo-change {
-    margin-left: 0.5rem;
-    font-weight: bold;
-    transition: transform 0.3s ease;
+    .elo-main {
+      transition: transform 0.4s ease;
     }
 
-    .elo-change.up {
-    color: #36d67d;
-    animation: rise 0.6s ease-out;
+    .elo-change-slide {
+      font-weight: bold;
+      font-size: 0.9rem;
+      transition: all 0.4s ease;
+      will-change: transform, opacity;
+      display: inline-block;
+      min-width: 40px;
+      text-align: right;
     }
 
-    .elo-change.down {
-    color: #e14c4c;
-    animation: fall 0.6s ease-out;
+    .elo-change-slide.up {
+      color: #36d67d;
     }
 
-    @keyframes rise {
-    from { transform: translateY(6px); opacity: 0; }
-    to   { transform: translateY(0); opacity: 1; }
+    .elo-change-slide.down {
+      color: #e14c4c;
     }
 
-    @keyframes fall {
-    from { transform: translateY(-6px); opacity: 0; }
-    to   { transform: translateY(0); opacity: 1; }
+    @keyframes pushInFade {
+      0% {
+        transform: translateX(1rem);
+        opacity: 1;
+      }
+      50% {
+        transform: translateX(0.25rem);
+        opacity: 1;
+      }
+      100% {
+        transform: translateX(0);
+        opacity: 0;
+      }
+    }
+
+    .elo-change-slide.push-in {
+      animation: pushInFade 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
     .button-row {

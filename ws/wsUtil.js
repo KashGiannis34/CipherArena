@@ -1,25 +1,21 @@
 import { Quote } from '../src/db/models/Quote.js';
 import { ObjectId } from 'mongodb';
 import { encodeQuote, stripQuote } from '../src/lib/util/CipherUtil.js';
+import { UserGame } from '../src/db/models/UserGame.js';
 
 export function calculateElo(players, winnerUsername, cipherType, K = 32, eloFloor = 100) {
   const eloChanges = {};
 
-  // Fallback if someone doesn't have a rating
-  const getElo = (p) => {
-    if (p.eloRatings instanceof Map) {
-      return p.eloRatings.get(cipherType) ?? 1200;
-    } else if (typeof p.eloRatings === 'object') {
-      return p.eloRatings[cipherType] ?? 1200;
-    }
-    return 1200;
-  };
+  const getElo = (player) => player.eloRatings?.[cipherType] ?? 1200;
 
-  const ratings = players.map(p => ({
-    username: p.username,
-    elo: getElo(p),
-    power: 10 ** (getElo(p) / 400)
-  }));
+  const ratings = players.map(p => {
+    const elo = getElo(p);
+    return {
+      username: p.username,
+      elo,
+      power: 10 ** (elo / 400)
+    };
+  });
 
   const totalPower = ratings.reduce((sum, r) => sum + r.power, 0);
 
@@ -51,21 +47,23 @@ export async function checkAnswerCorrectness(ans, quoteId, cipherType, keys, sol
   return ans === ansText;
 }
 
-export async function updateEloAfterWin(game, winner, cipherType) {
-  const eloChanges = calculateElo(game.users, winner.username, cipherType);
+export async function updateEloAfterWin(gameUsers, winner, cipherType) {
+  const eloChanges = calculateElo(gameUsers, winner.username, cipherType);
 
-  for (const player of game.users) {
+  for (const player of gameUsers) {
     const delta = eloChanges[player.username] ?? 0;
 
-    if (!player.eloRatings.has(cipherType)) {
-      player.eloRatings.set(cipherType, 1200);
+    // Ensure eloRatings exists
+    if (!player.eloRatings || typeof player.eloRatings !== 'object') {
+      player.eloRatings = {};
     }
 
-    const current = player.eloRatings.get(cipherType);
-    player.eloRatings.set(cipherType, Math.max(current + delta, 100));
+    const currentElo = player.eloRatings[cipherType] ?? 1200;
+    player.eloRatings[cipherType] = Math.max(currentElo + delta, 100);
+
+    player.markModified('eloRatings'); // Needed because it's a nested object
     await player.save();
   }
 
-  return eloChanges; // 🎯 Now returns the changes instead of emitting anything
+  return eloChanges;
 }
-

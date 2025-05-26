@@ -33,7 +33,7 @@
 
   function checkQuote(quote, hash, cipherType, keys, solve, startTime) {
     return new Promise((resolve) => {
-      socket.emit('check-quote', data.roomID, quote, hash, cipherType, keys, solve, startTime, result => {
+      socket.emit('check-quote', quote, hash, cipherType, keys, solve, startTime, result => {
         resolve({ solved: result });
       });
     });
@@ -78,9 +78,13 @@
       } catch (e) {
           console.error('Leave failed:', e);
       } finally {
-          socket?.emit('leave-room', data.roomID);
+          socket?.emit('leave-room');
           socket?.disconnect();
-          goto('/private-lobby');
+          if (data.mode == 'private') {
+            goto('/private-lobby');
+          } else {
+            goto('/public-lobby');
+          }
       }
   }
 
@@ -121,7 +125,7 @@
   }
 
   function startGame() {
-      socket?.emit('start-game', data['roomID']);
+      socket?.emit('start-game');
   }
 
   function handleProgressUpdate(percent) {
@@ -137,7 +141,8 @@
 
     socket = io({
       auth: {
-        token: decodeURIComponent(data['authToken'])
+        token: decodeURIComponent(data['authToken']),
+        joinLobby: false
       }
     });
 
@@ -146,7 +151,7 @@
     });
 
     socket.on('ready', () => {
-      socket.emit('join-room', data['roomID']);
+      socket.emit('join-room');
       console.log('Current game state: ', $state.snapshot(gameState));
       if (gameState == 'started') {
         socket.emit('get-cipher-info', info => {
@@ -187,7 +192,7 @@
 
     socket.on('disconnect', (message) => {
         console.log('You are now disconnected from the server', message);
-        socket?.emit('left-room', data['roomID']);
+        socket?.emit('left-room');
         gameState = "disconnected";
     });
 
