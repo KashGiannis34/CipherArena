@@ -1,0 +1,741 @@
+<script>
+    import { fade } from 'svelte/transition';
+    import LoadingOverlay from './LoadingOverlay.svelte';
+    import { cipherTypes } from '$lib/util/CipherTypes';
+
+    let { value = '', onSearch = () => {} } = $props();
+
+    const searchOptions = [
+        { key: 'all', label: 'show all games', example: 'most recent games' },
+        { key: 'cipher:', label: 'cipher', example: 'cipher type' },
+        { key: 'username:', label: 'username', example: 'player name' },
+        { key: 'ranked:', label: 'ranked (true/false)', example: 'true or false' },
+        { key: 'playerLimit:', label: 'player limit', example: 'max players allowed' },
+        { key: 'playerCount:', label: 'player count', example: 'current players' }
+    ];
+
+    let inputElement;
+    let showAutocomplete = $state(false);
+    let autocompleteOptions = $state([]);
+    let currentSearchOption = $state(null);
+    let currentInput = $state('');
+    let tokens = $state([]);
+    let isLoading = $state(false);
+    let activeKey = $state(null);
+    let keyInValue = $state(false);
+    let selectedOptionIndex = $state(0);
+
+    $effect(() => {
+        // Update tokens whenever value changes
+        tokens = parseSearchTokens(value);
+    });
+
+    function isCompleteToken(word) {
+        if (word === 'all') return true;
+        return searchOptions.some(opt => opt.key === word);
+    }
+
+    function parseSearchTokens(text) {
+        // If there's no text, return empty array
+        if (!text.trim()) return [];
+
+        const tokens = [];
+        const words = text.split(' ');
+
+        // Find the index of the active key in the words array
+        const activeKeyIndex = activeKey ? words.indexOf(activeKey) : -1;
+
+        // Process words up to the active key
+        let i = 0;
+        while (i < words.length) {
+            const word = words[i];
+            if (!word) {
+                i++;
+                continue;
+            }
+
+            // Stop processing if we hit the active key
+            if (i === activeKeyIndex) {
+                break;
+            }
+
+            if (isCompleteToken(word)) {
+                tokens.push({ text: word, isToken: true, isError: false, type: 'key' });
+                // Get the next word as value if it exists
+                if (i + 1 < words.length && !isCompleteToken(words[i + 1])) {
+                    const value = words[i + 1];
+                    const isRanked = word === 'ranked:';
+                    const isValid = !isRanked || ['true', 'false'].includes(value.toLowerCase());
+                    tokens.push({
+                        text: value,
+                        isToken: true,
+                        isError: isRanked && !isValid,
+                        type: 'value',
+                        parentKey: word
+                    });
+                    i += 2; // Skip the value
+                } else {
+                    i++;
+                }
+            } else {
+                tokens.push({ text: word, isToken: false, isError: false });
+                i++;
+            }
+        }
+
+        return tokens;
+    }
+
+    function getValueAutocompleteOptions(key) {
+        if (key === 'cipher:') {
+            return Object.keys(cipherTypes).map(type => ({
+                key: type,
+                label: type,
+                example: `Search for ${type} ciphers`
+            }));
+        } else if (key === 'ranked:') {
+            return [
+                { key: 'true', label: 'true (ranked games)', example: 'ranked games only' },
+                { key: 'false', label: 'false (casual games)', example: 'casual games only' }
+            ];
+        } else if (key === 'playerLimit:' || key === 'playerCount:') {
+            return []; // No autocomplete for these keys
+        }
+        return [];
+    }
+
+    function getFullKeyValueAutocompleteOptions(input) {
+        if (!input) return [];
+        const options = [];
+        const lowerInput = input.toLowerCase();
+
+        // Don't show full key-value pairs if:
+        // 1. Input matches any key directly
+        // 2. We're in the middle of completing a value for an active key
+        if (searchOptions.some(opt => opt.key.toLowerCase().startsWith(lowerInput)) || activeKey) {
+            return [];
+        }
+
+        // Check cipher types
+        if (Object.keys(cipherTypes).some(type => type.toLowerCase().includes(lowerInput))) {
+            const matchingTypes = Object.keys(cipherTypes).filter(type =>
+                type.toLowerCase().includes(lowerInput)
+            );
+            matchingTypes.forEach(type => {
+                options.push({
+                    key: 'cipher:',
+                    value: type,
+                    label: `Search for ${type} ciphers`,
+                    fullText: `cipher: ${type}`,
+                    type: 'full-pair'
+                });
+            });
+        }
+
+        // Check boolean options for true/false
+        if ('true'.includes(lowerInput) || 'false'.includes(lowerInput)) {
+            const boolValue = lowerInput.startsWith('t') ? 'true' : 'false';
+            options.push({
+                key: 'ranked:',
+                value: boolValue,
+                label: `${boolValue === 'true' ? 'Ranked' : 'Casual'} games only`,
+                fullText: `ranked: ${boolValue}`,
+                type: 'full-pair'
+            });
+        }
+
+        // Check if input could be a username
+        if (input.length >= 2) { // Only suggest username if input is at least 2 chars
+            options.push({
+                key: 'username:',
+                value: input,
+                label: `Search for player "${input}"`,
+                fullText: `username: ${input}`,
+                type: 'full-pair'
+            });
+        }
+
+        // Check if input could be a number for player limits/counts
+        const numValue = parseInt(input);
+        if (!isNaN(numValue) && numValue > 0) {
+            if (numValue <= 10) { // Reasonable limit for player counts
+                options.push({
+                    key: 'playerLimit:',
+                    value: input,
+                    label: `Games with ${input} player limit`,
+                    fullText: `playerLimit: ${input}`,
+                    type: 'full-pair'
+                });
+                options.push({
+                    key: 'playerCount:',
+                    value: input,
+                    label: `Games with ${input} current players`,
+                    fullText: `playerCount: ${input}`,
+                    type: 'full-pair'
+                });
+            }
+        }
+
+        return options;
+    }
+
+    function updateAutocomplete() {
+        if (!currentInput) {
+            // Show all search options when input is empty, but filter out 'all' if other keys exist
+            if (activeKey) {
+                // Show value options for active key
+                autocompleteOptions = getValueAutocompleteOptions(activeKey);
+            } else {
+                // Only show 'all' if no other keys are present in the search
+                const hasOtherKeys = value.split(' ').some(word => isCompleteToken(word) && word !== 'all');
+                autocompleteOptions = hasOtherKeys ?
+                    searchOptions.filter(opt => opt.key !== 'all') :
+                    searchOptions;
+            }
+            showAutocomplete = true;
+            currentSearchOption = null;
+        } else if (activeKey) {
+            // Filter value options based on input
+            const options = getValueAutocompleteOptions(activeKey);
+            autocompleteOptions = options.filter(opt =>
+                opt.key.toLowerCase().includes(currentInput.toLowerCase())
+            );
+            showAutocomplete = autocompleteOptions.length > 0;
+            currentSearchOption = null;
+        } else if (!currentInput.includes(' ')) {
+            // First try normal key autocomplete
+            const keyMatches = searchOptions.filter(opt =>
+                opt.key.toLowerCase().startsWith(currentInput.toLowerCase())
+            );
+
+            // If no key matches, try full key-value pair matches
+            if (keyMatches.length === 0) {
+                autocompleteOptions = getFullKeyValueAutocompleteOptions(currentInput);
+            } else {
+                // Only show 'all' in key matches if no other keys exist
+                const hasOtherKeys = value.split(' ').some(word => isCompleteToken(word) && word !== 'all');
+                autocompleteOptions = hasOtherKeys ?
+                    keyMatches.filter(opt => opt.key !== 'all') :
+                    keyMatches;
+            }
+            showAutocomplete = autocompleteOptions.length > 0;
+            currentSearchOption = null;
+        } else {
+            showAutocomplete = false;
+            currentSearchOption = null;
+        }
+        if (autocompleteOptions.length > 0) {
+            selectedOptionIndex = 0;
+        }
+    }
+
+    function handleInput(e) {
+        currentInput = e.target.value;
+
+        // Check if the current input exactly matches a search option
+        if (currentInput.endsWith(' ')) {
+            const words = currentInput.trim().split(' ');
+            const lastWord = words[words.length - 1];
+
+            if (isCompleteToken(lastWord)) {
+                if (lastWord === 'all') {
+                    // If 'all' is added and other keys exist, ignore it
+                    const otherKeys = value.split(' ').some(word => isCompleteToken(word) && word !== 'all');
+                    if (!otherKeys) {
+                        value = lastWord;
+                    }
+                } else {
+                    // If a non-'all' key is added, remove 'all' if it exists
+                    const words = value.split(' ').filter(word => word !== 'all');
+                    value = (words.length > 0 ? words.join(' ') + ' ' : '') + lastWord;
+                }
+                currentInput = '';
+                activeKey = lastWord === 'all' ? null : lastWord;
+                keyInValue = lastWord !== 'all';
+                // Show value options immediately for non-'all' keys
+                if (lastWord !== 'all') {
+                    autocompleteOptions = getValueAutocompleteOptions(lastWord);
+                    showAutocomplete = true;
+                }
+            }
+        }
+
+        updateAutocomplete();
+    }
+
+    function handleFocus() {
+        // Show all options when focused
+        if (!currentInput) {
+            autocompleteOptions = searchOptions;
+            showAutocomplete = true;
+        } else {
+            updateAutocomplete();
+        }
+    }
+
+    function handleBlur(e) {
+        // Only hide if we didn't click on an option
+        setTimeout(() => {
+            if (!e.relatedTarget?.closest('.autocomplete')) {
+                showAutocomplete = false;
+            }
+        }, 100);
+    }
+
+    async function commitSearch() {
+        if (currentInput.trim()) {
+            value = (value ? value + ' ' : '') + currentInput.trim();
+            currentInput = '';
+        }
+        isLoading = true;
+        try {
+            await onSearch({ searchValue: value });
+        } finally {
+            isLoading = false;
+        }
+    }
+
+    function handleKeydown(e) {
+        if (showAutocomplete && autocompleteOptions.length > 0) {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedOptionIndex = (selectedOptionIndex + 1) % autocompleteOptions.length;
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedOptionIndex = (selectedOptionIndex - 1 + autocompleteOptions.length) % autocompleteOptions.length;
+            } else if (e.key === 'Enter' && selectedOptionIndex >= 0) {
+                e.preventDefault();
+                selectAutocomplete(autocompleteOptions[selectedOptionIndex]);
+                return;
+            }
+        }
+
+        if (e.key === 'Backspace' && !currentInput) {
+            // Remove last token when backspace is pressed with empty input
+            const words = value.split(' ');
+            if (words.length > 0) {
+                const lastWord = words[words.length - 1];
+                words.pop();
+                value = words.join(' ');
+
+                // If we just removed a value, make its key active
+                if (!isCompleteToken(lastWord) && words.length > 0) {
+                    const lastKey = words[words.length - 1];
+                    if (isCompleteToken(lastKey)) {
+                        activeKey = lastKey;
+                        words.pop(); // Remove the key from the value string since it's now active
+                        value = words.join(' ');
+                        keyInValue = false;
+                        // Show value options immediately
+                        autocompleteOptions = getValueAutocompleteOptions(lastKey);
+                        showAutocomplete = true;
+                    } else {
+                        activeKey = null;
+                        keyInValue = false;
+                        // Show search options
+                        autocompleteOptions = searchOptions;
+                        showAutocomplete = true;
+                    }
+                } else {
+                    activeKey = null;
+                    keyInValue = false;
+                    // Show search options
+                    autocompleteOptions = searchOptions;
+                    showAutocomplete = true;
+                }
+            } else {
+                // If we've removed everything, show all search options
+                activeKey = null;
+                keyInValue = false;
+                autocompleteOptions = searchOptions;
+                showAutocomplete = true;
+            }
+        } else if (e.key === 'Tab' && showAutocomplete && autocompleteOptions.length > 0) {
+            e.preventDefault();
+            selectAutocomplete(autocompleteOptions[selectedOptionIndex]);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (activeKey && currentInput.trim()) {
+                if (!keyInValue) {
+                    // If key isn't in value string yet, add both key and value
+                    value = (value ? value + ' ' : '') + activeKey + ' ' + currentInput.trim();
+                } else {
+                    // If key is already there, just add the value
+                    value = (value ? value + ' ' : '') + currentInput.trim();
+                }
+                currentInput = '';
+                activeKey = null;
+                keyInValue = false;
+            } else if (currentInput.trim()) {
+                // Just append the current input if no active key
+                value = (value ? value + ' ' : '') + currentInput.trim();
+                currentInput = '';
+            }
+            commitSearch();
+        } else if (e.key === ':') {
+            // Check if the current input (without the colon) matches a search option
+            const potentialToken = currentInput + ':';
+            if (isCompleteToken(potentialToken)) {
+                e.preventDefault(); // Prevent the : from being added
+                value = (value ? value + ' ' : '') + potentialToken;
+                currentInput = '';
+                activeKey = potentialToken;
+                keyInValue = true;
+                // Show value options immediately
+                autocompleteOptions = getValueAutocompleteOptions(potentialToken);
+                showAutocomplete = true;
+            }
+        } else if (e.key === ' ' && activeKey && currentInput.trim()) {
+            e.preventDefault();
+            // Commit the value to the active key
+            if (!keyInValue) {
+                value = (value ? value + ' ' : '') + activeKey + ' ' + currentInput.trim();
+            } else {
+                value = (value ? value + ' ' : '') + currentInput.trim();
+            }
+            currentInput = '';
+            activeKey = null;
+            keyInValue = false;
+        }
+    }
+
+    function selectAutocomplete(option) {
+        if (option.type === 'full-pair') {
+            // For full key-value pairs, add both parts
+            const words = value.split(' ').filter(word => word !== 'all');
+            value = (words.length > 0 ? words.join(' ') + ' ' : '') + option.fullText;
+            currentInput = '';
+            activeKey = null;
+            keyInValue = false;
+            showAutocomplete = false;
+        } else if (activeKey) {
+            // If we're selecting a value for an active key
+            if (!keyInValue) {
+                value = (value ? value + ' ' : '') + activeKey + ' ' + option.key;
+            } else {
+                value = (value ? value + ' ' : '') + option.key;
+            }
+            currentInput = '';
+            activeKey = null;
+            keyInValue = false;
+            showAutocomplete = false;
+        } else {
+            // If we're selecting a search option
+            value = (value ? value + ' ' : '') + option.key;
+            activeKey = option.key;
+            keyInValue = true;
+            // Show value options immediately
+            autocompleteOptions = getValueAutocompleteOptions(option.key);
+            showAutocomplete = true;
+        }
+        currentInput = '';
+        inputElement.focus();
+    }
+
+    // Reset selected index when options change
+    $effect(() => {
+        if (autocompleteOptions) {
+            selectedOptionIndex = 0;
+        }
+    });
+</script>
+
+<div class="search-container">
+    <div class="search-input-wrapper">
+        {#each tokens as token, i}
+            {#if token.isToken}
+                {#if token.type === 'key'}
+                    <span class="search-token {token.text === 'all' ? 'all-token' : ''} {tokens[i+1]?.type === 'value' ? 'has-value' : ''}">{token.text}</span>
+                {:else if token.type === 'value'}
+                    <span class="search-token-group">
+                        {#if i > 0 && tokens[i-1].type !== 'key'}
+                            <span class="search-token has-value">{token.parentKey}</span>
+                        {/if}
+                        <span class="search-token value {token.isError ? 'error' : ''}">{token.text}</span>
+                    </span>
+                {/if}
+            {:else}
+                <span class="search-text">{token.text}</span>
+            {/if}
+        {/each}
+        {#if activeKey}
+            <span class="search-token active-key {activeKey === 'all' ? 'all-token' : ''}">{activeKey}</span>
+        {/if}
+        <input
+            bind:this={inputElement}
+            type="text"
+            bind:value={currentInput}
+            oninput={handleInput}
+            onkeydown={handleKeydown}
+            onfocus={handleFocus}
+            onblur={handleBlur}
+            placeholder={tokens.length === 0 && !activeKey ? "Search" : ""}
+            class="search-input"
+        />
+        <button
+            class="search-button"
+            onclick={commitSearch}
+            title="Search"
+            aria-label="Search"
+            tabindex="-1"
+        >
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
+
+    {#if showAutocomplete}
+        <div class="autocomplete" transition:fade={{ duration: 100 }}>
+            <div class="autocomplete-header">
+                {#if autocompleteOptions[0]?.type === 'full-pair'}
+                    MATCHING FILTERS
+                {:else}
+                    SEARCH OPTIONS
+                {/if}
+            </div>
+            {#each autocompleteOptions as option, i}
+                <div
+                    class="autocomplete-option {i === selectedOptionIndex ? 'selected' : ''}"
+                    onclick={() => selectAutocomplete(option)}
+                    onmouseenter={() => selectedOptionIndex = i}
+                    onkeydown={()=>{}}
+                    tabindex="0"
+                    role="option"
+                    aria-selected={i === selectedOptionIndex}
+                    aria-label={option.type === 'full-pair' ? option.label : `${option.key} - ${option.label}`}
+                >
+                    <div class="option-label">
+                        <span class="option-key">
+                            {option.type === 'full-pair' ? option.fullText : option.key}
+                        </span>
+                        <span class="option-description">{option.label}</span>
+                    </div>
+                    <div class="option-example">
+                        <span class="example-text">{option.example}</span>
+                    </div>
+                </div>
+            {/each}
+        </div>
+    {/if}
+
+    {#if isLoading}
+        <div class="loading-overlay">
+            <LoadingOverlay />
+        </div>
+    {/if}
+</div>
+
+<style>
+    .search-container {
+        position: relative;
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        align-items: center;
+        padding: 8px 12px;
+        font-size: 16px;
+        border: none;
+        background: transparent;
+        color: white;
+        border-bottom: 1px solid rgba(218, 218, 255, 0.8);
+        transition: border-color 0.2s ease;
+        min-height: 40px;
+        width: 100%;
+    }
+
+    .search-input {
+        flex: 1;
+        min-width: 250px;
+        border: none;
+        background: transparent;
+        color: white;
+        outline: none;
+        font-size: 16px;
+        padding: 4px 0;
+        padding-right: 36px; /* Make room for the search button */
+    }
+
+    .search-button {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: rgba(235, 219, 255, 0.538);
+        cursor: pointer;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s ease;
+        font-size: 16px;
+    }
+
+    .search-button:hover {
+        color: rgba(235, 219, 255, 0.8);
+    }
+
+    .search-button:active {
+        transform: translateY(-50%) scale(0.95);
+    }
+
+    .search-token-group {
+        display: inline-flex;
+        align-items: center;
+        margin: 0 2px;
+    }
+
+    .search-token {
+        background: #7555ff;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .search-token.has-value {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .search-token.all-token {
+        border-radius: 4px !important;
+        border-right: none !important;
+    }
+
+    .search-token.active-key {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .search-token.value {
+        background: #5d44cc;
+        margin-left: 1px;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    .search-text {
+        color: white;
+        white-space: nowrap;
+    }
+
+    .search-token.error {
+        background: #ff5555;
+    }
+
+    .search-input::placeholder {
+        color: rgba(235, 219, 255, 0.538);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    @media (max-width: 600px) {
+        .search-input {
+            min-width: 200px;
+        }
+
+        .search-input::placeholder {
+            font-size: 14px;
+        }
+    }
+
+    .autocomplete {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #2a2a2a;
+        border: 1px solid #3a3a3a;
+        border-radius: 4px;
+        margin-top: 4px;
+        z-index: 1000;
+        font-size: 14px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+    }
+
+    .autocomplete-header {
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #72767d;
+        background: #222;
+        letter-spacing: 0.5px;
+    }
+
+    .autocomplete-option {
+        padding: 8px 12px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s ease;
+        border-left: 2px solid transparent;
+        user-select: none;
+    }
+
+    .autocomplete-option:hover,
+    .autocomplete-option.selected {
+        background-color: #3a3a3a;
+        border-left-color: #7555ff;
+    }
+
+    .autocomplete-option.selected {
+        background-color: #2d2d2d;
+    }
+
+    .autocomplete-option:hover.selected {
+        background-color: #3a3a3a;
+    }
+
+    .option-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .option-key {
+        color: #7555ff;
+        font-weight: 500;
+    }
+
+    .option-description {
+        color: #dcddde;
+    }
+
+    .option-example {
+        color: #72767d;
+        font-size: 12px;
+        font-style: italic;
+    }
+
+    .example-text::before {
+        content: 'e.g., ';
+        opacity: 0.7;
+    }
+
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+    }
+</style>

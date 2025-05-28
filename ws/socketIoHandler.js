@@ -139,7 +139,10 @@ export default async function injectSocketIO(server) {
                     socket.currentRoom = game._id;
                     // console.log(`${user._id} joined room ${roomId}`);
                     io.to(game._id).emit('players-changed');
-                    io.to('public-lobby').emit('lobbies-updated');
+                    if (game.state == 'waiting') {
+                        console.log("Lobbies updated");
+                        io.to('public-lobby').emit('lobbies-updated');
+                    }
                 } catch (err) {
                     console.error('join-room error:', err);
                 }
@@ -181,6 +184,7 @@ export default async function injectSocketIO(server) {
                     // 3. Notify room
                     io.to(socket.currentRoom).emit('players-changed');
                     io.to('public-lobby').emit('lobbies-updated');
+                    console.log("Lobbies updated");
                 } catch (err) {
                     console.error('kick-player error:', err);
                     socket.emit('error', 'Internal error during kick');
@@ -206,6 +210,8 @@ export default async function injectSocketIO(server) {
                     await game.save();
 
                     io.to(socket.currentRoom).emit('start-game', game.params, game.autoFocus, game.quote);
+                    io.to('public-lobby').emit('lobbies-updated');
+                    console.log("Lobbies updated");
                 } catch (err) {
                     console.error('start-game error:', err);
                 }
@@ -356,6 +362,8 @@ export default async function injectSocketIO(server) {
             socket.on('disconnect', async () => {
                 try {
                     const active = activeSockets.get(userId);
+                    let updateLobby = true;
+                    let latestGame = null;
                     if (active === socketId) {
                         activeSockets.delete(userId);
                     }
@@ -378,9 +386,11 @@ export default async function injectSocketIO(server) {
 
                     if (!socket.disconnectReason) {
                         console.log(`User ${userId} disconnected no reason`);
-                        let latestGame = null;
                         if (latestUser.currentGame) {
                             latestGame = await Game.findById(latestUser.currentGame).populate('users').exec();
+                            if (latestGame && (latestGame.state !== 'waiting' || latestGame.mode === 'private')) {
+                                updateLobby = false;
+                            }
                         }
 
                         if (latestGame && latestGame.host.equals(latestUser._id)) {
@@ -392,11 +402,13 @@ export default async function injectSocketIO(server) {
                         }
                     }
 
-                    console.log("current room", socket.currentRoom);
                     if (socket.currentRoom) {
-                        console.log("PLayers changed", socket.currentRoom);
                         io.to(socket.currentRoom).emit('players-changed');
+                    }
+
+                    if (updateLobby && !latestGame) {
                         io.to('public-lobby').emit('lobbies-updated');
+                        console.log("Lobbies updated");
                     }
                 } catch (err) {
                     console.error(`❌ Error during disconnect for user ${userId}:`, err);
@@ -407,33 +419,78 @@ export default async function injectSocketIO(server) {
                 console.log('📡 ' + user.username + ' Received event (lobby):', event, args);
             });
 
-            socket.on('get-public-lobbies', async ({ search = '', limit = 50 } = {}, cb) => {
+            socket.on('get-public-lobbies', async (request, cb) => {
                 try {
+                    const { searchTerms = {}, limit = 50 } = request || {};
                     const MAX_LIMIT = 100;
-                    limit = Math.min(limit, MAX_LIMIT);
+                    const effectiveLimit = Math.min(limit, MAX_LIMIT);
 
                     const query = {
-                    mode: { $in: ['public', 'ranked'] },
-                    state: 'waiting'
+                        mode: { $in: ['public', 'ranked'] },
+                        state: 'waiting'
                     };
 
-                    // Fetch games + populate usernames
+                    // Fetch games + populate usernames and ensure we have all necessary fields
                     let games = await Game.find(query)
-                    .sort({ createdAt: -1 }) // Newest first
-                    .limit(limit)
-                    .populate({ path: 'users', select: 'username' })
-                    .lean();
+                        .select('_id params.cipherType mode state createdAt users playerLimit')
+                        .sort({ createdAt: -1 }) // Newest first
+                        .limit(effectiveLimit)
+                        .populate({ path: 'users', select: 'username' })
+                        .lean();
 
-                    // Perform filtering on cipherType, usernames, or ranked
-                    const searchLower = search.trim().toLowerCase();
+                    // Apply filters based on search terms
+                    if (Object.keys(searchTerms).length > 0) {
+                        // If we have other search terms besides 'all', ignore 'all'
+                        const hasOtherTerms = Object.keys(searchTerms).some(key => key !== 'all');
+                        if (hasOtherTerms) {
+                            delete searchTerms['all'];
+                        }
+                        // If only 'all' is present, return all games without filtering
+                        if (Object.keys(searchTerms).length === 0) {
+                            cb(formatted);
+                            return;
+                        }
 
-                    if (searchLower) {
-                    games = games.filter(game => {
-                        const cipherMatch = game.params?.cipherType?.toLowerCase().includes(searchLower);
-                        const userMatch = game.users.some(user => user.username?.toLowerCase().includes(searchLower));
-                        const rankedMatch = game.mode === 'ranked' && 'ranked'.includes(searchLower);
-                        return cipherMatch || userMatch || rankedMatch;
-                    });
+                        games = games.filter(game => {
+                            for (const [option, terms] of Object.entries(searchTerms)) {
+                                const searchText = terms.join(' ').toLowerCase();
+
+                                switch (option) {
+                                    case 'cipher:':
+                                        if (!game.params?.cipherType?.toLowerCase().includes(searchText)) {
+                                            return false;
+                                        }
+                                        break;
+                                    case 'username:':
+                                        if (!game.users.some(user =>
+                                            user.username?.toLowerCase().includes(searchText)
+                                        )) {
+                                            return false;
+                                        }
+                                        break;
+                                    case 'ranked:':
+                                        const isRanked = searchText === 'true';
+                                        if ((isRanked && game.mode !== 'ranked') ||
+                                            (!isRanked && game.mode !== 'public')) {
+                                            return false;
+                                        }
+                                        break;
+                                    case 'playerLimit:':
+                                        const limitNum = parseInt(searchText);
+                                        if (!isNaN(limitNum) && game.playerLimit !== limitNum) {
+                                            return false;
+                                        }
+                                        break;
+                                    case 'playerCount:':
+                                        const countNum = parseInt(searchText);
+                                        if (!isNaN(countNum) && game.users.length !== countNum) {
+                                            return false;
+                                        }
+                                        break;
+                                }
+                            }
+                            return true;
+                        });
                     }
 
                     const formatted = games.map(g => ({
@@ -443,6 +500,7 @@ export default async function injectSocketIO(server) {
                         state: g.state,
                         createdAt: g.createdAt,
                         playerCount: g.users.length,
+                        playerLimit: g.playerLimit,
                         usernames: g.users.map(u => u.username)
                     }));
 

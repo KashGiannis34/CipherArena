@@ -12,6 +12,7 @@ import { generateShortCode } from '$db/generateShortCode';
 export async function POST({ request, cookies }) {
     try {
         const req = await request.json();
+        console.log(req);
 
         const auth = authenticate(cookies.get("auth-token"));
 
@@ -31,6 +32,12 @@ export async function POST({ request, cookies }) {
             cipherType: req.cipherType
         };
 
+        // Validate playerLimit
+        const playerLimit = Number(req.options.playerLimit);
+        if (isNaN(playerLimit) || playerLimit < 2 || playerLimit > 6) {
+            return json({success: false, message: "Invalid player limit. Must be between 2 and 6."});
+        }
+
         const quote = await generateQuote(params);
 
         let shortCode;
@@ -45,7 +52,8 @@ export async function POST({ request, cookies }) {
         const newGame = new Game({
             _id: shortCode,
             params: params,
-            autoFocus: req.AutoFocus,
+            autoFocus: req.options.AutoFocus,
+            playerLimit: playerLimit,
             quote: {
                 id: quote.id,
                 encodedText: quote.quote,

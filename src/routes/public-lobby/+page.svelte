@@ -9,10 +9,11 @@
     import {cipherTypes} from '$lib/util/CipherTypes';
     import { goto } from "$app/navigation";
     import { fade } from 'svelte/transition';
+    import SearchBar from '$lib/Components/General/SearchBar.svelte';
 
     let { data } = $props();
 
-    let options = $state({'AutoFocus':true, 'Ranked':false});
+    let options = $state({'AutoFocus':true, 'Ranked':false, 'playerLimit': 2});
     let cipherType = $state('Aristocrat');
     let cipherOption = $state('Random');
     let cipherOptionObj = {'K':'Random'};
@@ -21,8 +22,9 @@
 
     let lobbies = $state([]);
     let loading = $state(true);
-    let search = $state('');
+    let searchValue = $state('');
     let disconnected = $state(false);
+    let mounted = $state(false);
     let limit = 50;
     let socket;
     let fetchInterval;
@@ -35,11 +37,54 @@
         };
     }
 
-    async function fetchLobbies() {
-        socket.emit('get-public-lobbies', { search, limit }, async (data) => {
-            lobbies = data;
-            console.log("Lobbies: ", data);
+    async function fetchLobbies({ searchValue = '' } = {}) {
+        if (!socket?.connected) {
+            console.log('Socket not connected, skipping fetch');
+            return;
+        }
+
+        const fetchPromise = new Promise((resolve) => {
+            // Parse search options
+            const searchTerms = {};
+            const words = searchValue.split(' ');
+            let currentOption = null;
+
+            for (let i = 0; i < words.length; i++) {
+                const word = words[i].trim();
+                if (!word) continue;
+
+                if (word.endsWith(':')) {
+                    currentOption = word;
+                } else if (currentOption) {
+                    if (!searchTerms[currentOption]) {
+                        searchTerms[currentOption] = [];
+                    }
+                    searchTerms[currentOption].push(word);
+                }
+            }
+
+            const request = { searchTerms, limit };
+            socket.emit('get-public-lobbies', request, (data) => {
+                if (Array.isArray(data)) {
+                    lobbies = data;
+                } else {
+                    console.error("Invalid lobbies data:", data);
+                    lobbies = [];
+                }
+                resolve();
+            });
         });
+
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Fetch lobbies timeout')), 5000);
+        });
+
+        try {
+            await Promise.race([fetchPromise, timeoutPromise]);
+        } catch (error) {
+            console.error('Error fetching lobbies:', error);
+            lobbies = [];
+        }
     }
 
     const debouncedFetchLobbies = debounce(fetchLobbies, 500);
@@ -61,8 +106,12 @@
         cipherType = type;
     }
 
-    function onOptionChange(option) {
-        options[option] = !options[option];
+    function onOptionChange(option, value) {
+        if (value) {
+            options[option] = value;
+        } else {
+            options[option] = !options[option];
+        }
     }
 
     async function createGame() {
@@ -72,7 +121,7 @@
             feedbackCreate = '';
             const response = await fetch('/api/create-game', {
                 method: 'POST',
-                body: JSON.stringify({cipherType, cipherOptionObj, AutoFocus: options.AutoFocus, mode:(options.Ranked ? "ranked": "public")}),
+                body: JSON.stringify({cipherType, cipherOptionObj, options, mode:(options.Ranked ? "ranked": "public")}),
                 headers: {
                     'content-type': 'application/json'
                 }
@@ -114,87 +163,113 @@
     }
 
     onMount(() => {
+        mounted = true;
         socket = io({
             auth: {
                 token: decodeURIComponent(data.authToken),
                 joinLobby: true
             },
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000
         });
 
-        fetchLobbies();
-        socket.on('lobbies-updated', () => {
-            debouncedFetchLobbies();
+        socket.on('connect', () => {
+            console.log('Connected to lobby');
+            disconnected = false;
+            socket.once('ready', async () => {
+                console.log('Socket ready, fetching lobbies');
+                await fetchLobbies();
+                loading = false;
+            });
         });
 
-        socket.on('disconnect', (message) => {
+        socket.on('connect_error', (error) => {
+            console.error('Connection error:', error);
             disconnected = true;
-            console.log("Disconnected: ", message);
+            loading = false;
         });
-        loading = false;
+
+        socket.on('lobbies-updated', () => {
+            if (!disconnected) {
+                fetchLobbies({ searchValue });
+            }
+        });
+
+        socket.on('disconnect', (reason) => {
+            disconnected = true;
+            console.log("Disconnected:", reason);
+        });
     });
 </script>
 
-{#if loading}
-    <LoadingOverlay/>
-{/if}
-
-{#if disconnected}
+{#if !mounted || loading}
+    <LoadingOverlay />
+{:else if disconnected}
     <div transition:fade>Disconnected.</div>
 {:else}
-    <Container style="gap: 15px; display: flex; justify-content: center; align-items: center;">
-        <h2>New Public Game</h2>
-        <Options options={options} onOptionChange={onOptionChange} cipherType={cipherType} multiplayer={true} cipherOption={cipherOption} changeCipherOption={changeCipherOption} changeType={changeType}/>
-        <div class="button-row">
-            <button class="button" onclick={createGame}>Create Game</button>
+    <div transition:fade>
+        <Container style="gap: 15px; display: flex; justify-content: center; align-items: center;">
+            <h2>New Public Game</h2>
+            <Options options={options} onOptionChange={onOptionChange} cipherType={cipherType} multiplayer={true} cipherOption={cipherOption} changeCipherOption={changeCipherOption} changeType={changeType}/>
+            <div class="button-row">
+                <button class="button" onclick={createGame}>Create Game</button>
 
-            {#if showLeaveGameButton}
-                <button class="button" onclick={leaveGame} style="color: #fa6969;">Leave Current Game</button>
+                {#if showLeaveGameButton}
+                    <button class="button" onclick={leaveGame} style="color: #fa6969;">Leave Current Game</button>
+                {/if}
+            </div>
+
+            {#if feedbackCreate}
+                <p>{feedbackCreate}</p>
+            {/if}
+        </Container>
+        <div class="waiting-container">
+            <div class="top-bar">
+                <h2 class="waiting-title">Public Lobby</h2>
+                <div class="input-container">
+                    <SearchBar
+                        bind:value={searchValue}
+                        onSearch={fetchLobbies}
+                    />
+                </div>
+            </div>
+
+            {#if lobbies.length === 0}
+                <p style="color: white;" in:fade={{ duration: 200, delay: 200 }} out:fade={{ duration: 200 }}>No matching games found.</p>
+            {:else}
+                <div class="player-list" in:fade={{ duration: 200, delay: 200 }} out:fade={{ duration: 200 }}>
+                    {#each [...lobbies].sort((a, b) => b.usernames.includes(data.username) - a.usernames.includes(data.username)) as lobby (lobby.id)}
+                        <div class="player-card {lobby.playerCount >= lobby.playerLimit ? 'full' : ''} {lobby.usernames.includes(data.username) ? 'in-game' : ''}" transition:fade>
+                            <div class="player-info-wrapper">
+                                <div class="player-left-group">
+                                    <div class="player-name">{lobby.cipherType}</div>
+                                    <div class="player-elo">
+                                        {lobby.mode === 'ranked' ? 'Ranked' : 'Casual'}
+                                    </div>
+                                    <div class="player-elo {lobby.playerCount >= lobby.playerLimit ? 'full-text' : ''}">
+                                        {lobby.playerCount}/{lobby.playerLimit} Player{lobby.playerLimit > 1 ? 's' : ''} ({lobby.usernames.join(', ')})
+                                    </div>
+                                </div>
+                                <div class="button-row">
+                                    {#if lobby.usernames.includes(data.username)}
+                                        <a href={`/game-lobby/${lobby.id}`}>
+                                            <button class="copy-box rejoin">Rejoin</button>
+                                        </a>
+                                    {:else if lobby.playerCount < lobby.playerLimit}
+                                        <a href={`/game-lobby/${lobby.id}`}>
+                                            <button class="copy-box">Join</button>
+                                        </a>
+                                    {:else}
+                                        <div class="full-indicator">Full</div>
+                                    {/if}
+                                </div>
+                            </div>
+                        </div>
+                    {/each}
+                </div>
             {/if}
         </div>
-
-        {#if feedbackCreate}
-            <p>{feedbackCreate}</p>
-        {/if}
-    </Container>
-    <div class="waiting-container">
-    <div class="top-bar">
-        <h2 class="waiting-title">Public Lobby</h2>
-        <div class="input-container">
-        <input
-            type="text"
-            placeholder="Search by cipher, username, or 'ranked'"
-            bind:value={search}
-            oninput={debouncedFetch}
-        />
-        </div>
-    </div>
-
-    {#if lobbies.length === 0}
-        <p style="color: white;" in:fade={{ duration: 200, delay: 200 }} out:fade={{ duration: 200 }}>No matching lobbies found.</p>
-    {:else}
-        <div class="player-list" in:fade={{ duration: 200, delay: 200 }} out:fade={{ duration: 200 }}>
-            {#each lobbies as lobby (lobby.id)}
-                <div class="player-card" transition:fade>
-                    <div class="player-info-wrapper">
-                        <div class="player-left-group">
-                            <div class="player-name">{lobby.cipherType}</div>
-                            <div class="player-elo">
-                                {lobby.mode === 'ranked' ? 'Ranked' : 'Casual'}
-                            </div>
-                            <div class="player-elo">
-                                {lobby.playerCount} Player{lobby.playerCount > 1 ? 's' : ''} ({lobby.usernames.join(', ')})
-                            </div>
-                        </div>
-                        <div class="button-row">
-                            <a href={`/game-lobby/${lobby.id}`}>
-                                <button class="copy-box">Join</button>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            {/each}
-        </div>
-    {/if}
     </div>
 {/if}
 
@@ -204,7 +279,7 @@
     gap: 12px;
     align-items: center;
     justify-content: center;
-    flex-wrap: wrap; /* optional: allows stacking on small screens */
+    flex-wrap: wrap;
   }
 
   .waiting-container {
@@ -222,9 +297,10 @@
     max-width: 900px;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
     align-items: center;
     margin-bottom: 2rem;
+    padding: 0 1rem;
   }
 
   .waiting-title {
@@ -235,35 +311,21 @@
   }
 
   .input-container {
+    width: 100%;
+    max-width: 800px;
     display: flex;
     align-items: center;
-    border-bottom: 1px solid rgba(218, 218, 255, 0.8);
-    transition: border-color 0.2s ease;
-    transition: border-width 0.5s ease;
-  }
-
-  input {
-    width: 500px;
-    border: none;
-    background: transparent;
-    color: white;
-    padding: 8px 0;
-    font-size: 16px;
-    outline: none;
-  }
-
-  input::placeholder {
-    color: rgba(235, 219, 255, 0.538);
-  }
-
-  .input-container:focus-within {
-    border-width: 5px;
-    border-color: rgb(179, 179, 255);
+    justify-content: center;
   }
 
   @media (max-width: 500px) {
-    input {
-        width: 100%;
+    .top-bar {
+        padding: 0 0.5rem;
+        gap: 1rem;
+    }
+
+    .input-container {
+        padding: 0 0.5rem;
     }
   }
 
@@ -288,9 +350,16 @@
     transition: transform 0.2s ease, background-color 0.2s ease;
   }
 
-  .player-card:hover {
+  .player-card:not(.full):hover {
     background-color: #684cff;
     transform: translateY(-2px);
+  }
+
+  .player-card.full {
+    background-color: #5a4499;
+    border-color: #4a3780;
+    opacity: 0.8;
+    cursor: not-allowed;
   }
 
   .player-info-wrapper {
@@ -318,6 +387,10 @@
     color: #ddd;
   }
 
+  .player-elo.full-text {
+    color: #ff9494;
+  }
+
   .button-row {
     display: flex;
     align-items: center;
@@ -340,6 +413,15 @@
     transform: scale(1.03);
   }
 
+  .full-indicator {
+    background-color: #ff6b6b;
+    color: white;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    opacity: 0.9;
+  }
+
   @media (max-width: 600px) {
     .player-info-wrapper {
       flex-direction: column;
@@ -353,6 +435,55 @@
 
     .top-bar {
       align-items: stretch;
+    }
+  }
+
+  .player-card.in-game {
+    background: linear-gradient(135deg, #6a11cb88, #2575fc88);
+    border: 2px solid #8855ff;
+    box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
+    animation: pulse 2s ease-in-out infinite;
+    transform-origin: center;
+  }
+
+  .player-card.in-game:hover {
+    background: linear-gradient(135deg, #6a11cbcc, #2575fccc);
+    transform: translateY(-2px) scale(1.02);
+    animation: none;
+    box-shadow: 0 8px 30px rgba(106, 17, 203, 0.6);
+    border-color: #aa77ff;
+  }
+
+  .player-card.in-game .player-name {
+    color: white;
+    font-weight: 700;
+  }
+
+  .copy-box.rejoin {
+    background: #8855ff;
+    color: white;
+    font-weight: 600;
+    border: none;
+    padding: 0.6rem 1.2rem;
+  }
+
+  .copy-box.rejoin:hover {
+    background: #9966ff;
+    transform: scale(1.05);
+  }
+
+  @keyframes pulse {
+    0% {
+        box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
+        border-color: #8855ff;
+    }
+    50% {
+        box-shadow: 0 8px 30px rgba(106, 17, 203, 0.6);
+        border-color: #aa77ff;
+    }
+    100% {
+        box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
+        border-color: #8855ff;
     }
   }
 </style>

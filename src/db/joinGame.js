@@ -46,8 +46,8 @@ export async function joinGame(roomCode, userGameId, { userGame = null, game = n
 		}
 
 		// Room full
-		if (game.users.length >= 2) {
-			return { success: false, message: 'Game is full' };
+		if (game.users.length >= game.playerLimit) {
+			return { success: false, message: 'Game has reached its player limit' };
 		}
 
 		game.users.push(userGame._id);

@@ -314,7 +314,7 @@
           {/if}
           <div class="player-info-wrapper">
             <div class="player-left-group">
-              <ProfilePicture profilePicture={player.profilePicture} size={40} />
+              <ProfilePicture profilePicture={player.profilePicture} size={40} useColorRing={player.username == data.username} preserveSize={true}/>
               <div class="player-name" style={(player.connected ? "color: #ffffff;" : "color: #ff7d7d;") + (player.username === data.username ? " font-weight: 700;" : "font-weight: 200;")}>
                 {player.username + (!player.connected ? " (DISCONNECTED)" : "") + (player.host ? " (HOST)" : "")}
               </div>
@@ -336,7 +336,7 @@
   </div>
 {:else if gameState === "started" && cipherRetrieved}
   <div transition:fade>
-    <ProgressDisplay players={historicalPlayers} progressMap={progressMap} />
+    <ProgressDisplay username={data.username} players={historicalPlayers} progressMap={progressMap} />
 
     <Cipher
       quote={cipherData.quote.encodedText}
@@ -363,6 +363,7 @@
       onRematch={requestRematch}
       onLeaveGame={leaveGame}
       rematchVoters={rematchVoters}
+      username={data.username}
     />
   {/if}
 {:else}
@@ -524,18 +525,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: -2rem;
+    margin-right: -4rem;
     opacity: 0;
     transform: translateX(-2rem);
     position: relative;
-    transition:
-    opacity 0.25s ease,
-    transform 0.25s ease;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    cursor: pointer;
+    padding: 1.5rem;
+    z-index: 1;
   }
 
   .player-card:hover .kick-left-wrapper {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateX(-1rem);
   }
 
   .kick-left-icon {
@@ -543,6 +545,10 @@
     color: #ff3c3c;
     cursor: pointer;
     user-select: none;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
   }
 
   .kick-left-icon:hover {

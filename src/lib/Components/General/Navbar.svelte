@@ -1,187 +1,465 @@
 <script>
     import {login} from "$lib/Components/General/Info.svelte.js";
+    import { goto, preloadData } from "$app/navigation";
 
     let isMenuOpen = $state(false);
+    let isMenuClosing = $state(false);
     let {authenticated, verified} = $props();
 
     function toggleMenu() {
-      isMenuOpen = !isMenuOpen;
+        if (isMenuOpen) {
+            isMenuClosing = true;
+            setTimeout(() => {
+                isMenuOpen = false;
+                isMenuClosing = false;
+            }, 200);
+        } else {
+            isMenuOpen = true;
+        }
     }
 
     function updateStorage(newVal) {
         sessionStorage.setItem('login', JSON.stringify(newVal));
         login.val = newVal;
     }
+
+    // Add preload functions for each route
+    async function preloadRoute(path) {
+        try {
+            await preloadData(path);
+        } catch (error) {
+            console.error('Error preloading:', error);
+        }
+    }
+
+    async function navigate(path) {
+        isMenuOpen = false;
+        try {
+            await goto(path, {
+                invalidateAll: true
+            });
+        } catch (error) {
+            console.error('Navigation error:', error);
+        }
+    }
 </script>
 
 <nav>
-    <div class="logo unselectable" onclick={() => {updateStorage(true); window.location.href="/";}} onkeydown={() => {}} tabindex=-1 role="button">CipherArena</div>
-    <div class={"menu-icon unselectable"} onclick={toggleMenu} onkeydown={() => {}} tabindex=-1 role="button">
-      ☰
-    </div>
-    <div class="links {isMenuOpen ? 'open' : ''}">
-      {#if !authenticated}
-        <a href="/singleplayer" class="unselectable">Singleplayer</a>
-        <a href="/" onclick={() => {updateStorage(true)}} class="unselectable">Login</a>
-        <a href="/" onclick={() => {updateStorage(false)}} class="unselectable main">Sign up</a>
-      {:else}
-        {#if verified=="false"}
-            <button onclick={() => {window.location.href = '/resend-verification'}} onkeydown={() => {}} class="unselectable main">Verify Account</button>
-        {/if}
-        <a href="/home" class="unselectable">Home</a>
-        <a href="/singleplayer" class="unselectable">Singleplayer</a>
-        <a href="/private-lobby" class="unselectable">Private Lobby</a>
-        <a href="/public-lobby" class="unselectable">Public Lobby</a>
-        <form action="/logout" method="POST">
-            <button class="unselectable">Logout</button>
-        </form>
-      {/if}
+    <div class="nav-container">
+        <div class="nav-left">
+            <div class="logo"
+                onclick={() => navigate('/')}
+                onmouseenter={() => preloadRoute('/')}
+                onkeydown={() => {}}
+                tabindex=-1
+                role="button">
+                <img
+                    src="/logo.png"
+                    alt="CipherArena"
+                    class="logo-img"
+                    width="32"
+                    height="32"
+                    loading="eager"
+                    decoding="sync"
+                />
+                <div class="logo-tooltip">CipherArena</div>
+            </div>
+            {#if authenticated}
+                <div class="nav-links desktop-only">
+                    <button class="nav-link"
+                        onclick={() => navigate('/home')}
+                        onmouseenter={() => preloadRoute('/home')}>Home</button>
+                    <button class="nav-link"
+                        onclick={() => navigate('/singleplayer')}
+                        onmouseenter={() => preloadRoute('/singleplayer')}>Play Solo</button>
+                    <button class="nav-link"
+                        onclick={() => navigate('/private-lobby')}
+                        onmouseenter={() => preloadRoute('/private-lobby')}>Private</button>
+                    <button class="nav-link"
+                        onclick={() => navigate('/public-lobby')}
+                        onmouseenter={() => preloadRoute('/public-lobby')}>Public</button>
+                </div>
+            {/if}
+        </div>
+
+        <div class="menu-icon" onclick={toggleMenu} onkeydown={() => {}} tabindex=-1 role="button">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <div class="nav-right {isMenuOpen ? 'open' : ''} {isMenuClosing ? 'closing' : ''}">
+            {#if !authenticated}
+                <button class="nav-link" onclick={() => navigate('/singleplayer')}>Try it out</button>
+                <div class="auth-buttons">
+                    <button class="nav-link login" onclick={() => {updateStorage(true); navigate('/')}}>Login</button>
+                    <button class="nav-link signup" onclick={() => {updateStorage(false); navigate('/')}}>Sign up</button>
+                </div>
+            {:else}
+                {#if authenticated}
+                    <div class="mobile-nav-links">
+                        <button class="nav-link"
+                            onclick={() => navigate('/home')}
+                            onmouseenter={() => preloadRoute('/home')}>Home</button>
+                        <button class="nav-link"
+                            onclick={() => navigate('/singleplayer')}
+                            onmouseenter={() => preloadRoute('/singleplayer')}>Play Solo</button>
+                        <button class="nav-link"
+                            onclick={() => navigate('/private-lobby')}
+                            onmouseenter={() => preloadRoute('/private-lobby')}>Private</button>
+                        <button class="nav-link"
+                            onclick={() => navigate('/public-lobby')}
+                            onmouseenter={() => preloadRoute('/public-lobby')}>Public</button>
+                    </div>
+                {/if}
+                {#if verified=="false"}
+                    <button onclick={() => navigate('/resend-verification')} class="verify-btn">Verify Account</button>
+                {/if}
+                <form action="/logout" method="POST">
+                    <button class="nav-link logout">Logout</button>
+                </form>
+            {/if}
+        </div>
     </div>
 </nav>
 
 <style>
-    .unselectable {
-        -moz-user-select: -moz-none;
-        -khtml-user-select: none;
-        -webkit-user-select: none;
-
-        -ms-user-select: none;
-        user-select: none;
-    }
     nav {
-        z-index: 5;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        padding: 0.5rem 0;
+        transform: translateZ(0);
+        will-change: transform;
+        height: 60px;
+        contain: layout size;
+    }
+
+    .nav-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1rem 2rem;
-        background: linear-gradient(135deg, #6a11cb, #2575fc); /* Gradient complementing container */
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8); /* Deeper shadow for contrast */
+        height: 100%;
+        contain: layout style;
+    }
+
+    .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        height: 100%;
     }
 
     .logo {
-        font-size: 1.8rem;
-        font-weight: bold;
-        color: #ffffff;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6); /* Subtle text shadow */
-        margin-right: 10px;
+        position: relative;
+        cursor: pointer;
+        padding: 1.25rem;
+        border-radius: 6px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 32px;
+        width: 32px;
+        contain: strict;
+        background: transparent;
     }
 
-    .links {
-        z-index: 10;
+    .logo:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .logo-img {
+        display: block;
+        height: 32px;
+        width: 32px;
+        object-fit: contain;
+        filter: brightness(1.1);
+        transition: all 0.2s;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+    }
+
+    .logo:hover .logo-img {
+        filter: brightness(1.2);
+    }
+
+    .logo-tooltip {
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.2s;
+        white-space: nowrap;
+        margin-top: 0.5rem;
+    }
+
+    .logo:hover .logo-tooltip {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 0.5rem;
+        height: 100%;
+        align-items: center;
+    }
+
+    .nav-link {
+        color: white !important;
+        text-decoration: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: background-color 0.2s ease-out;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        contain: content;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    .nav-link:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        height: 100%;
+    }
+
+    .auth-buttons {
         display: flex;
         gap: 0.5rem;
     }
 
-    .links a {
-        text-decoration: none;
-        color: #ffffff; /* White text for links */
-        font-size: 1rem;
-        font-weight: bold;
-        padding: 0.5rem 1rem;
-        border-radius: 5px;
-        transition: background 0.3s ease, color 0.3s ease;
-        text-align: center;
+    .login {
+        border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
-    .links button {
-        text-decoration: none;
-        color: #ffffff; /* White text for links */
-        font-size: 1rem;
-        font-weight: bold;
-        padding: 0.5rem 1rem;
-        border-radius: 5px;
-        border: 0px;
-        transition: background 0.3s ease, color 0.3s ease;
-        text-align: center;
+    .signup {
+        background: white;
+        color: #6a11cb !important;
+        font-weight: 600;
     }
 
-    .links button:active {
-        scale: 97%;
+    .verify-btn {
+        background: white;
+        color: #6a11cb !important;
+        border: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s ease-out;
     }
 
-    .main {
-        background: rgba(228, 236, 255, 0.49) !important;
-        color: #243f84 !important;
-    }
-
-    .main:hover {
-        background: rgba(251, 252, 255, 0.568) !important;
-        color: #3156b2 !important;
-    }
-
-    .links a:hover {
-        background: rgba(255, 255, 255, 0.2); /* Soft hover highlight */
-        color: #c2d3ff; /* Slightly lighter text on hover */
-    }
-
-    .links a:active {
-        scale: 97%;
-    }
-
-    form {
-        margin: 0;
-        padding: 0;
-    }
-
-    .links form button {
-        text-decoration: none;
-        color: #ffffff;
-        background-color: transparent;
-        border-color: transparent;
-        font-size: 1rem;
-        font-weight: bold;
-        padding: 0.5rem 1rem;
-        border-radius: 5px;
-        border-width: 0px;
-        transition: background 0.3s ease, color 0.3s ease;
-    }
-
-    .links form button:hover {
-        background: rgba(255, 255, 255, 0.2); /* Soft hover highlight */
-        color: #c2d3ff; /* Slightly lighter text on hover */
-    }
-
-    .links form button:active {
-        scale: 97%;
+    .logout {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
     .menu-icon {
         display: none;
-        font-size: 1.8rem;
+        flex-direction: column;
+        gap: 4px;
         cursor: pointer;
-        color: #ffffff;
-        border-radius: 5px;
-        padding: 3px;
+        padding: 0.5rem;
     }
 
-    .menu-icon:hover {
-        background: rgba(255, 255, 255, 0.2); /* Soft hover highlight */
-        color: #c2d3ff; /* Slightly lighter text on hover */
+    .menu-icon span {
+        display: block;
+        width: 24px;
+        height: 2px;
+        background: white;
+        transition: all 0.3s;
     }
 
-    .menu-icon:active {
-        scale: 97%;
+    .desktop-only {
+        display: flex;
+    }
+
+    .mobile-nav-links {
+        display: none;
     }
 
     @media (max-width: 850px) {
-        .links {
+        .desktop-only {
             display: none;
-            flex-direction: column;
-            position: absolute;
-            top: 60px;
-            right: 10px;
-            background: linear-gradient(135deg, #2d33a7, #1a23c7a0); /* Match navbar */
-            padding: 1rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
-        }
-
-        .links.open {
-            display: flex;
         }
 
         .menu-icon {
-            display: block;
+            display: flex;
+        }
+
+        .nav-right {
+            display: none;
+            position: fixed;
+            top: 60px;
+            right: 1rem;
+            background: linear-gradient(135deg, #2575fc77, #6b11cb77);
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            flex-direction: column;
+            align-items: stretch;
+            min-width: 200px;
+            max-width: calc(100vw - 2rem);
+            gap: 0.5rem;
+            transform: translateZ(0);
+            will-change: transform, opacity;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            height: auto;
+            overflow: hidden;
+            contain: content;
+        }
+
+        .nav-right.open {
+            display: flex;
+            animation: slideIn 0.2s ease-out forwards;
+        }
+
+        .nav-right.closing {
+            display: flex;
+            animation: slideOut 0.2s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+
+        .mobile-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .mobile-nav-links .nav-link {
+            width: 100%;
+            text-align: center;
+            padding: 0.8rem 1rem;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .mobile-nav-links .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .auth-buttons {
+            flex-direction: column;
+            width: 100%;
+            align-items: stretch;
+            gap: 0.5rem;
+        }
+
+        .auth-buttons .nav-link,
+        .logout,
+        .verify-btn {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            margin: 0;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link.login {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-link.login:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .nav-link.signup,
+        .verify-btn {
+            background: white;
+            color: #6a11cb !important;
+        }
+
+        .nav-link.signup:hover,
+        .verify-btn:hover {
+            background: #f0f0f0;
+            transform: translateY(-1px);
+        }
+
+        .logout {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logout:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        form {
+            width: 100%;
+            margin: 0;
         }
     }
-  </style>
+
+    @media (max-width: 380px) {
+        .nav-right {
+            right: 0.5rem;
+            left: 0.5rem;
+            width: auto;
+            min-width: unset;
+            max-width: unset;
+        }
+    }
+</style>

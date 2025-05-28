@@ -22,6 +22,13 @@ const GameSchema = new mongoose.Schema({
             default: 'Decode'
         }
     },
+    playerLimit: {
+        type: Number,
+        min: 2,
+        max: 6,
+        default: 2,
+        required: true
+    },
     autoFocus: {
         type: Boolean,
         default: false
@@ -51,7 +58,12 @@ const GameSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'UserGame'
         }],
-        validate: [arrayLimit, 'Games are limited to 2 players.']
+        validate: {
+            validator: function(val) {
+                return val.length <= this.playerLimit;
+            },
+            message: 'Game has reached its player limit.'
+        }
     },
     metadata: {
         initialUserIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'UserGame' }],
@@ -87,9 +99,5 @@ const GameSchema = new mongoose.Schema({
         default: null
     }
 }, { collection: 'games' });
-
-function arrayLimit(val) {
-    return val.length <= 2;
-}
 
 export const Game = mongoose.models.Game || mongoose.model("Game", GameSchema);

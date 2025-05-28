@@ -1,6 +1,6 @@
 <script>
   import ProfilePicture from "../General/ProfilePicture.svelte";
-  let {players = [], progressMap = {}} = $props();
+  let {username, players = [], progressMap = {}} = $props();
 
   function getProgressColor(progress) {
     if (progress >= 80) return '#4caf50'; // green
@@ -11,9 +11,9 @@
 </script>
 
 <div class="progress-display-wrapper">
-  {#each players as player (player.username)}
+  {#each players.slice().sort((a, b) => (a.username === username ? -1 : b.username === username ? 1 : 0)) as player (player.username)}
     <div class="progress-player-card {player.connected === false ? 'disconnected' : ''}">
-      <ProfilePicture profilePicture={player.profilePicture} size={40} />
+      <ProfilePicture profilePicture={player.profilePicture} size={40} useColorRing={player.username==username} preserveSize={true}/>
       <div class="progress-info">
         <div class="progress-username">
           {player.username}

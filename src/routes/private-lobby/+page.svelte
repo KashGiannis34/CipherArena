@@ -6,7 +6,7 @@
     import { broadcastTabEvent } from "$lib/util/crossTabEvents";
     import LoadingOverlay from "$lib/Components/General/LoadingOverlay.svelte";
 
-    let options = $state({'AutoFocus':true});
+    let options = $state({'AutoFocus':true, 'playerLimit': 2});
     let cipherType = $state('Aristocrat');
     let cipherOption = $state('Random');
     let cipherOptionObj = {'K':'Random'};
@@ -35,8 +35,12 @@
         cipherType = type;
     }
 
-    function onOptionChange(option) {
-        options[option] = !options[option];
+    function onOptionChange(option, value) {
+        if (value) {
+            options[option] = value;
+        } else {
+            options[option] = !options[option];
+        }
     }
 
     async function createGame() {
@@ -46,7 +50,7 @@
             feedbackCreate = '';
             const response = await fetch('/api/create-game', {
                 method: 'POST',
-                body: JSON.stringify({cipherType, cipherOptionObj, AutoFocus: options.AutoFocus, mode:"private"}),
+                body: JSON.stringify({cipherType, cipherOptionObj, options, mode:"private"}),
                 headers: {
                     'content-type': 'application/json'
                 }
@@ -136,7 +140,7 @@
 {/if}
 
 <Container style="gap: 15px; display: flex; justify-content: center; align-items: center;">
-    <h3>New Private Game</h3>
+    <h2>New Private Game</h2>
     <Options options={options} onOptionChange={onOptionChange} cipherType={cipherType} multiplayer={true} cipherOption={cipherOption} changeCipherOption={changeCipherOption} changeType={changeType}/>
     <div class="button-row">
         <button class="button" onclick={createGame}>Create Game</button>
@@ -152,7 +156,7 @@
 </Container>
 
 <Container style="gap: 15px; display: flex; flex-direction:column; justify-content: center; align-items: center;">
-    <h3>Join Game</h3>
+    <h2>Join Game</h2>
     <div class="join">
         <h4>Enter Code:</h4>
         <label class="input-container">

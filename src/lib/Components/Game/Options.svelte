@@ -6,6 +6,9 @@
     let {options, onOptionChange, cipherType, multiplayer=false, cipherOption, changeCipherOption, changeType} = $props();
 
     let isOptions = $derived(cipherTypes[cipherType]['options'].length != 0);
+    let playerLimit = $derived(options.playerLimit || 2);
+
+    const playerLimits = [2, 3, 4, 5, 6];
 
     function mainTitle() {
         return (multiplayer) ? cipherType : "Ciphers";
@@ -17,6 +20,10 @@
 
     function handleClick(event) {
         onOptionChange(event.srcElement.id);
+    }
+
+    function handlePlayerLimit(value) {
+        onOptionChange('playerLimit', value);
     }
 
     function linkParam(name, option) {
@@ -64,11 +71,33 @@
             {/each}
         </Cipherdown>
     </ButtonGroup>
-    {#each Object.entries(options) as [option, value]}
-        <div class="option checkbox">
-            <input type="checkbox" id={option} checked={options[option]} name={option} onchange={handleClick}/>
-            <label for={option}>{option}</label>
+
+    {#if multiplayer}
+        <div class="player-limit-container">
+            <label for="player-limit-group">Players:</label>
+            <ButtonGroup id="player-limit-group" role="group" aria-label="Player limit selection">
+                {#each playerLimits as limit}
+                    <Button
+                        color="none"
+                        class="limit-btn {playerLimit === limit ? 'active' : ''}"
+                        onclick={() => handlePlayerLimit(limit)}
+                        role="radio"
+                        aria-checked={playerLimit === limit}
+                    >
+                        {limit}
+                    </Button>
+                {/each}
+            </ButtonGroup>
         </div>
+    {/if}
+
+    {#each Object.entries(options) as [option, value]}
+        {#if option !== 'playerLimit'}
+            <div class="option checkbox">
+                <input type="checkbox" id={option} checked={options[option]} name={option} onchange={handleClick}/>
+                <label for={option}>{option}</label>
+            </div>
+        {/if}
     {/each}
 </div>
 
@@ -77,16 +106,26 @@
         flex-wrap: wrap;
         display: flex;
         flex-direction: row;
-        justify-content: center; /* Center items within the container */
-        align-items: center; /* Align items horizontally */
+        justify-content: center;
+        align-items: center;
         margin: 10px;
         gap: 2.5vw;
     }
 
     .option {
         display: flex;
-        align-items: center; /* Align items horizontally */
+        align-items: center;
+    }
 
+    .player-limit-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .player-limit-container label {
+        color: rgb(235, 254, 255);
+        font-weight: 500;
     }
 
     label {

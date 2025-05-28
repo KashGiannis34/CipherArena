@@ -3,7 +3,7 @@
   import { Tween } from "svelte/motion";
   import ProfilePicture from "../General/ProfilePicture.svelte";
   import { onMount, tick } from "svelte";
-  let { won, players, ranked, eloChanges, onRematch, onLeaveGame, winnerUsername, rematchVoters = [] } = $props();
+  let { username, won, players, ranked, eloChanges, onRematch, onLeaveGame, winnerUsername, rematchVoters = [] } = $props();
 
   let animatedElos = $state({});
   let animatedChanges = $state({});
@@ -11,38 +11,38 @@
   let changed = $state(false);
 
   onMount(async () => {
-  if (!ranked) return;
+    if (!ranked) return;
 
-  await tick();
-  await new Promise(r => setTimeout(r, 600));
+    await tick();
+    await new Promise(r => setTimeout(r, 1000));
 
-  for (const player of players) {
-    const delta = eloChanges[player.username] ?? 0;
-    const start = player.elo - delta;
+    for (const player of players) {
+      const delta = eloChanges[player.username] ?? 0;
+      const start = player.elo - delta;
 
-    let eloTween = new Tween(start, {
+      let eloTween = new Tween(start, {
+          duration: 2000,
+          easing: cubicOut
+        });
+
+      let deltaTween = new Tween(delta, {
         duration: 2000,
         easing: cubicOut
       });
 
-    let deltaTween = new Tween(delta, {
-      duration: 2000,
-      easing: cubicOut
-    });
+      eloTween.target = player.elo;
+      deltaTween.target = 0;
 
-    eloTween.target = player.elo;
-    deltaTween.target = 0;
+      animatedElos[player.username] = eloTween;
+      animatedChanges[player.username] = deltaTween;
+      isAnimating[player.username] = true;
 
-    animatedElos[player.username] = eloTween;
-    animatedChanges[player.username] = deltaTween;
-    isAnimating[player.username] = true;
-
-    setTimeout(() => {
-      isAnimating[player.username] = false;
-    }, 2000);
-  }
-  changed = true;
-});
+      setTimeout(() => {
+        isAnimating[player.username] = false;
+      }, 2000);
+    }
+    changed = true;
+  });
 
   function zoom(node, { duration = 300 }) {
     return {
@@ -52,7 +52,6 @@
         return `
           transform: translate(-50%, 0%) scale(${eased});
           opacity: ${eased};
-          top: 30%;
           left: 50%;
         `;
       }
@@ -80,11 +79,16 @@
     </h2>
 
     <div class="player-section">
-        {#each players as player (player.username)}
+        {#each players.slice().sort((a, b) => (a.username === username ? -1 : b.username === username ? 1 : 0)) as player (player.username)}
             <div class="player-card
             {player.username === winnerUsername ? 'won-player' : 'lost-player'}
             {player.connected === false ? 'disconnected' : ''}">
-                <ProfilePicture profilePicture={player.profilePicture}/>
+                <ProfilePicture
+                  profilePicture={player.profilePicture}
+                  size={48}
+                  useColorRing={player.username === username}
+                  preserveSize={true}
+                />
                 <div class="player-info">
                     <div class="player-name">
                         {player.username}
@@ -143,7 +147,7 @@
 
     .modal-wrapper {
     position: fixed;
-    top: 30%;
+    top: 20vh;
     left: 50%;
     transform: translate(-50%, 0);
     z-index: 20;
