@@ -1,5 +1,5 @@
 <script>
-    import { onMount } from 'svelte';
+    import { onDestroy, onMount } from 'svelte';
     import { io } from 'socket.io-client';
     import LoadingOverlay from '$lib/Components/General/LoadingOverlay.svelte';
 
@@ -27,7 +27,6 @@
     let mounted = $state(false);
     let limit = 50;
     let socket;
-    let fetchInterval;
 
     function debounce(func, delay) {
         let timeout;
@@ -39,7 +38,6 @@
 
     async function fetchLobbies({ searchValue = '' } = {}) {
         if (!socket?.connected) {
-            console.log('Socket not connected, skipping fetch');
             return;
         }
 
@@ -90,7 +88,6 @@
     const debouncedFetchLobbies = debounce(fetchLobbies, 500);
 
     function changeCipherOption(option, optionObj) {
-        console.log("optionObj", $state.snapshot(optionObj));
         let nOption;
         if (option[0] === "!") {
             nOption = option.substring(1);
@@ -175,10 +172,8 @@
         });
 
         socket.on('connect', () => {
-            console.log('Connected to lobby');
             disconnected = false;
             socket.once('ready', async () => {
-                console.log('Socket ready, fetching lobbies');
                 await fetchLobbies();
                 loading = false;
             });
@@ -198,8 +193,11 @@
 
         socket.on('disconnect', (reason) => {
             disconnected = true;
-            console.log("Disconnected:", reason);
         });
+    });
+
+    onDestroy(() => {
+        socket?.disconnect();
     });
 </script>
 
@@ -243,9 +241,29 @@
                         <div class="player-card {lobby.playerCount >= lobby.playerLimit ? 'full' : ''} {lobby.usernames.includes(data.username) ? 'in-game' : ''}" transition:fade>
                             <div class="player-info-wrapper">
                                 <div class="player-left-group">
-                                    <div class="player-name">{lobby.cipherType}</div>
+                                    <div class="player-name">
+                                        {#if lobby.K !== '-1'}
+                                            {lobby.cipherType}: {lobby.K === 'Random' ? 'Random' : `K${lobby.K}`}
+                                        {:else}
+                                            {lobby.cipherType}: {lobby.Solve}
+                                        {/if}
+                                    </div>
                                     <div class="player-elo">
                                         {lobby.mode === 'ranked' ? 'Ranked' : 'Casual'}
+                                        {#if lobby?.autoFocus}
+                                            <div
+                                                class="autofocus-indicator"
+                                                onmouseenter={() => {lobby.showTooltip = true}}
+                                                onmouseleave={() => {lobby.showTooltip = false}}
+                                                onkeydown={() => {}}
+                                                tabindex="0"
+                                                role="button"
+                                            >⌨️
+                                                {#if lobby.showTooltip}
+                                                    <div class="tooltip" transition:fade>Auto Focus</div>
+                                                {/if}
+                                            </div>
+                                        {/if}
                                     </div>
                                     <div class="player-elo {lobby.playerCount >= lobby.playerLimit ? 'full-text' : ''}">
                                         {lobby.playerCount}/{lobby.playerLimit} Player{lobby.playerLimit > 1 ? 's' : ''} ({lobby.usernames.join(', ')})
@@ -485,5 +503,50 @@
         box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
         border-color: #8855ff;
     }
+  }
+
+  .autofocus-indicator {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 3px;
+    font-size: 0.9em;
+    cursor: help;
+    opacity: 0.9;
+    transition: opacity 0.2s ease;
+    position: relative;
+    transform: translateY(-3px);
+    line-height: 1;
+    vertical-align: middle;
+  }
+
+  .autofocus-indicator:hover {
+    opacity: 1;
+  }
+
+  .tooltip {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(6px);
+    background-color: #333;
+    color: #fff;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    white-space: nowrap;
+    z-index: 10;
+    opacity: 0.95;
+    pointer-events: none;
+  }
+
+  .tooltip::after {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent #333 transparent;
   }
 </style>

@@ -198,7 +198,6 @@
         } else {
             solved = answer.solved;
         }
-        console.log("Cipher solved: ", solved);
         isChecking = false;
 
         if (solved) {

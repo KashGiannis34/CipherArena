@@ -8,13 +8,18 @@ import { ObjectId } from 'mongodb';
  * @param {ObjectId} userId
  * @returns {Promise<{ success: boolean, message: string, gameId?: string }>}
  */
-export async function leaveGameCleanup(userId) {
+export async function leaveGameCleanup(userId, gameId) {
     const user = await UserGame.findById(new ObjectId(userId));
     if (!user) return { success: false, message: 'User not found' };
 
-    const gameId = user.currentGame;
-    user.currentGame = null;
-    await user.save();
+    if (!gameId) {
+        gameId = user.currentGame;
+    }
+
+    if (user.currentGame == gameId || !gameId) {
+        user.currentGame = null;
+        await user.save();
+    }
 
     const game = await Game.findById(gameId).populate('users').exec();
     if (!game) return { success: true, message: 'Game not found', gameId: gameId };

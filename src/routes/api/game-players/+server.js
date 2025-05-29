@@ -12,7 +12,7 @@ export async function GET({ url }) {
     username: u.username,
     connected: u.currentSocketId ? true : false,
     host: game.host.equals(u._id),
-    elo: u.eloRatings?.[game.params.cipherType] ?? 1200,
+    elo: u.stats?.[game.params.cipherType]?.elo ?? 1200,
     profilePicture: u.profilePicture
   }));
 

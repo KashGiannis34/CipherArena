@@ -26,7 +26,6 @@
         <Container --minWidth=none --maxWidth=min(80vw,600px)>
             <form method="POST" action={"?/"+(login ? "login":"register")} onsubmit={() => {authenticating=true; feedback={};}} use:enhance={async () => {
                 return({result}) => {
-                    console.log(result);
                     if (result.data?.redirect) {
                         window.location.href = result.data.redirect;
                     }

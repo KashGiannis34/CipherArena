@@ -19,7 +19,6 @@
 
 
     function changeCipherOption(option, optionObj) {
-        console.log("optionObj", $state.snapshot(optionObj));
         let nOption;
         if (option[0] === "!") {
             nOption = option.substring(1);
@@ -108,7 +107,7 @@
 
     async function leaveGame() {
         authenticating = true;
-        const res = await fetch('/api/leave-current-game', { method: 'POST' });
+        const res = await fetch('/api/leave-current-game', { method: 'POST'});
         const data = await res.json();
 
         if (data.success) {

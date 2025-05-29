@@ -35,9 +35,7 @@
     async function navigate(path) {
         isMenuOpen = false;
         try {
-            await goto(path, {
-                invalidateAll: true
-            });
+            await goto(path);
         } catch (error) {
             console.error('Navigation error:', error);
         }
@@ -70,8 +68,11 @@
                         onclick={() => navigate('/home')}
                         onmouseenter={() => preloadRoute('/home')}>Home</button>
                     <button class="nav-link"
-                        onclick={() => navigate('/singleplayer')}
-                        onmouseenter={() => preloadRoute('/singleplayer')}>Play Solo</button>
+                    onclick={() => navigate('/leaderboard')}
+                    onmouseenter={() => preloadRoute('/leaderboard')}>Leaderboard</button>
+                    <button class="nav-link"
+                        onclick={() => navigate('/singleplayer/Aristocrat')}
+                        onmouseenter={() => preloadRoute('/singleplayer/Aristocrat')}>Play Solo</button>
                     <button class="nav-link"
                         onclick={() => navigate('/private-lobby')}
                         onmouseenter={() => preloadRoute('/private-lobby')}>Private</button>
@@ -90,28 +91,34 @@
 
         <div class="nav-right {isMenuOpen ? 'open' : ''} {isMenuClosing ? 'closing' : ''}">
             {#if !authenticated}
-                <button class="nav-link" onclick={() => navigate('/singleplayer')}>Try it out</button>
+                <button class="nav-link"
+                onclick={() => navigate('/singleplayer/Aristocrat')}
+                onmouseenter={() => preloadRoute('/singleplayer/Aristocrat')}>Try it out</button>
+                <button class="nav-link"
+                onclick={() => navigate('/leaderboard')}
+                onmouseenter={() => preloadRoute('/leaderboard')}>Leaderboard</button>
                 <div class="auth-buttons">
                     <button class="nav-link login" onclick={() => {updateStorage(true); navigate('/')}}>Login</button>
                     <button class="nav-link signup" onclick={() => {updateStorage(false); navigate('/')}}>Sign up</button>
                 </div>
             {:else}
-                {#if authenticated}
-                    <div class="mobile-nav-links">
-                        <button class="nav-link"
-                            onclick={() => navigate('/home')}
-                            onmouseenter={() => preloadRoute('/home')}>Home</button>
-                        <button class="nav-link"
-                            onclick={() => navigate('/singleplayer')}
-                            onmouseenter={() => preloadRoute('/singleplayer')}>Play Solo</button>
-                        <button class="nav-link"
-                            onclick={() => navigate('/private-lobby')}
-                            onmouseenter={() => preloadRoute('/private-lobby')}>Private</button>
-                        <button class="nav-link"
-                            onclick={() => navigate('/public-lobby')}
-                            onmouseenter={() => preloadRoute('/public-lobby')}>Public</button>
-                    </div>
-                {/if}
+                <div class="mobile-nav-links">
+                    <button class="nav-link"
+                        onclick={() => navigate('/home')}
+                        onmouseenter={() => preloadRoute('/home')}>Home</button>
+                    <button class="nav-link"
+                    onclick={() => navigate('/leaderboard')}
+                    onmouseenter={() => preloadRoute('/leaderboard')}>Leaderboard</button>
+                    <button class="nav-link"
+                        onclick={() => navigate('/singleplayer')}
+                        onmouseenter={() => preloadRoute('/singleplayer')}>Play Solo</button>
+                    <button class="nav-link"
+                        onclick={() => navigate('/private-lobby')}
+                        onmouseenter={() => preloadRoute('/private-lobby')}>Private</button>
+                    <button class="nav-link"
+                        onclick={() => navigate('/public-lobby')}
+                        onmouseenter={() => preloadRoute('/public-lobby')}>Public</button>
+                </div>
                 {#if verified=="false"}
                     <button onclick={() => navigate('/resend-verification')} class="verify-btn">Verify Account</button>
                 {/if}

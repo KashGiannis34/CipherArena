@@ -471,6 +471,8 @@
             onblur={handleBlur}
             placeholder={tokens.length === 0 && !activeKey ? "Search" : ""}
             class="search-input"
+            name="searchQuery"
+            id="searchQuery"
         />
         <button
             class="search-button"

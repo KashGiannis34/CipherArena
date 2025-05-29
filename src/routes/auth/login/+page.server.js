@@ -1,6 +1,6 @@
 import { UserAuth } from '$db/models/UserAuth';
 import {login_user} from '$db/auth/login';
-import { fail } from '@sveltejs/kit';
+import { fail, error } from '@sveltejs/kit';
 import { Cookies } from "@sveltejs/kit";
 import { cookie_options } from '$db/dbUtil';
 import { joinGame } from '$db/joinGame';
@@ -13,8 +13,13 @@ export const actions = {
         const email = data.get("email");
         const password = data.get("password");
 
-        const user_data = await login_user(email, password);
+        if (!email || !password) {
+            throw error(400, {
+                message: 'Email and password are required'
+            });
+        }
 
+        const user_data = await login_user(email, password);
 
         if ("error" in user_data) {
             return fail(400, { email, error: user_data.error });

@@ -10,13 +10,10 @@
 
   onMount(() => {
     if (useColorRing) {
-      console.log('Using color ring for profile picture');
       if (imgRef?.complete) {
         extractColor();
-        console.log('Image already loaded, extracting color...');
       } else {
         imgRef.addEventListener('load', extractColor);
-        console.log('Waiting for image to load for color extraction...');
       }
     }
   });
@@ -26,7 +23,6 @@
       const colorThief = new ColorThief();
       const [r, g, b] = colorThief.getColor(imgRef);
       ringColor = `rgb(${r}, ${g}, ${b})`;
-      console.log('Extracted color:', ringColor);
 
       if (onColorExtract) {
         onColorExtract(ringColor);

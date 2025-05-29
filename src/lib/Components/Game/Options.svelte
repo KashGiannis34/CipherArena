@@ -74,7 +74,7 @@
 
     {#if multiplayer}
         <div class="player-limit-container">
-            <label for="player-limit-group">Players:</label>
+            <span class="player-limit-label">Players:</span>
             <ButtonGroup id="player-limit-group" role="group" aria-label="Player limit selection">
                 {#each playerLimits as limit}
                     <Button
@@ -123,7 +123,7 @@
         gap: 12px;
     }
 
-    .player-limit-container label {
+    .player-limit-label {
         color: rgb(235, 254, 255);
         font-weight: 500;
     }

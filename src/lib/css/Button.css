@@ -16,6 +16,11 @@
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
+
+  flex: 1 1 auto;
+  padding: 0.5rem 1rem;
+  min-width: 100px;
+  text-align: center;
 }
 
 .button:hover {
@@ -27,4 +32,11 @@
 
 .button:active {
   transform: scale(0.95);
+}
+
+@media (max-width: 600px) {
+  .button {
+      padding: 0.4rem 0.75rem;
+      font-size: 0.85rem;
+  }
 }

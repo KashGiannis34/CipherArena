@@ -62,18 +62,20 @@ export default async function injectSocketIO(server) {
 
         if (!socket.handshake.auth.joinLobby) {
             try {
-                user = await UserGame.findById(new ObjectId(userId));
-                oldSocketId = activeSockets.get(userId);
-
-                if (oldSocketId && oldSocketId !== socketId) {
-                    const oldSocket = io.sockets.sockets.get(oldSocketId);
-                    if (oldSocket) {
-                        oldSocket.disconnectReason = 'replaced';
-                        oldSocket.disconnect();
+                const existingSocketId = activeSockets.get(userId);
+                console.log("Existing socket ID: ", existingSocketId);
+                console.log("Socket ID: ", socketId);
+                if (existingSocketId && existingSocketId !== socketId) {
+                    console.log("Replacing socket: ", existingSocketId);
+                    const existingSocket = io.sockets.sockets.get(existingSocketId);
+                    if (existingSocket) {
+                        existingSocket.disconnectReason = 'replaced';
+                        existingSocket.disconnect();
                     }
                 }
-
                 activeSockets.set(userId, socketId);
+
+                user = await UserGame.findById(new ObjectId(userId));
 
                 if (user.currentGame) {
                     game = await Game.findById(user.currentGame).populate('users').exec();
@@ -125,6 +127,7 @@ export default async function injectSocketIO(server) {
         if (socket.currentRoom != 'public-lobby') {
             socket.on('join-room', async () => {
                 try {
+                    console.log("Socket joining room: ", socketId);
                     const hostUG = await UserGame.findById(game.host);
                     if (!hostUG || !hostUG.currentSocketId) {
                         // Reassign host to the reconnecting user
@@ -170,7 +173,7 @@ export default async function injectSocketIO(server) {
                     if (targetUser._id.equals(user._id)) socket.emit('error', 'You cannot kick yourself');
 
                     // 1. Run DB cleanup
-                    await leaveGameCleanup(targetUser._id);
+                    await leaveGameCleanup(targetUser._id, game._id);
                     console.log("CLeanup done");
 
                     // 2. Kick active socket
@@ -241,7 +244,7 @@ export default async function injectSocketIO(server) {
                     const formatted = initialPlayers.map(u => ({
                         username: u.username,
                         profilePicture: u.profilePicture,
-                        elo: u.eloRatings?.[game.params.cipherType] ?? 1200,
+                        elo: u.stats?.[game.params.cipherType]?.elo ?? 1200,
                         host: game.host.equals(u._id),
                         connected: !!u.currentSocketId,
                         left: !u.currentSocketId
@@ -266,7 +269,7 @@ export default async function injectSocketIO(server) {
                     let eloChanges = null;
                     if (game.mode === 'ranked' && game.metadata?.initialUserIds?.length > 1) {
                         const initialPlayers = await UserGame.find({ _id: { $in: game.metadata.initialUserIds } });
-                        eloChanges = await wsUtil.updateEloAfterWin(initialPlayers, user, cipherType);
+                        eloChanges = await wsUtil.updateStatsAfterWin(initialPlayers, user, cipherType);
                     }
 
                     const initialPlayers = await UserGame.find({ _id: { $in: game.metadata.initialUserIds } });
@@ -276,7 +279,7 @@ export default async function injectSocketIO(server) {
                         players: initialPlayers.map(u => ({
                             username: u.username,
                             host: game.host.equals(u._id),
-                            elo: u.eloRatings?.[game.params.cipherType] ?? 1200,
+                            elo: u.stats?.[game.params.cipherType]?.elo ?? 1200,
                             profilePicture: u.profilePicture
                         })),
                         eloChanges: eloChanges ?? {}
@@ -361,12 +364,8 @@ export default async function injectSocketIO(server) {
 
             socket.on('disconnect', async () => {
                 try {
-                    const active = activeSockets.get(userId);
                     let updateLobby = true;
                     let latestGame = null;
-                    if (active === socketId) {
-                        activeSockets.delete(userId);
-                    }
 
                     if (socket.disconnectReason) {
                         console.log(socket.disconnectReason+": "+socketId);
@@ -374,6 +373,7 @@ export default async function injectSocketIO(server) {
 
                     const latestUser = await UserGame.findById(userId);
                     if (latestUser?.currentSocketId === socketId && socket.disconnectReason != "replaced") {
+                        activeSockets.delete(userId);
                         latestUser.currentSocketId = null;
                         await latestUser.save();
                     }
@@ -400,6 +400,10 @@ export default async function injectSocketIO(server) {
                                 console.log(`🔁 Host transferred to ${newHost._id.toString()}`);
                             }
                         }
+                    }
+
+                    if (socket.disconnectReason == "replaced") {
+                        updateLobby = false;
                     }
 
                     if (socket.currentRoom) {
@@ -432,7 +436,7 @@ export default async function injectSocketIO(server) {
 
                     // Fetch games + populate usernames and ensure we have all necessary fields
                     let games = await Game.find(query)
-                        .select('_id params.cipherType mode state createdAt users playerLimit')
+                        .select('_id params mode state createdAt users playerLimit autoFocus')
                         .sort({ createdAt: -1 }) // Newest first
                         .limit(effectiveLimit)
                         .populate({ path: 'users', select: 'username' })
@@ -501,7 +505,10 @@ export default async function injectSocketIO(server) {
                         createdAt: g.createdAt,
                         playerCount: g.users.length,
                         playerLimit: g.playerLimit,
-                        usernames: g.users.map(u => u.username)
+                        usernames: g.users.map(u => u.username),
+                        autoFocus: g.autoFocus,
+                        K: g.params.K,
+                        Solve: g.params.Solve
                     }));
 
                     cb(formatted);
@@ -515,7 +522,7 @@ export default async function injectSocketIO(server) {
                 try {
                     const active = lobbySockets.get(userId);
                     if (active === socketId) {
-                        activeSockets.delete(userId);
+                        lobbySockets.delete(userId);
                     }
 
                     if (socket.disconnectReason) {

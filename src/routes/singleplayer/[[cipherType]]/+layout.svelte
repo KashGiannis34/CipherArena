@@ -1,5 +1,5 @@
 <script>
-    import "$lib/css/Cipherdown.css";
+    import "$lib/css/StrapBtn.css";
     import "$lib/css/Button.css";
 
     let {data, children} = $props();

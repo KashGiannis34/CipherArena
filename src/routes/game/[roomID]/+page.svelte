@@ -74,7 +74,7 @@
   async function leaveGame() {
       gameState = "leavingGame";
       try {
-          const res = await fetch('/api/leave-current-game', { method: 'POST' });
+          const res = await fetch('/api/leave-current-game', { method: 'POST', body: JSON.stringify({ gameId: data.roomID }) });
       } catch (e) {
           console.error('Leave failed:', e);
       } finally {
@@ -148,6 +148,11 @@
 
     socket.on('connect', () => {
       console.log('You are connected with id', socket.id);
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('Connection error:', error);
+      gameState = "disconnected";
     });
 
     socket.on('ready', () => {
@@ -249,7 +254,8 @@
   });
 
   onDestroy(() => {
-      stopListening?.();
+    socket?.disconnect();
+    stopListening?.();
   });
 </script>
 
@@ -278,6 +284,42 @@
             {tooltipText || 'Copy link to share'}
           </div>
         {/if}
+      </div>
+
+      <div class="game-settings-pill">
+        <div class="game-title">
+          {#if data.K !== '-1'}
+            {data.cipherType}: {data.K === 'Random' ? 'Random' : `K${data.K}`}
+          {:else}
+            {data.cipherType}: {data.Solve}
+          {/if}
+        </div>
+        <div class="game-subtext">
+          {data.mode === 'ranked' ? 'Ranked' : 'Casual'}
+          {#if data.autoFocus}
+            <div
+                class="autofocus-indicator"
+                onmouseenter={() => {
+                    tooltipVisible = 'autofocus';
+                    tooltipText = 'Auto Focus';
+                }}
+                onmouseleave={() => tooltipVisible = null}
+                onkeydown={() => {}}
+                tabindex="0"
+                role="button"
+            >
+              ⌨️
+              {#if tooltipVisible === 'autofocus'}
+                  <div class="tooltip" transition:fade>
+                      {tooltipText}
+                  </div>
+              {/if}
+            </div>
+          {/if}
+        </div>
+        <div class="game-subtext">
+          Players: {players.length}/{data.playerLimit}
+        </div>
       </div>
 
       <div
@@ -511,6 +553,10 @@
       text-align: center;
     }
 
+    .game-settings-pill {
+      width: 100%;
+    }
+
     .tooltip {
       font-size: 0.75rem;
     }
@@ -617,5 +663,57 @@
     font-size: 0.9em;
     color: white;
     white-space: nowrap;
+  }
+
+  .game-settings-pill {
+    background-color: #7555ff;
+    border: 1px solid #703cff;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    text-align: center;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 1rem;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+  }
+
+  .game-title {
+    font-size: clamp(0.9rem, 1vw + 0.3rem, 1.1rem);
+    margin-bottom: 0.25rem;
+  }
+
+  .game-subtext {
+    font-size: 0.9rem;
+    color: #eee;
+  }
+
+  .top-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .autofocus-indicator {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 3px;
+    font-size: 0.9em;
+    cursor: help;
+    opacity: 0.9;
+    transition: opacity 0.2s ease;
+    position: relative;
+    transform: translateY(-3px);
+    line-height: 1;
+    vertical-align: middle;
+  }
+
+  .autofocus-indicator:hover {
+    opacity: 1;
   }
 </style>

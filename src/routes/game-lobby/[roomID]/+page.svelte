@@ -10,19 +10,6 @@
 	let feedback = $state('');
 	let authenticating = $state(false);
 
-	onMount(() => {
-        if (data.action === 'redirect') {
-			if (data.reason) {
-				console.log(data.reason);
-				alert(data.reason);
-			}
-
-			if (data.destination) {
-				window.location.href = data.destination;
-			}
-        }
-	});
-
 	function handleLoginRedirect() {
 		goto(`/auth/login?roomId=${data.gameId}`);
 	}
@@ -33,7 +20,7 @@
 
 	async function leaveGame() {
 		authenticating = true;
-        const res = await fetch('/api/leave-current-game', { method: 'POST' });
+        const res = await fetch('/api/leave-current-game', { method: 'POST', body: JSON.stringify({ gameId: data.gameId }) });
         const data = await res.json();
 
         if (data.success) {

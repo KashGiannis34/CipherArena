@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { redirect, error } from '@sveltejs/kit';
 import { authenticate } from '$db/auth/authenticate';
 import { UserGame } from '$db/models/UserGame';
 import { ObjectId } from 'mongodb';
@@ -10,16 +10,28 @@ export async function load({cookies}) {
     // console.log('Loading game with roomID:', params['roomID']);
     const auth = authenticate(cookies.get("auth-token"));
     if (!auth) {
-       return redirect(303, '/');
+        throw error(401, {
+            message: 'You must be logged in to access the lobby'
+        });
     }
 
     try {
         const user = await UserGame.findById(new ObjectId(auth.id));
-        if (!user) return redirect(303, '/');
+        if (!user) {
+            throw error(401, {
+                message: 'Invalid user account'
+            });
+        }
 
         return {authToken: cookies.get("auth-token")};
-    } catch (error) {
-        console.error('Error loading lobby:', error);
-        return redirect(303, '/');
+    } catch (e) {
+        // If it's already a SvelteKit error, rethrow it
+        if (e?.status) throw e;
+
+        // Otherwise, wrap it in a 500 error
+        console.error('Error loading lobby:', e);
+        throw error(500, {
+            message: 'An unexpected error occurred while loading the lobby'
+        });
     }
 }
