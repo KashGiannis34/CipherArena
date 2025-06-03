@@ -1,11 +1,30 @@
 import { register_user } from '$db/auth/register';
 import { UserAuth } from '$db/models/UserAuth';
 import {login_user} from '$db/auth/login';
-import { fail } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
 import { Cookies } from "@sveltejs/kit";
 import { cookie_options } from '$db/dbUtil';
 import { createVerificationToken } from '$db/auth/verify';
 import { sendVerificationEmail } from '$db/auth/mailer';
+
+import { redirect } from '@sveltejs/kit';
+import { authenticate } from '$db/auth/authenticate.js';
+
+export function load({ params, cookies }) {
+    const auth = authenticate(cookies.get('auth-token'));
+    if (auth) {
+        throw redirect(303, '/profile');
+    }
+
+    const mode = params.mode;
+
+    if (mode !== 'login' && mode !== 'register') {
+        throw error(404, 'Invalid account mode');
+    }
+
+    return { login: mode === 'login' };
+}
+
 
 /** @satisfies {import('./$types').Actions} */
 export const actions = {
@@ -35,7 +54,7 @@ export const actions = {
             cookies.set("username", user.username, cookie_options);
             cookies.set("verified", user.verified, cookie_options);
 
-            return {redirect: "/home"};
+            return {redirect: "/profile"};
 		}
     },
     register: async ({request}) => {

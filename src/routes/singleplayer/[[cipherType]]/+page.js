@@ -2,7 +2,7 @@
 import { redirect } from '@sveltejs/kit';
 import { cipherTypes } from '$lib/util/CipherTypes';
 
-export async function load({ params }) {
+export function load({ params }) {
     const cipherType = params['cipherType'] && cipherTypes[params['cipherType']] ? params['cipherType'] : 'Redirect';
     if (cipherType === 'Redirect') {
         throw redirect(303, '/singleplayer/Aristocrat');

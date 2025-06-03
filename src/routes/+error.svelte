@@ -1,5 +1,6 @@
 <!-- Custom error page for the entire application -->
 <script>
+    import "$lib/css/Button.css";
     import { page } from '$app/stores';
 </script>
 

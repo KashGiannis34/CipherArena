@@ -244,7 +244,7 @@ export default async function injectSocketIO(server) {
                     const formatted = initialPlayers.map(u => ({
                         username: u.username,
                         profilePicture: u.profilePicture,
-                        elo: u.stats?.[game.params.cipherType]?.elo ?? 1200,
+                        elo: u.stats?.[game.params.cipherType]?.elo ?? 1000,
                         host: game.host.equals(u._id),
                         connected: !!u.currentSocketId,
                         left: !u.currentSocketId
@@ -279,7 +279,7 @@ export default async function injectSocketIO(server) {
                         players: initialPlayers.map(u => ({
                             username: u.username,
                             host: game.host.equals(u._id),
-                            elo: u.stats?.[game.params.cipherType]?.elo ?? 1200,
+                            elo: u.stats?.[game.params.cipherType]?.elo ?? 1000,
                             profilePicture: u.profilePicture
                         })),
                         eloChanges: eloChanges ?? {}

@@ -5,6 +5,7 @@
     let {data, children} = $props();
 </script>
 
+<div id="modals"></div>
 <div class="app-container">
     <div class="navbar-space">
         <Navbar authenticated={!!data.username && !!data.email} verified={data.verified}/>
@@ -27,7 +28,7 @@
         top: 0;
         left: 0;
         right: 0;
-        z-index: 1000;
+        z-index: 100;
     }
 
     .main-container {

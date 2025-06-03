@@ -7,7 +7,7 @@ import { cipherTypes } from '../src/lib/util/CipherTypes.js';
 export function calculateElo(players, winnerUsername, cipherType, K = 32, eloFloor = 100) {
   const eloChanges = {};
 
-  const getElo = (player) => player.stats?.[cipherType]?.elo ?? 1200;
+  const getElo = (player) => player.stats?.[cipherType]?.elo ?? 1000;
 
   const ratings = players.map(p => {
     const elo = getElo(p);
@@ -42,7 +42,7 @@ function updateTotalStats(user) {
     const s = user.stats?.[type];
     if (!s) continue;
 
-    const elo = s.elo ?? 1200;
+    const elo = s.elo ?? 1000;
     const wins = s.wins ?? 0;
     const losses = s.losses ?? 0;
 
@@ -52,10 +52,10 @@ function updateTotalStats(user) {
     count++;
   }
 
-  const avgElo = count > 0 ? Math.round(totalElo / count) : 1200;
+  const avgElo = count > 0 ? Math.round(totalElo / count) : 1000;
 
   user.stats.All = {
-    elo: Number.isFinite(avgElo) ? avgElo : 1200,
+    elo: Number.isFinite(avgElo) ? avgElo : 1000,
     wins: Number.isFinite(totalWins) ? totalWins : 0,
     losses: Number.isFinite(totalLosses) ? totalLosses : 0
   };
@@ -86,7 +86,7 @@ export async function updateStatsAfterWin(gameUsers, winner, cipherType) {
     }
 
     if (!player.stats[cipherType]) {
-      player.stats[cipherType] = { elo: 1200, wins: 0, losses: 0 };
+      player.stats[cipherType] = { elo: 1000, wins: 0, losses: 0 };
     }
 
     const currentElo = player.stats[cipherType].elo;

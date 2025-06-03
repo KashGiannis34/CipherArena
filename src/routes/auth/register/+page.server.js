@@ -5,6 +5,14 @@ import { Cookies } from "@sveltejs/kit";
 import { redirect } from '@sveltejs/kit';
 import { createVerificationToken } from '$db/auth/verify';
 import { sendVerificationEmail } from '$db/auth/mailer';
+import { authenticate } from '$db/auth/authenticate.js';
+
+export function load({ cookies }) {
+  const auth = authenticate(cookies.get('auth-token'));
+  if (auth) {
+    throw redirect(303, '/profile');
+  }
+}
 
 /** @satisfies {import('./$types').Actions} */
 export const actions = {

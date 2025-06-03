@@ -1,5 +1,4 @@
 <script>
-    import {login} from "$lib/Components/General/Info.svelte.js";
     import { goto, preloadData } from "$app/navigation";
 
     let isMenuOpen = $state(false);
@@ -16,11 +15,6 @@
         } else {
             isMenuOpen = true;
         }
-    }
-
-    function updateStorage(newVal) {
-        sessionStorage.setItem('login', JSON.stringify(newVal));
-        login.val = newVal;
     }
 
     // Add preload functions for each route
@@ -65,8 +59,8 @@
             {#if authenticated}
                 <div class="nav-links desktop-only">
                     <button class="nav-link"
-                        onclick={() => navigate('/home')}
-                        onmouseenter={() => preloadRoute('/home')}>Home</button>
+                        onclick={() => navigate('/profile')}
+                        onmouseenter={() => preloadRoute('/profile')}>Home</button>
                     <button class="nav-link"
                     onclick={() => navigate('/leaderboard')}
                     onmouseenter={() => preloadRoute('/leaderboard')}>Leaderboard</button>
@@ -98,14 +92,16 @@
                 onclick={() => navigate('/leaderboard')}
                 onmouseenter={() => preloadRoute('/leaderboard')}>Leaderboard</button>
                 <div class="auth-buttons">
-                    <button class="nav-link login" onclick={() => {updateStorage(true); navigate('/')}}>Login</button>
-                    <button class="nav-link signup" onclick={() => {updateStorage(false); navigate('/')}}>Sign up</button>
+                    <button class="nav-link login" onclick={() => navigate('/account/login')}
+                        onmouseenter={() => preloadRoute('/account/login')}>Login</button>
+                    <button class="nav-link signup" onclick={() => navigate('/account/register')}
+                        onmouseenter={() => preloadRoute('/account/register')}>Sign up</button>
                 </div>
             {:else}
                 <div class="mobile-nav-links">
                     <button class="nav-link"
-                        onclick={() => navigate('/home')}
-                        onmouseenter={() => preloadRoute('/home')}>Home</button>
+                        onclick={() => navigate('/profile')}
+                        onmouseenter={() => preloadRoute('/profile')}>Home</button>
                     <button class="nav-link"
                     onclick={() => navigate('/leaderboard')}
                     onmouseenter={() => preloadRoute('/leaderboard')}>Leaderboard</button>

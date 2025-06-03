@@ -2,7 +2,7 @@ import { cipherTypes } from "../../lib/util/CipherTypes.js";
 import mongoose from "mongoose";
 
 const CipherStatsSchema = new mongoose.Schema({
-	elo: { type: Number, default: 1200 },
+	elo: { type: Number, default: 1000 },
 	wins: { type: Number, default: 0 },
 	losses: { type: Number, default: 0 }
 }, { _id: false });
@@ -30,7 +30,7 @@ const UserGameSchema = new mongoose.Schema({
 			const initial = {};
 			for (const type of Object.keys(cipherTypes)) {
 				initial[type] = {
-					elo: 1200,
+					elo: 1000,
 					wins: 0,
 					losses: 0
 				};
@@ -46,6 +46,10 @@ const UserGameSchema = new mongoose.Schema({
     type: String,
     ref: 'Game',
     default: null
+  },
+  profilePicture: {
+    type: String,
+    default: 'default'
   }
 }, { collection: 'users_game' });
 

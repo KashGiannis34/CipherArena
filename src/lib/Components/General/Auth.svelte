@@ -4,7 +4,7 @@
     import { enhance } from "$app/forms";
     import { redirect } from "@sveltejs/kit";
 
-    let {login, roomId, toggleLogin, toggleAvailable} = $props();
+    let {login, roomId, toggleAvailable} = $props();
     let authenticating = $state(false);
     let username = $state("");
     let email = $state("");
@@ -39,9 +39,8 @@
                             password = "";
                             confirmPass = "";
                             if (toggleAvailable) {
-                                login = true;
+                                window.location.href = "/account/login";
                             }
-                            sessionStorage.setItem('login', JSON.stringify(true));
                         }
                         if ('error' in feedback && feedback['error'].includes('MongoServerError: E11000')) {
                             if (feedback['error'].includes('email')) {
@@ -105,12 +104,12 @@
                     {#if !login}
                         <div>
                             <p>Already have an account?</p>
-                            <a href="/" onclick={() => {toggleLogin(); clearInfo();}} onkeydown={() => {}} tabindex=0>Login</a>
+                            <a href="/account/login">Login</a>
                         </div>
                     {:else}
                         <div>
                             <p>Don't have an account?</p>
-                            <a href="/" onclick={() => {toggleLogin(); clearInfo();}} onkeydown={() => {}} tabindex=0>Register</a>
+                            <a href="/account/register">Register</a>
                         </div>
                     {/if}
                 </div>

@@ -2,18 +2,23 @@
   import { onMount } from "svelte";
   import ColorThief from 'colorthief';
 
-  let {profilePicture = '/uploads/default-avatar.png', size = 40, useColorRing = false, preserveSize = false, onColorExtract = null} = $props();
-  let loading = $state(false);
-  let src = $state(profilePicture);
+  let {profilePicture = 'default', size = 40, useColorRing = false, preserveSize = false, onColorExtract = null} = $props();
+  let loading = $state(true);
+  let src = $state("");
   let ringColor = $state('#bcaeff');
   let imgRef;
 
-  onMount(() => {
-    if (useColorRing) {
-      if (imgRef?.complete) {
-        extractColor();
+  onMount(async () => {
+    if (profilePicture == 'default') {
+      src = '/default-avatar.png';
+    } else {
+      const res = await fetch(`/api/profile/retrieve/${profilePicture}`);
+      const data = await res.json();
+      if (data.success) {
+        src = data.url;
       } else {
-        imgRef.addEventListener('load', extractColor);
+        src = '/default-avatar.png';
+        console.error(data.error);
       }
     }
   });
@@ -34,10 +39,13 @@
 
   function handleLoad() {
     loading = false;
+    if (useColorRing) {
+      extractColor();
+    }
   }
 
   function handleError() {
-    profilePicture = '/uploads/default-avatar.png';
+    profilePicture = '/default-avatar.png';
   }
 </script>
 
@@ -48,6 +56,7 @@
     height: {size}px;
     --ring-color: {ringColor};
     --size: {size}px;
+    --ring-thickness: 2px;
   "
 >
   {#if loading}
@@ -71,8 +80,6 @@
       border-radius: 50%;
       padding: 4px; /* Reserve space for the ring */
       box-sizing: content-box; /* Ensures padding adds outside the avatar */
-      --ring-thickness: 2px;
-      --ring-color: #bcaeff;
       background-color: transparent;
       position: relative;
     }
@@ -128,7 +135,7 @@
   }
 
   @keyframes soft-ring {
-    0%, 100% { transform: scale(0.93); opacity: 0.35; }
-    50%     { transform: scale(1); opacity: 0.2; }
+    0%, 100% { transform: scale(0.95); opacity: 0.5; }
+    50%     { transform: scale(1); opacity: 0.3; }
   }
 </style>

@@ -2,7 +2,7 @@
 	import { cipherTypes } from '../../util/CipherTypes.js';
     import { onMount } from 'svelte';
 
-    const defaultStats = () => ({ elo: 1200, wins: 0, losses: 0 });
+    const defaultStats = () => ({ elo: 1000, wins: 0, losses: 0 });
 
     let leaderboardData = $state([]);
 
@@ -98,7 +98,11 @@
                             {:else} {i + 1}
                             {/if}
                         </td>
-                        <td>{user.username}</td>
+                        <td>
+							<a href={`/profile/${user.username}`} target="_blank" rel="noopener noreferrer" class="profile-link">
+								{user.username}
+							</a>
+						</td>
                         <td>{formatMetric(user)}</td>
                     </tr>
                 {/each}
@@ -108,6 +112,18 @@
 </div>
 
 <style>
+	.profile-link {
+		color: #fff;
+		text-decoration: none;
+		font-weight: 500;
+		transition: color 0.2s;
+	}
+
+	.profile-link:hover {
+		color: #4e9aff;
+		text-decoration: underline;
+	}
+
 	.leaderboard-container {
 		padding: 1.5rem;
 		margin: 0 auto;

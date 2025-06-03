@@ -8,7 +8,7 @@
   <Container>
     <h1>{data['sent'] ? "Success!" : "Error"}</h1>
     <p>{data['message']}</p>
-    <a class="button" href="/home" onclick={() => {window.location.href="/home";}}>Go to Home</a>
+    <a class="button" href="/profile" onclick={() => {window.location.href="/profile";}}>Go to Home</a>
   </Container>
 
   <style>

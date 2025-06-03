@@ -5,6 +5,16 @@ import { Cookies } from "@sveltejs/kit";
 import { cookie_options } from '$db/dbUtil';
 import { joinGame } from '$db/joinGame';
 
+import { redirect } from '@sveltejs/kit';
+import { authenticate } from '$db/auth/authenticate.js';
+
+export function load({ cookies }) {
+  const auth = authenticate(cookies.get('auth-token'));
+  if (auth) {
+    throw redirect(303, '/profile');
+  }
+}
+
 /** @satisfies {import('./$types').Actions} */
 export const actions = {
     login: async ({cookies, request}) => {
@@ -12,12 +22,6 @@ export const actions = {
 
         const email = data.get("email");
         const password = data.get("password");
-
-        if (!email || !password) {
-            throw error(400, {
-                message: 'Email and password are required'
-            });
-        }
 
         const user_data = await login_user(email, password);
 
