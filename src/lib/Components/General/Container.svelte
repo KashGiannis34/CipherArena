@@ -10,21 +10,27 @@
     .Container {
         position: relative;
         display: flex;
-        flex-direction: var(--flexDir, column); /* Stack items vertically */
+        flex-direction: var(--flexDir, column);
         flex-wrap: wrap;
-        justify-content: center; /* Center items within the container */
-        align-items: center; /* Align items horizontally */
+        justify-content: center;
+        align-items: center;
         min-width: var(--minWidth, 90vw);
         max-width: var(--maxWidth, 90vw);
         padding: 20px;
-        border-radius: 15px;
-        background: var(--bgcolor, linear-gradient(135deg, #6a11cb, #2575fc));
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        border-radius: 20px;
+
+        background: rgba(255, 255, 255, 0.05);
+        box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.37),
+            inset 0 0 0.5px rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+
         color: var(--color, #ffffff);
         text-align: left;
         padding-top: var(--paddingTop, 20px);
         margin-bottom: 24px;
-
         flex-shrink: 0;
     }
 </style>

@@ -1,63 +1,76 @@
 <script>
-    import { badgeCriteria } from '$lib/util/badgeConfig.js';
-    import { portal } from '$lib/util/portal.js';
-    import { cubicOut } from 'svelte/easing';
+  import { goto } from '$app/navigation';
+  import { badgeCriteria } from '$lib/util/badgeConfig.js';
+  import { portal } from '$lib/util/portal.js';
+  import { cubicOut } from 'svelte/easing';
 
-    let { unlockedBadgeIds = [] } = $props();
+  let { unlockedBadgeIds = [] } = $props();
+  unlockedBadgeIds = [];
 
-    let selectedBadge = $state(null);
+  let selectedBadge = $state(null);
 
-    function selectBadge(badge) {
-      selectedBadge = badge;
-    }
+  function selectBadge(badge) {
+    selectedBadge = badge;
+  }
 
-    function selectBadgeFromId(badgeId) {
-      selectedBadge = badgeCriteria.find(badge => badge.id === badgeId);
-    }
+  function selectBadgeFromId(badgeId) {
+    selectedBadge = badgeCriteria.find(badge => badge.id === badgeId);
+  }
 
-    function returnToGrid() {
-      selectedBadge = null;
-    }
+  function returnToGrid() {
+    selectedBadge = null;
+  }
 
-    function zoom(node, { duration = 300 }) {
-        return {
-            duration,
-            css: t => {
-                const eased = cubicOut(t); // Apply easing
-                return `
-                    transform: scale(${eased});
-                `;
-            }
-        };
-    }
+  function zoom(node, { duration = 300 }) {
+      return {
+          duration,
+          css: t => {
+              const eased = cubicOut(t); // Apply easing
+              return `
+                  transform: scale(${eased});
+              `;
+          }
+      };
+  }
 
-    function fade(node, {duration = 400}) {
-        return {
-            duration,
-            css: t => {
-                const eased = cubicOut(t); // Apply easing
-                return `
-                    opacity: ${eased};
-                `;
-            }
-        };
-    }
+  function fade(node, {duration = 400}) {
+      return {
+          duration,
+          css: t => {
+              const eased = cubicOut(t); // Apply easing
+              return `
+                  opacity: ${eased};
+              `;
+          }
+      };
+  }
 
-    let showModal = $state(false);
-    const unlockedSet = new Set(unlockedBadgeIds);
+  let showModal = $state(false);
+  const unlockedSet = new Set(unlockedBadgeIds);
 
-    function toggleModal() {
-      showModal = !showModal;
-    }
+  function toggleModal() {
+    showModal = !showModal;
+  }
   </script>
 
 <!-- Compact Badge Stack -->
 <div class="badge-display-wrapper" onclick={() => {toggleModal(); returnToGrid();}} role="button" tabindex="0" onkeydown={() => {}}>
     <h3>Achievements</h3>
     <div class="badge-stack">
-        {#each unlockedBadgeIds as badgeId}
-          <img class="badge-preview" src={`/badges/${badgeId}.png`} alt={badgeId} onclick={(e) => {e.stopPropagation(); selectBadgeFromId(badgeId); toggleModal()}} role="button" tabindex="0" onkeydown={() => {}}/>
-        {/each}
+        {#if unlockedBadgeIds.length > 0}
+          {#each unlockedBadgeIds as badgeId}
+            <img class="badge-preview" src={`/badges/${badgeId}.png`} alt={badgeId} onclick={(e) => {e.stopPropagation(); selectBadgeFromId(badgeId); toggleModal()}} role="button" tabindex="0" onkeydown={() => {}}/>
+          {/each}
+        {:else}
+          <div class="no-badges">
+            <div class="badge-placeholder">
+              <img src="/locked-badge-icon.png" alt="No Badges Yet" />
+            </div>
+            <h4>No badges… yet.</h4>
+            <p>Solve cryptograms, rank up, and uncover secrets to earn your first badge! Stats count only in public ranked matches.</p>
+            <button class="start-btn" onclick={(e) => {e.stopPropagation(); goto('/public-lobby')}}>Get Started</button>
+          </div>
+        {/if}
     </div>
 </div>
 
@@ -281,6 +294,72 @@
 .tooltip-wrapper:hover .tooltip {
   visibility: visible;
   opacity: 1;
+}
+
+.no-badges {
+  text-align: center;
+  padding: 2rem;
+  color: #eee;
+  max-width: 400px;
+  margin: 0 auto;
+  animation: fadeInScale 0.5s ease-out;
+}
+
+.badge-placeholder {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 1rem;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+.badge-placeholder img {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+}
+
+.no-badges h4 {
+  font-size: 1.3rem;
+  margin-top: 1rem;
+  color: #ccc;
+}
+
+.no-badges p {
+  font-size: 0.95rem;
+  color: #aaa;
+  margin: 0.5rem 0 1rem;
+}
+
+.start-btn {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+  transition: background 0.3s ease;
+  cursor: pointer;
+}
+
+.start-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes fadeInScale {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 </style>

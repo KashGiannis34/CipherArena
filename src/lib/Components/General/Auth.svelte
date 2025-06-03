@@ -56,13 +56,13 @@
 
                 <label>
                     <i class="fas fa-envelope"></i>
-                    <input bind:value={email} name="email" type="email" placeholder="Email" autocomplete="email"/>
+                    <input bind:value={email} name="email" type="email" placeholder="Email"/>
                 </label>
 
                 {#if !login}
                     <label>
                         <i class="fas fa-user"></i>
-                        <input bind:value={username} name="username" type="username" placeholder="Username" autocomplete="username"/>
+                        <input bind:value={username} name="username" type="username" placeholder="Username"/>
                     </label>
                 {/if}
 
@@ -119,153 +119,196 @@
 {/key}
 
 <style>
-    @import "$lib/css/Button.css";
-    p {
-      text-align: center;
-    }
+  @import "$lib/css/Button.css";
 
-    form {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 15px;
-        align-items: center;
-    }
+  p {
+    text-align: center;
+  }
 
-    form,
-    .options {
-        width: min(60vw, 400px);
-        max-width: 100%;
-        margin: 0 auto;
-    }
+  form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+    align-items: center;
+    width: min(60vw, 400px);
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 30px;
+  }
 
-    h1 {
-        text-align: center;
-        font-size: 2rem;
-        font-weight: 700;
-    }
+  h1 {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 700;
+  }
 
-    form label {
-        display: flex;
-        align-items: center;
-        border-bottom: 1px solid rgba(218, 218, 255, 0.606);
-        margin: 0;
-        width: min(100%, 350px);
-        transition: 0.9 ease !important;
-    }
+  form label {
+    display: flex;
+    align-items: center;
+    width: min(100%, 350px);
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(218, 218, 255, 0.2);
+    transition: border 0.3s ease, background 0.3s ease;
+  }
 
-    form label input {
-        width: 100%;
-        border: none;
-        background: transparent !important;
-        filter: none !important;
-        color: white;
-        padding: 8px 10px;
-    }
+  form label:focus-within {
+    border-color: rgb(141, 191, 255);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 10px rgba(141, 191, 255, 0.3);
+  }
 
-    form label i {
-        margin-right: 3px;
-    }
+  form label i {
+    color: #ffffffaa;
+    margin-right: 6px;
+  }
 
-    form input::placeholder {
-        color: rgba(235, 219, 255, 0.538);
-    }
+  form label:focus-within i {
+    color: rgb(141, 191, 255);
+    font-size: larger;
+  }
 
-    form input:focus {
-        border: none;
-        outline: none;
-    }
+  input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: #ffffff;
+    transition: background-color 5000s ease-in-out 0s;
+    box-shadow: inset 0 0 20px 20px #534e8529;
+    caret-color: white !important;
+}
 
-    form label:focus-within {
-        border-color: rgb(179, 179, 255);
-    }
+  form label input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: white;
+    padding: 8px 10px;
+  }
 
-    form label:focus-within i {
-        color: rgb(179, 179, 255);
-        font-size: larger;
-    }
+  form input::placeholder {
+    color: rgba(235, 219, 255, 0.538);
+  }
 
-    .spin {
-        animation: spin 2s infinite;
-    }
+  form input:focus {
+    outline: none;
+  }
 
-    @keyframes spin {
-        from {
-            transform: rotate(0deg);
-        } to {
-            transform: rotate(360deg);
-        }
-    }
+  button.button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 10px 18px;
+    border-radius: 12px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
 
-    .options{
-        padding: 14px 0;
-        overflow: hidden;
-        font-size: 0.9rem;
-        flex-direction: column;
-        gap: 4px;
-    }
+  button.button:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
 
-    .options > p {
-        position: relative;
-        text-align: center;
-        width: fit-content;
-        margin: 0 auto;
-        padding: 8px;
-        padding-bottom: 10px;
-    }
+  button.button:active {
+    transform: scale(0.97);
+  }
 
-    .options > p::after,
-    .options > p::before {
-        position: absolute;
-        content:"";
-        top: 50%;
-        width: 100vw;
-        height: 1.5px;
-        background: white;
-    }
+  .spin {
+    animation: spin 2s infinite;
+  }
 
-    .options > p::after {
-        right: 100%;
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
     }
-
-    .options > p::before {
-        left: 100%;
+    to {
+      transform: rotate(360deg);
     }
+  }
 
-    .options div {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        justify-content: center;
-    }
+  .options {
+    padding: 14px 0;
+    overflow: hidden;
+    font-size: 0.9rem;
+    flex-direction: column;
+    gap: 4px;
+  }
 
-    .options div a {
-        position: relative;
-        text-align: center;
-        width: fit-content;
-        margin: 0;
-        padding-bottom: 16px;
+  .options > p {
+    position: relative;
+    text-align: center;
+    width: fit-content;
+    margin: 0 auto;
+    padding: 8px;
+    padding-bottom: 10px;
+  }
 
-        color: rgb(93, 239, 255);
-        cursor: pointer;
-        transition: 0.5s ease;
-        text-decoration: none;
-    }
+  .options > p::after,
+  .options > p::before {
+    position: absolute;
+    content: "";
+    top: 50%;
+    width: 100vw;
+    height: 1.5px;
+    background: white;
+  }
 
-    .options div a:hover {
-        color: rgba(68, 202, 255, 0.562);
-        cursor: pointer;
-    }
+  .options > p::after {
+    right: 100%;
+  }
 
-    .options div a:active {
-        font-size: 95%;
-    }
+  .options > p::before {
+    left: 100%;
+  }
 
-    .error {
-        color: coral;
-    }
+  .options div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+  }
 
-    .message {
-        color: aquamarine;
-    }
+  .options div a {
+    position: relative;
+    text-align: center;
+    width: fit-content;
+    margin: 0;
+    padding-bottom: 16px;
+    color: rgb(93, 239, 255);
+    cursor: pointer;
+    transition: 0.5s ease;
+    text-decoration: none;
+  }
+
+  .options div a:hover {
+    color: rgba(68, 202, 255, 0.562);
+    cursor: pointer;
+  }
+
+  .options div a:active {
+    font-size: 95%;
+  }
+
+  .error,
+  .message {
+    text-align: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    width: fit-content;
+    margin: 0 auto;
+    font-size: 0.95rem;
+  }
+
+  .error {
+    background-color: rgba(255, 100, 100, 0.15);
+    color: #ff7f7f;
+  }
+
+  .message {
+    background-color: rgba(0, 255, 200, 0.1);
+    color: aquamarine;
+  }
 </style>
