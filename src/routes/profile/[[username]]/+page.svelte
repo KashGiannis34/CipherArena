@@ -3,17 +3,26 @@
   import ProfileStats from '$lib/Components/General/ProfileStats.svelte';
   import BadgeDisplay from '$lib/Components/Game/BadgeDisplay.svelte';
   import { getUnlockedBadges } from '$lib/util/badgeConfig.js';
+  import { cipherTypes } from '$lib/util/CipherTypes.js';
+  import SolveTimeHistogram from '$lib/Components/Game/SolveTimeHistogram.svelte';
 
 
   let { data } = $props();
   let { username, profilePicture, stats, isOwnProfile } = data;
 
-  let profileStats = JSON.parse(stats);
+  let profileStats = stats ? JSON.parse(stats) : {};
   let uploadError = $state("");
   let unlockedBadgeIds = $derived(getUnlockedBadges(profileStats).map(b => b.id));
 
+  let selectedCipher = $state('All');
+  let cipherOptions = ['All', ...Object.keys(cipherTypes)];
+
   function onUploadError(error) {
     uploadError = error;
+  }
+
+  function getSolveTimes(cipher) {
+    return profileStats?.[cipher]?.solveTimes ?? [];
   }
 </script>
 
@@ -38,7 +47,7 @@
   </div>
 
   <div class="badges-wrapper animate-stats-float">
-    <BadgeDisplay {unlockedBadgeIds} />
+    <BadgeDisplay {unlockedBadgeIds} stats={profileStats} {isOwnProfile} />
   </div>
 
   <div class="divider-section animate-divider-expand">
@@ -47,6 +56,32 @@
 
   <div class="stats-wrapper animate-stats-float">
     <ProfileStats stats={profileStats} />
+  </div>
+
+  <div class="divider-section animate-divider-expand">
+    <hr class="glass-divider" />
+  </div>
+
+  <div class="solve-time-section">
+    <div class="cipher-selector">
+      {#each cipherOptions as option}
+        <button
+          class:selected={selectedCipher === option}
+          onclick={() => selectedCipher = option}
+        >
+          {option}
+        </button>
+      {/each}
+    </div>
+
+    {#if getSolveTimes(selectedCipher).length}
+      <SolveTimeHistogram
+        solveTimes={getSolveTimes(selectedCipher)}
+        cipherType={selectedCipher}
+      />
+    {:else}
+      <p class="no-data">No solve time data available for {selectedCipher}.</p>
+    {/if}
   </div>
 </section>
 
@@ -406,5 +441,37 @@
   .noise-overlay {
     opacity: 0.2;
   }
+}
+
+.solve-time-section {
+  margin-top: 2rem;
+}
+
+.cipher-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  justify-content: center;
+}
+
+.cipher-selector button {
+  padding: 0.4rem 0.8rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+}
+
+.cipher-selector button.selected {
+  background: rgba(148, 131, 255, 0.25);
+  border-color: rgba(148, 131, 255, 0.6);
+}
+
+.no-data {
+  color: #aaa;
+  font-style: italic;
+  text-align: center;
 }
 </style>

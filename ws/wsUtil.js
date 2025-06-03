@@ -34,7 +34,7 @@ export function calculateElo(players, winnerUsername, cipherType, K = 32, eloFlo
   return eloChanges;
 }
 
-function updateTotalStats(user) {
+function updateTotalStats(user, solveTime) {
   let totalElo = 0, totalWins = 0, totalLosses = 0;
   let count = 0;
 
@@ -42,23 +42,27 @@ function updateTotalStats(user) {
     const s = user.stats?.[type];
     if (!s) continue;
 
-    const elo = s.elo ?? 1000;
-    const wins = s.wins ?? 0;
-    const losses = s.losses ?? 0;
-
-    totalElo += elo;
-    totalWins += wins;
-    totalLosses += losses;
+    totalElo += s.elo ?? 1000;
+    totalWins += s.wins ?? 0;
+    totalLosses += s.losses ?? 0;
     count++;
   }
 
   const avgElo = count > 0 ? Math.round(totalElo / count) : 1000;
+  const allStats = user.stats.All ?? {};
+  allStats.elo = avgElo;
+  allStats.wins = totalWins;
+  allStats.losses = totalLosses;
 
-  user.stats.All = {
-    elo: Number.isFinite(avgElo) ? avgElo : 1000,
-    wins: Number.isFinite(totalWins) ? totalWins : 0,
-    losses: Number.isFinite(totalLosses) ? totalLosses : 0
-  };
+  if (solveTime != undefined) {
+    allStats.solveTimes ??= [];
+    allStats.solveTimes.push(solveTime);
+
+    allStats.bestSolveTime = Math.min(allStats.bestSolveTime ?? solveTime, solveTime);
+    allStats.averageSolveTime = Math.round(allStats.solveTimes.reduce((a, b) => a + b, 0) / allStats.solveTimes.length);
+  }
+
+  user.stats.All = allStats;
 }
 
 export async function checkAnswerCorrectness(ans, quoteId, cipherType, keys, solve) {
@@ -75,33 +79,35 @@ export async function checkAnswerCorrectness(ans, quoteId, cipherType, keys, sol
   return ans === ansText;
 }
 
-export async function updateStatsAfterWin(gameUsers, winner, cipherType) {
+export async function updateStatsAfterWin(gameUsers, winner, cipherType, solveTime) {
   const eloChanges = calculateElo(gameUsers, winner.username, cipherType);
 
   for (const player of gameUsers) {
     const delta = eloChanges[player.username] ?? 0;
 
-    if (!player.stats) {
-      player.stats = {};
-    }
-
+    if (!player.stats) player.stats = {};
     if (!player.stats[cipherType]) {
-      player.stats[cipherType] = { elo: 1000, wins: 0, losses: 0 };
+      player.stats[cipherType] = { elo: 1000, wins: 0, losses: 0, solveTimes: [] };
     }
 
-    const currentElo = player.stats[cipherType].elo;
-    player.stats[cipherType].elo = Math.max(currentElo + delta, 100);
+    const stats = player.stats[cipherType];
+    stats.elo = Math.max(stats.elo + delta, 100);
 
-    // Update wins/losses
     if (player.username === winner.username) {
-      player.stats[cipherType].wins += 1;
+      stats.wins += 1;
+      stats.solveTimes ??= [];
+      stats.solveTimes.push(solveTime);
+
+      stats.bestSolveTime = Math.min(stats.bestSolveTime ?? solveTime, solveTime);
+      stats.averageSolveTime = Math.round(stats.solveTimes.reduce((a, b) => a + b, 0) / stats.solveTimes.length);
+
+      updateTotalStats(player, solveTime);
     } else {
-      player.stats[cipherType].losses += 1;
+      stats.losses += 1;
+      updateTotalStats(player);
     }
 
-    updateTotalStats(player);
-
-    player.markModified('stats'); // nested path
+    player.markModified('stats');
     player.markModified('stats.All');
     await player.save();
   }

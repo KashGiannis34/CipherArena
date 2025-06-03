@@ -1,4 +1,5 @@
 <script>
+	import "$lib/css/StrapBtn.css";
 	import { goto } from '$app/navigation';
   	import LoadingOverlay from '$lib/Components/General/LoadingOverlay.svelte';
   	import { fade } from 'svelte/transition';
@@ -20,7 +21,7 @@
 
 	async function leaveGame() {
 		authenticating = true;
-        const res = await fetch('/api/leave-current-game', { method: 'POST', body: JSON.stringify({ gameId: data.gameId }) });
+        const res = await fetch('/api/leave-current-game', {method: 'POST'});
         const data = await res.json();
 
         if (data.success) {

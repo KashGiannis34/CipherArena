@@ -10,7 +10,7 @@
 	const cipherTypeOptions = ['All', ...Object.keys(cipherTypes)];
 
 	let metric = $state('elo');
-	const metricOptions = ['elo', 'wins', 'win%'];
+	const metricOptions = ['elo', 'wins', 'win%', 'avg solve time', 'best solve time'];
 
 	async function fetchLeaderboard(cipherType, metric) {
 		try {
@@ -40,9 +40,15 @@
     }
 
 	function formatMetric(user) {
-		return metric === 'win%' && typeof user.value === 'number'
-			? `${user.value.toFixed(1)}%`
-			: user.value;
+		if (metric === 'win%' && typeof user.value === 'number') {
+			return `${user.value.toFixed(1)}%`;
+		} else if (metric === 'avg solve time' || metric === 'best solve time') {
+			const minutes = Math.floor(user.value / 60);
+			const seconds = user.value % 60;
+			return `MM:SS`.replace('MM', String(minutes).padStart(2, '0')).replace('SS', String(seconds).padStart(2, '0'));
+		} else {
+			return user.value;
+		}
 	}
 
     onMount(async () => {
@@ -83,7 +89,10 @@
 					<th>
 						{#if metric === 'elo'} Elo
 						{:else if metric === 'wins'} Total Wins
-						{:else} Win %
+						{:else if metric === 'win%'} Win %
+						{:else if metric === 'avg solve time'} Avg Solve Time
+						{:else if metric === 'best solve time'} Best Solve Time
+						{:else} {metric}
 						{/if}
 					</th>
 				</tr>

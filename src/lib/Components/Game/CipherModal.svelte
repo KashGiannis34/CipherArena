@@ -3,7 +3,7 @@
   import { Tween } from "svelte/motion";
   import ProfilePicture from "../General/ProfilePicture.svelte";
   import { onMount, tick } from "svelte";
-  let { username, won, players, ranked, eloChanges, onRematch, onLeaveGame, winnerUsername, rematchVoters = [] } = $props();
+  let { username, won, players, ranked, eloChanges, onRematch, onLeaveGame, winnerUsername, rematchVoters = [], solveTime } = $props();
 
   let animatedElos = $state({});
   let animatedChanges = $state({});
@@ -69,6 +69,12 @@
       }
     };
   }
+
+  function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  }
 </script>
 
 <div class="background" in:fade out:fade></div>
@@ -77,6 +83,12 @@
     <h2 class="result-text {won ? 'win' : 'lose'}">
       {won ? 'You Won!' : 'You Lost'}
     </h2>
+
+    {#if won && solveTime > 0}
+      <div class="solve-time-display">
+        ⏱ Solve Time: <span>{formatTime(solveTime)}</span>
+      </div>
+    {/if}
 
     <div class="player-section">
         {#each players.slice().sort((a, b) => (a.username === username ? -1 : b.username === username ? 1 : 0)) as player (player.username)}
@@ -334,4 +346,28 @@
     display: flex;
     align-items: center;
     }
+
+    .solve-time-display {
+    margin-top: -0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #222;
+    background: #ffffffcc;
+    padding: 6px 12px;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    animation: fadeSlideIn 0.4s ease-out;
+  }
+
+  @keyframes fadeSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 </style>

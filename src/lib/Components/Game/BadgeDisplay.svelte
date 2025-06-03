@@ -4,8 +4,7 @@
   import { portal } from '$lib/util/portal.js';
   import { cubicOut } from 'svelte/easing';
 
-  let { unlockedBadgeIds = [] } = $props();
-  unlockedBadgeIds = [];
+  let { unlockedBadgeIds = [], stats, isOwnProfile } = $props();
 
   let selectedBadge = $state(null);
 
@@ -67,7 +66,7 @@
               <img src="/locked-badge-icon.png" alt="No Badges Yet" />
             </div>
             <h4>No badges… yet.</h4>
-            <p>Solve cryptograms, rank up, and uncover secrets to earn your first badge! Stats count only in public ranked matches.</p>
+            <p>Solve cryptograms, rank up, and uncover secrets to earn your first badge! Stats count only in public ranked matches with multiple users.</p>
             <button class="start-btn" onclick={(e) => {e.stopPropagation(); goto('/public-lobby')}}>Get Started</button>
           </div>
         {/if}
@@ -86,10 +85,15 @@
               <div class="badge-info">
                 <h3>{selectedBadge.label}</h3>
                 <p>{selectedBadge.description}</p>
+                {#if !unlockedSet.has(selectedBadge.id)}
+                  {#if selectedBadge.progress(stats)}
+                    <p class="badge-progress">Progress: {selectedBadge.progress(stats)}</p>
+                  {/if}
+                {/if}
               </div>
             </div>
           {:else}
-            <h2 class="badge-title">Your Badges</h2>
+            <h2 class="badge-title">{isOwnProfile ? "Your ": " "}Badges</h2>
             <div class="badge-grid">
               {#each badgeCriteria as badge}
                 <div class="badge-grid-item" onclick={() => selectBadge(badge)} onkeydown={() => {}} role="button" tabindex="0">
@@ -360,6 +364,13 @@
     transform: scale(1);
     opacity: 1;
   }
+}
+
+.badge-progress {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  color: #bbb;
+  font-style: italic;
 }
 
 </style>

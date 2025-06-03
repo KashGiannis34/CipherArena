@@ -102,9 +102,11 @@
       matchResult.players = matchResult.players.map(p => {
         const latest = basePlayers.get(p.username);
         const current = assignedPlayers.get(p.username);
+        console.log('p.profilePicture: ', p.profilePicture);
+        console.log('current.profilePicture: ', current?.profilePicture);
         return {
           ...p,
-          profilePicture: latest?.profilePicture ?? p.profilePicture,
+          profilePicture: p.profilePicture ?? current?.profilePicture,
           connected: current?.connected ?? false,
           left: !current // if not in `players`, they left
         };
@@ -179,7 +181,8 @@
               winner: result.winner,
               players: result.players,
               ranked: !!result.eloChanges,
-              eloChanges: result.eloChanges ?? {}
+              eloChanges: result.eloChanges ?? {},
+              solveTime: result.solveTime
             };
             resultRetrieved = true;
           }
@@ -406,6 +409,7 @@
       onLeaveGame={leaveGame}
       rematchVoters={rematchVoters}
       username={data.username}
+      solveTime={matchResult.solveTime}
     />
   {/if}
 {:else}

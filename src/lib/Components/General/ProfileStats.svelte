@@ -9,30 +9,41 @@
         return winPct.toFixed(2) + '%';
     }
 
+    function formatTime(seconds) {
+        if (seconds == null || isNaN(seconds)) return '—';
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
     const orderedStatKeys = ['All', ...Object.keys(cipherTypes)];
 </script>
 
 <div class="table-wrapper">
     <table class="leaderboard-table">
         <thead>
-        <tr>
-            <th>Cipher</th>
-            <th>Elo</th>
-            <th>Wins</th>
-            <th>Losses</th>
-            <th>Win %</th>
-        </tr>
+            <tr>
+                <th>Cipher</th>
+                <th>Elo</th>
+                <th>Wins</th>
+                <th>Losses</th>
+                <th>Win %</th>
+                <th>Avg Time</th>
+                <th>Best Time</th>
+            </tr>
         </thead>
         <tbody>
-        {#each orderedStatKeys as cipher}
-            <tr class="table-row">
-            <td><strong>{cipher}</strong></td>
-            <td>{stats[cipher]?.elo ?? 1000}</td>
-            <td>{stats[cipher]?.wins ?? 0}</td>
-            <td>{stats[cipher]?.losses ?? 0}</td>
-            <td>{winPercent(stats[cipher])}</td>
-            </tr>
-        {/each}
+            {#each orderedStatKeys as cipher}
+                <tr class="table-row">
+                <td><strong>{cipher}</strong></td>
+                <td>{stats[cipher]?.elo ?? 1000}</td>
+                <td>{stats[cipher]?.wins ?? 0}</td>
+                <td>{stats[cipher]?.losses ?? 0}</td>
+                <td>{winPercent(stats[cipher])}</td>
+                <td>{formatTime(stats[cipher]?.averageSolveTime)}</td>
+                <td>{formatTime(stats[cipher]?.bestSolveTime)}</td>
+                </tr>
+            {/each}
         </tbody>
     </table>
 </div>

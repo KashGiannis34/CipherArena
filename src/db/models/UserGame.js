@@ -4,7 +4,10 @@ import mongoose from "mongoose";
 const CipherStatsSchema = new mongoose.Schema({
 	elo: { type: Number, default: 1000 },
 	wins: { type: Number, default: 0 },
-	losses: { type: Number, default: 0 }
+	losses: { type: Number, default: 0 },
+  averageSolveTime: { type: Number, default: null },
+  bestSolveTime: { type: Number, default: null },
+  solveTimes: { type: [Number], default: [] }
 }, { _id: false });
 
 const statsShape = {};
@@ -32,7 +35,8 @@ const UserGameSchema = new mongoose.Schema({
 				initial[type] = {
 					elo: 1000,
 					wins: 0,
-					losses: 0
+					losses: 0,
+          solveTimes: [],
 				};
 			}
 			return initial;

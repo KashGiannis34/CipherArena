@@ -2,25 +2,45 @@
   import { onMount } from "svelte";
   import ColorThief from 'colorthief';
 
-  let {profilePicture = 'default', size = 40, useColorRing = false, preserveSize = false, onColorExtract = null} = $props();
+  let { profilePicture, size = 40, useColorRing = false, preserveSize = false, onColorExtract = null } = $props();
   let loading = $state(true);
   let src = $state("");
   let ringColor = $state('#bcaeff');
   let imgRef;
+  let lastFetchedProfileId = $state(""); // New state to track last successful fetch
 
-  onMount(async () => {
-    if (profilePicture == 'default') {
+  $effect(() => {
+    if (!profilePicture) {
       src = '/default-avatar.png';
-    } else {
-      const res = await fetch(`/api/profile/retrieve/${profilePicture}`);
-      const data = await res.json();
-      if (data.success) {
-        src = data.url;
-      } else {
-        src = '/default-avatar.png';
-        console.error(data.error);
-      }
+      return;
     }
+
+    if (profilePicture === 'default') {
+      src = '/default-avatar.png';
+      lastFetchedProfileId = 'default';
+      return;
+    }
+
+    // Skip fetch if already loaded
+    if (lastFetchedProfileId === profilePicture) return;
+
+    (async () => {
+      loading = true;
+      try {
+        const res = await fetch(`/api/profile/retrieve/${profilePicture}`);
+        const data = await res.json();
+        if (data.success) {
+          src = data.url;
+          lastFetchedProfileId = profilePicture;
+        } else {
+          console.error(data.error);
+          src = '/default-avatar.png';
+        }
+      } catch (err) {
+        console.error('Profile picture fetch error:', err);
+        src = '/default-avatar.png';
+      }
+    })();
   });
 
   function extractColor() {
@@ -28,10 +48,7 @@
       const colorThief = new ColorThief();
       const [r, g, b] = colorThief.getColor(imgRef);
       ringColor = `rgb(${r}, ${g}, ${b})`;
-
-      if (onColorExtract) {
-        onColorExtract(ringColor);
-      }
+      if (onColorExtract) onColorExtract(ringColor);
     } catch (e) {
       console.warn('Color extraction failed:', e);
     }
@@ -39,13 +56,11 @@
 
   function handleLoad() {
     loading = false;
-    if (useColorRing) {
-      extractColor();
-    }
+    if (useColorRing) extractColor();
   }
 
   function handleError() {
-    profilePicture = '/default-avatar.png';
+    src = '/default-avatar.png';
   }
 </script>
 

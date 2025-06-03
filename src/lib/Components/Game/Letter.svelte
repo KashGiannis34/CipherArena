@@ -138,7 +138,7 @@
     }
 
     .selected {
-        background-color: #001b42b8 !important;
+        background-color: #ffffff28 !important;
     }
 
     :not(.error) {
@@ -151,20 +151,34 @@
     }
 
     .focus {
-        border-bottom: 2px solid rgba(255, 255, 255, 0.825);
-        background-color: #001b42b8 !important;
+        background-color: rgba(255, 255, 255, 0.06); /* softer base */
+        animation: focusPulse 1.5s ease-in-out infinite;
+        box-shadow: 0 0 4px rgba(255, 255, 255, 0.15);
+        transition: background-color 0.25s ease, box-shadow 0.25s ease;
+        border-radius: 4px;
     }
 
-    :not(.focus) {
-        border: none;
+    @keyframes focusPulse {
+        0%, 100% {
+            box-shadow: 0 0 4px rgba(255, 255, 255, 0.15);
+        }
+        50% {
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
+        }
     }
+
 
     input:hover {
-        background-color: #002d6d9d;
+        background-color: #ffffff0a;
         cursor: pointer;
     }
 
     input::placeholder {
         color: #ffffff31;
+    }
+
+    :not(.error) {
+        color: rgb(235, 254, 255);
+        transition-duration: 0ms;
     }
 </style>

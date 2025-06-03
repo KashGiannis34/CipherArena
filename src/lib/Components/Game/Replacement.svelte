@@ -117,15 +117,48 @@ class:focus={focus && !solved} onclick={handleClick}>
     }
 
     .selected {
-        background-color: #001b42b8 !important;
+        background-color: #ffffff28 !important;
     }
 
     .focus {
-        background-color: #000000ae !important;
+        position: relative;
+        z-index: 1;
     }
 
+    .focus::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        height: 100%;
+        transform: translate(-50%, -50%);
+        background: radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.15) 0%,
+            rgba(255, 255, 255, 0.02) 70%,
+            transparent 100%
+        );
+        border-radius: 50%;
+        animation: softGlow 1.8s ease-in-out infinite;
+        pointer-events: none;
+        z-index: -1;
+        }
+
+        @keyframes softGlow {
+        0%, 100% {
+            opacity: 0.8;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+    }
+
+
     td:hover {
-        background-color: #002d6d9d;
+        background-color: #ffffff10;
         cursor: pointer;
     }
 

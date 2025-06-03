@@ -207,7 +207,8 @@ export default async function injectSocketIO(server) {
                     game.state = 'started';
                     game.metadata = {
                         ...(game.metadata ?? {}),
-                        initialUserIds: game.users
+                        initialUserIds: game.users,
+                        startedAt: new Date()
                     };
 
                     await game.save();
@@ -265,11 +266,12 @@ export default async function injectSocketIO(server) {
 
                     game = await Game.findById(user.currentGame).populate('users').exec();
                     if (!game || !game.users || game.users.length === 0) return;
+                    const solveTime = Math.round((Date.now() - game.metadata.startedAt.getTime()) / 1000);
 
                     let eloChanges = null;
                     if (game.mode === 'ranked' && game.metadata?.initialUserIds?.length > 1) {
                         const initialPlayers = await UserGame.find({ _id: { $in: game.metadata.initialUserIds } });
-                        eloChanges = await wsUtil.updateStatsAfterWin(initialPlayers, user, cipherType);
+                        eloChanges = await wsUtil.updateStatsAfterWin(initialPlayers, user, cipherType, solveTime);
                     }
 
                     const initialPlayers = await UserGame.find({ _id: { $in: game.metadata.initialUserIds } });
@@ -282,7 +284,8 @@ export default async function injectSocketIO(server) {
                             elo: u.stats?.[game.params.cipherType]?.elo ?? 1000,
                             profilePicture: u.profilePicture
                         })),
-                        eloChanges: eloChanges ?? {}
+                        eloChanges: eloChanges ?? {},
+                        solveTime: solveTime
                     };
 
                     game.state = 'finished';

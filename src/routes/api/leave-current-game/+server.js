@@ -18,6 +18,8 @@ export async function POST({ cookies, request }) {
         gameId = null;
     }
 
+    console.log('Leaving game', auth.id, gameId);
+
     const result = gameId
         ? await leaveGameCleanup(auth.id, gameId)
         : await leaveGameCleanup(auth.id);

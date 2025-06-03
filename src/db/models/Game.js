@@ -67,6 +67,10 @@ const GameSchema = new mongoose.Schema({
     },
     metadata: {
         initialUserIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'UserGame' }],
+        startedAt: {
+            type: Date,
+            default: Date.now
+        },
     },
     host: {
         type: mongoose.Schema.Types.ObjectId,
@@ -94,7 +98,8 @@ const GameSchema = new mongoose.Schema({
             eloChanges: {
             type: Map,
             of: Number
-            }
+            },
+            solveTime: Number,
         },
         default: null
     }
