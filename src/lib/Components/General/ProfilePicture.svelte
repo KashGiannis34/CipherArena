@@ -6,22 +6,16 @@
   let loading = $state(true);
   let src = $state("");
   let ringColor = $state('#bcaeff');
-  let imgRef;
+  let imgRef = $state(null);
   let lastFetchedProfileId = $state(""); // New state to track last successful fetch
 
   $effect(() => {
-    if (!profilePicture) {
-      src = '/default-avatar.png';
-      return;
-    }
-
-    if (profilePicture === 'default') {
+    if (!profilePicture || profilePicture === 'default') {
       src = '/default-avatar.png';
       lastFetchedProfileId = 'default';
       return;
     }
 
-    // Skip fetch if already loaded
     if (lastFetchedProfileId === profilePicture) return;
 
     (async () => {
@@ -77,16 +71,18 @@
   {#if loading}
     <div class="spinner"></div>
   {/if}
-  <img
-    bind:this={imgRef}
-    src={src}
-    alt="avatar"
-    class="avatar"
-    crossorigin="anonymous"
-    onload={handleLoad}
-    onerror={handleError}
-    style="display: {loading ? 'none' : 'block'}"
-  />
+  {#if src !== '' && (!loading || src !== '/default-avatar.png')}
+    <img
+      bind:this={imgRef}
+      src={src}
+      alt="avatar"
+      class="avatar"
+      crossorigin="anonymous"
+      onload={handleLoad}
+      onerror={handleError}
+      style="display: block"
+    />
+  {/if}
 </div>
 
 <style>

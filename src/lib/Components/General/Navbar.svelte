@@ -54,7 +54,6 @@
                     loading="eager"
                     decoding="sync"
                 />
-                <div class="logo-tooltip">CipherArena</div>
             </div>
             {#if authenticated}
                 <div class="nav-links desktop-only">
@@ -192,28 +191,6 @@
 
     .logo:hover .logo-img {
         filter: brightness(1.2);
-    }
-
-    .logo-tooltip {
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
-        font-size: 0.875rem;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.2s;
-        white-space: nowrap;
-        margin-top: 0.5rem;
-    }
-
-    .logo:hover .logo-tooltip {
-        opacity: 1;
-        visibility: visible;
     }
 
     .nav-links {

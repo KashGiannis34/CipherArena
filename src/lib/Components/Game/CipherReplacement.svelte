@@ -122,7 +122,7 @@ class:focus={focus && !solved} onclick={handleClick}>
         outline: none;
         caret-color: transparent;
         font-size: 1.8vw;
-        font-family: 'Rubik', sans-serif;
+        font-family: 'Source Code Pro', monospace !important;
     }
     @media screen and (min-width: 1200px) {
         input {

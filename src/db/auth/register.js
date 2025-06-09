@@ -22,7 +22,7 @@ export async function verify_email(email) {
 	return "";
 }
 
-function verify_password(password, confirmPass) {
+export function verify_password(password, confirmPass) {
 	if (!password) return "Password is required.";
 
     if (password != confirmPass) return "Password and Confirm Password do not match.";

@@ -2,12 +2,18 @@ import { cipherTypes } from "../../lib/util/CipherTypes.js";
 import mongoose from "mongoose";
 
 const CipherStatsSchema = new mongoose.Schema({
-	elo: { type: Number, default: 1000 },
-	wins: { type: Number, default: 0 },
-	losses: { type: Number, default: 0 },
+  elo: { type: Number, default: 1000 },
+  wins: { type: Number, default: 0 },
+  losses: { type: Number, default: 0 },
   averageSolveTime: { type: Number, default: null },
   bestSolveTime: { type: Number, default: null },
-  solveTimes: { type: [Number], default: [] }
+  solveTimes: {
+    type: [{
+      time: { type: Number, required: true },
+      length: { type: Number, required: true }
+    }],
+    default: []
+  }
 }, { _id: false });
 
 const statsShape = {};

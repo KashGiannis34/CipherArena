@@ -2,23 +2,30 @@
     import Letter from "./Letter.svelte";
     import FreqTable from "./FreqTable.svelte";
     import Container from "../General/Container.svelte";
-    import {encodeQuote, isLetter} from "$lib/util/CipherUtil";
+    import {isSolvableChunk} from "$lib/util/CipherUtil";
     import {Confetti} from 'svelte-confetti';
     import { cipherTypes } from "$lib/util/CipherTypes";
     import LoadingOverlay from "../General/LoadingOverlay.svelte";
     import { fade } from "svelte/transition";
     import { onMount, onDestroy } from "svelte";
+    import AtbashTable from "./AtbashTable.svelte";
+    import BaconianTable from "./BaconianTable.svelte";
+    import PortaTable from "./PortaTable.svelte";
+    import CaesarTable from "./CaesarTable.svelte";
+    import PolybiusSquare from "./PolybiusSquare.svelte";
 
-    let {quote, hash, cipherType, autoFocus, params, keys, onSolved, mode, newProblem, fetchAnswerStatus, onProgressUpdate} = $props();
+    let {quote, hash, cipherType, autoFocus, params, keys, onSolved, mode, newProblem, fetchAnswerStatus, onProgressUpdate, autoSwitch} = $props();
     let startTime = Date.now()/1000;
     let solved=$state(false);
     let isChecking=$state(false);
     let submissionError=$state(false);
+    let clearPolybius = $state(false);
     let debouncedProgressUpdate;
+    let initialQuote = initQuote(quote, cipherTypes[cipherType]['spacing']);
 
     let info = $state({
-        cipherText: initQuote(quote, cipherTypes[cipherType]['spacing']),
-        cipherTextTrim: quote.split(" ").join(""),
+        cipherText: initialQuote,
+        cipherTextTrim: initialQuote.filter(c => c !== ' '),
         letterInputs: initLetterInputs(),
         letterFocus: initLetterFocus(),
         inputs: []
@@ -43,7 +50,14 @@
                 input.value = '';
             }
         }
-        debouncedProgressUpdate();
+
+        if (mode === "multiplayer") {
+            debouncedProgressUpdate();
+        }
+
+        if (cipherType == "Nihilist") {
+            clearPolybius = true;
+        }
     }
 
     function paramToString(obj) {
@@ -70,7 +84,7 @@
         while (currIndex + inc < info.inputs.length && currIndex >= 0) {
             let prevChar = info.cipherTextTrim[currIndex];
             currIndex += inc;
-            if (isLetter(info.cipherTextTrim[currIndex]) && (info.cipherTextTrim[currIndex] != prevChar || !directMap)) {
+            if (isSolvableChunk(info.cipherTextTrim[currIndex], cipherType) && (info.cipherTextTrim[currIndex] != prevChar || !directMap)) {
                 break;
             }
         }
@@ -84,6 +98,10 @@
     }
 
     function onChange(letter, val, index) {
+        if (debouncedProgressUpdate && mode === "multiplayer" && info.inputs[index].value != val && (val == '' || info.inputs[index].value == '')) {
+            debouncedProgressUpdate();
+        }
+
         if (!directMap) {
             info.inputs[index].value = val;
         }
@@ -96,43 +114,40 @@
             while (currIndex + 1 < info.inputs.length) {
                 currIndex++;
                 if (directMap) {
-                    if (isLetter(info.cipherTextTrim[currIndex]) &&
+                    if (isSolvableChunk(info.cipherTextTrim[currIndex], cipherType) &&
                     info.cipherTextTrim[currIndex].toUpperCase() !== letter &&
                     info.letterInputs[info.cipherTextTrim[currIndex].toUpperCase()] == '') {
                         break;
                     }
                 } else {
-                    if (isLetter(info.cipherTextTrim[currIndex])) {
+                    if (isSolvableChunk(info.cipherTextTrim[currIndex], cipherType) && info.inputs[currIndex].value == '') {
                         break;
                     }
                 }
             }
             info.inputs[currIndex]?.focus();
         }
-
-        if (debouncedProgressUpdate && mode === "multiplayer" && (info.inputs[index].value != val && (val == '' || info.inputs[index].value == ''))) {
-            debouncedProgressUpdate();
-        }
     }
 
-    function initQuote(quote, spacing) {
-        if (spacing == -1)
-            return quote;
-        else {
-            let res = '';
-            let count = 0;
-            for (let letter of quote) {
-                if (isLetter(letter)) {
-                    res+=letter;
-                    count++;
-                } else {
-                    continue;
+    function initQuote(quoteArr, spacing) {
+        if (spacing === -1) return quoteArr;
+
+        const spaced = [];
+        let count = 0;
+
+        for (const chunk of quoteArr) {
+            if (!isSolvableChunk(chunk, cipherType)) continue;
+
+            spaced.push(chunk);
+            if (isSolvableChunk(chunk, cipherType)) {
+                count++;
+                if (spacing != 0 && count % spacing === 0) {
+                    spaced.push(" ");
                 }
-                if (res != '' && spacing != 0 && count % spacing == 0)
-                    res += ' ';
             }
-            return res;
         }
+
+        return spaced;
     }
 
     function initLetterInputs() {
@@ -159,17 +174,31 @@
 
     function initLWI() {
         let res = [];
-        const words = info.cipherText.toUpperCase().split(" ");
         let index = 0;
-        for (let word of words) {
-            let wArr = [];
-            for (let character of word) {
-                let cObj = {letter:character, index: index};
-                index++;
-                wArr.push(cObj);
+        let currentWord = [];
+        const keyword = keys[0];
+        const addKey = cipherTypes[cipherType]['stackKey'];
+        let keywordIndex = 0;
+
+        for (let char of info.cipherText) {
+            if (char === ' ') {
+                if (currentWord.length) res.push(currentWord);
+                currentWord = [];
+                continue;
             }
-            res.push(wArr);
+
+            let keywordChar = '';
+
+            if (addKey && isSolvableChunk(char, cipherType)) {
+                keywordChar = keyword[keywordIndex].toUpperCase();
+                keywordIndex = (keywordIndex + 1) % keyword.length;
+            }
+
+            currentWord.push({ letter: char, index, keyLetter: keywordChar });
+            index++;
         }
+
+        if (currentWord.length) res.push(currentWord);
         return res;
     }
 
@@ -216,14 +245,20 @@
         }, 2000); // error disappears after 2 seconds
     }
 
+    function resetClear() {
+        clearPolybius = false;
+    }
+
     onMount(() => {
         if (mode == "multiplayer") {
             debouncedProgressUpdate = debounce(() => {
                 const filled = getInputText().replace(/[^A-Za-z]/g, '').length;
-                const total = info.cipherText.replace(/[^A-Za-z]/g, '').length;
+                const total = info.cipherText.filter(chunk => isSolvableChunk(chunk, cipherType)).length;
                 const percent = Math.floor((filled / total) * 100);
                 onProgressUpdate(percent);
             }, 250);
+
+            debouncedProgressUpdate();
         }
     });
 </script>
@@ -237,7 +272,7 @@
         <h3>{params["Solve"]} this <span class="highlight" style="border-radius: 3px; padding: 3px;">{paramString + cipherType}</span> cipher.</h3>
         {#each keys as key, index}
             {#if cipherTypes[cipherType]['keys'][index] != '!'}
-                <h4>{cipherTypes[cipherType]['keys'][index]} is <span class="highlight" style="border-radius: 3px; padding: 3px;">{key}</span>. </h4>
+                <h4>The {cipherTypes[cipherType]['keys'][index]} is <span class="highlight" style="border-radius: 3px; padding: 3px;">{key}</span>. </h4>
             {/if}
         {/each}
 
@@ -245,10 +280,10 @@
     <div class="cipher">
         {#each lettersWithIndices as word}
             <div class="word">
-                {#each word as {letter, index}}
+                {#each word as {letter, index, keyLetter}}
                     <Letter bind:inputs={info.inputs} letterInputs={info.letterInputs} cipherLetter={letter} index={index} inputValue={info.letterInputs[letter]}
                     selected={info.letterFocus[letter]} directMap={directMap} autoFocus={autoFocus} onArrow={onArrow}
-                    onFocus={onFocus} onChange={onChange} solved={solved}/>
+                    onFocus={onFocus} onChange={onChange} solved={solved} cipherType={cipherType} keyLetter={keyLetter}/>
                 {/each}
             </div>
         {/each}
@@ -256,10 +291,25 @@
     {#if cipherTypes[cipherType]['addOn']=="freqTable"}
         <FreqTable bind:info={info} solved={solved} autoFocus={autoFocus}
         k={params['K']}/>
+    {:else if cipherTypes[cipherType]['addOn']=="atbashTable"}
+        <AtbashTable />
+    {:else if cipherTypes[cipherType]['addOn']=="baconTable"}
+        <BaconianTable />
+    {:else if cipherTypes[cipherType]['addOn']=="portaTable"}
+        <PortaTable />
+    {:else if cipherTypes[cipherType]['addOn']=="caesarTable"}
+        <CaesarTable />
+    {:else if cipherTypes[cipherType]['addOn']=="polybiusSquare"}
+        <PolybiusSquare {autoFocus} {clearPolybius} {resetClear} />
     {/if}
+
     <div class="buttons">
-        <button class="button" onclick={clearQuote}>Clear</button>
-        <button class="button" onclick={(solved && mode=="singleplayer") ? newProblem:checkQuote}>{(solved && mode=="singleplayer") ? 'New Problem' : 'Submit'}</button>
+        {#if !solved}
+            <button class="button" onclick={clearQuote}>Clear</button>
+        {/if}
+        {#if (mode == 'singleplayer' && !autoSwitch) || !solved}
+            <button class="button" onclick={(solved && mode=="singleplayer") ? newProblem:checkQuote}>{(solved && mode=="singleplayer") ? 'New Problem' : 'Submit'}</button>
+        {/if}
     </div>
     {#if submissionError}
         <div class="cipher-error" transition:fade>
@@ -268,7 +318,7 @@
     {/if}
 </Container>
 
-{#if solved}
+{#if solved && mode == "singleplayer"}
     <div style="
     position: fixed;
     z-index: 25;
@@ -310,13 +360,16 @@
 
     .cipher {
         display: flex;
-        flex-direction: row;
         flex-wrap: wrap;
+        max-width: 100%;
     }
 
     .word {
         margin-left: 10px;
         margin-right: 10px;
+        max-width: 100%;
+        flex-wrap: wrap;
+        row-gap: 30px;
     }
 
     .buttons {

@@ -5,11 +5,12 @@
   	import { fade } from 'svelte/transition';
 	import { broadcastTabEvent } from '$lib/util/crossTabEvents.js';
   	import { onMount } from 'svelte';
+  	import Container from "$lib/Components/General/Container.svelte";
 
 	let { data } = $props();
 	let showJoinGameButton = $state(false);
-	let feedback = $state('');
 	let authenticating = $state(false);
+	let feedback = $state('');
 
 	function handleLoginRedirect() {
 		goto(`/auth/login?roomId=${data.gameId}`);
@@ -27,7 +28,6 @@
         if (data.success) {
 			showJoinGameButton = true;
 			feedback = "You left your previous game. Now join this game.";
-
         } else {
             feedback = data.message;
         }
@@ -39,7 +39,6 @@
     }
 
 	async function joinGame() {
-        let res = null;
         try {
             authenticating = true;
             feedback = '';
@@ -51,7 +50,7 @@
                 }
             });
 
-            res = await response.json();
+            const res = await response.json();
             authenticating = false;
 
             if (res.success) {
@@ -72,34 +71,35 @@
 
 {#if data.action === 'login'}
 	<div class="page">
-		<div class="card">
-			<h1 class="title">You're about to join a game</h1>
-			<p class="subtitle">Log in or register to continue</p>
-			<div class="buttons">
-				<button class="btn login" onclick={handleLoginRedirect}>Log In</button>
-				<button class="btn register" onclick={handleRegisterRedirect}>Register</button>
+		<Container --minWidth=none --maxWidth=min(90vw,1000px)>
+			<div class="lobby-auth-wrapper">
+				<h1 class="title">You're about to join a game</h1>
+				<p class="subtitle">Log in or register to continue</p>
+				<div class="buttons">
+					<button class="btn login" onclick={handleLoginRedirect}>Log In</button>
+					<button class="btn register" onclick={handleRegisterRedirect}>Register</button>
+				</div>
 			</div>
-			{#if feedback}
-				<p style="color: white;">{feedback}</p>
-			{/if}
-		</div>
+		</Container>
 	</div>
 {:else if data.action === 'leaveGame'}
 	<div class="page">
-		<div class="card">
-			<h1 class="title">You're in a different game</h1>
-			<p class="subtitle">Leave your current game before joining this one.</p>
-			<div class="buttons">
-				{#if showJoinGameButton}
-					<button class="btn login" onclick={joinGame}>Join Game</button>
-				{:else}
-					<button class="btn login" onclick={leaveGame}>Leave Game</button>
+		<Container --minWidth=none --maxWidth=min(90vw,1000px)>
+			<div class="lobby-auth-wrapper">
+				<h1 class="title">You're in a different game</h1>
+				<p class="subtitle">Leave your current game before joining this one.</p>
+				<div class="buttons">
+					{#if showJoinGameButton}
+						<button class="btn login" onclick={joinGame}>Join Game</button>
+					{:else}
+						<button class="btn login" onclick={leaveGame}>Leave Game</button>
+					{/if}
+				</div>
+				{#if feedback}
+					<p class="info">{feedback}</p>
 				{/if}
 			</div>
-			{#if feedback}
-				<p style="color: white;">{feedback}</p>
-			{/if}
-		</div>
+		</Container>
 	</div>
 {/if}
 
@@ -114,74 +114,77 @@
 		box-sizing: border-box;
 	}
 
-	.card {
-		background: linear-gradient(135deg, #6a11cb, #2575fc);
+	.lobby-auth-wrapper {
 		width: 100%;
-        top: -25%;
-		max-width: 90vw;
-		max-height: 90vh;
-		padding: clamp(1.5rem, 5vw, 3rem);
-		border-radius: 1.5rem;
-		box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
-		text-align: center;
-
+		padding: 2rem 2.5rem;
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
 		align-items: center;
 		gap: 1.5rem;
 	}
 
 	.title {
-		font-size: clamp(1.75rem, 4vw, 2.5rem);
-		font-weight: 700;
+		font-size: 2rem;
+		font-weight: 800;
+		text-align: center;
 		color: white;
 		margin: 0;
 	}
 
 	.subtitle {
-		font-size: clamp(1rem, 2.5vw, 1.25rem);
-		color: #ffffffb0;
+		font-size: 1.05rem;
+		color: #a7a7c1;
+		text-align: center;
 		margin: 0;
 	}
 
 	.buttons {
 		display: flex;
-		flex-direction: column;
-		gap: 1rem;
+		gap: 1.25rem;
+		justify-content: center;
 		width: 100%;
-		max-width: 400px;
+		max-width: 100%;
 	}
 
-	@media (min-width: 640px) {
+	@media (max-width: 500px) {
 		.buttons {
-			flex-direction: row;
+			flex-direction: column;
 		}
 	}
 
 	.btn {
 		flex: 1;
-		padding: 0.75rem 1.5rem;
+		padding: 0.85rem 1.8rem;
 		font-size: 1rem;
-		border-radius: 0.5rem;
-		border: none;
-		cursor: pointer;
-		transition: transform 0.2s ease, box-shadow 0.2s ease;
+		font-weight: 700;
+		border-radius: 0.85rem;
+		background: transparent;
+		color: white;
+		border: 1px solid rgba(255, 255, 255, 0.25);
+		transition: all 0.3s ease;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
 	}
 
 	.btn:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+		background: rgba(255, 255, 255, 0.05);
 	}
 
 	.login {
-		background-color: #7555ff;
+		background: rgba(117, 85, 255, 0.8);
 		color: white;
 	}
 
 	.register {
-		background: rgb(238, 221, 255);
-		color: #7555ff;
-		border: 2px solid #703cff;
+		background: rgba(255, 255, 255, 0.08);
+		color: #e0cbff;
+		border: 1px solid #b29cff;
+	}
+
+	.info {
+		text-align: center;
+		color: aquamarine;
+		font-size: 0.95rem;
+		margin-top: 0.5rem;
 	}
 </style>

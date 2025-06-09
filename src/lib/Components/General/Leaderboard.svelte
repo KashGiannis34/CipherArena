@@ -10,7 +10,7 @@
 	const cipherTypeOptions = ['All', ...Object.keys(cipherTypes)];
 
 	let metric = $state('elo');
-	const metricOptions = ['elo', 'wins', 'win%', 'avg solve time', 'best solve time'];
+	const metricOptions = ['elo', 'wins', 'win%', 'avg solve time per char', 'best solve time'];
 
 	async function fetchLeaderboard(cipherType, metric) {
 		try {
@@ -29,6 +29,7 @@
 		}
 	}
 
+
 	async function handleCipherTypeSelect(type) {
         await fetchLeaderboard(type, metric);
 		selectedCipherType = type;
@@ -42,10 +43,12 @@
 	function formatMetric(user) {
 		if (metric === 'win%' && typeof user.value === 'number') {
 			return `${user.value.toFixed(1)}%`;
-		} else if (metric === 'avg solve time' || metric === 'best solve time') {
+		} else if (metric === 'best solve time') {
 			const minutes = Math.floor(user.value / 60);
-			const seconds = user.value % 60;
+			const seconds = Math.round(user.value % 60);
 			return `MM:SS`.replace('MM', String(minutes).padStart(2, '0')).replace('SS', String(seconds).padStart(2, '0'));
+		} else if (metric === 'avg solve time per char') {
+			return `${user.value.toFixed(2)}`;
 		} else {
 			return user.value;
 		}
@@ -80,6 +83,17 @@
 		{/each}
 	</div>
 
+	<div class="metric-note-wrapper">
+		{#if metric === 'win%'}
+			<p class="metric-note-inline">* Only users with 50+ ranked games are shown.</p>
+		{:else if metric === 'avg solve time per char'}
+			<p class="metric-note-inline">* Only users with 50+ ranked wins are shown.</p>
+		{:else}
+			<!-- Invisible element to preserve height -->
+			<p class="metric-note-inline empty">&nbsp;</p>
+		{/if}
+	</div>
+
 	<div class="table-wrapper">
 		<table class="leaderboard-table">
 			<thead>
@@ -87,12 +101,18 @@
 					<th>Rank</th>
 					<th>Username</th>
 					<th>
-						{#if metric === 'elo'} Elo
-						{:else if metric === 'wins'} Total Wins
-						{:else if metric === 'win%'} Win %
-						{:else if metric === 'avg solve time'} Avg Solve Time
-						{:else if metric === 'best solve time'} Best Solve Time
-						{:else} {metric}
+						{#if metric === 'elo'}
+							Elo
+						{:else if metric === 'wins'}
+							Total Wins
+						{:else if metric === 'win%'}
+							Win %
+						{:else if metric === 'avg solve time per char'}
+							Avg Solve Time Per Char
+						{:else if metric === 'best solve time'}
+							Best Solve Time
+						{:else}
+							{metric}
 						{/if}
 					</th>
 				</tr>
@@ -121,6 +141,24 @@
 </div>
 
 <style>
+	.metric-note-wrapper {
+		height: 1.25rem; /* consistent vertical space */
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		margin-bottom: 0.5rem;
+	}
+
+	.metric-note-inline {
+		font-size: 0.75rem;
+		color: rgba(255, 255, 255, 0.5);
+		margin: 0;
+	}
+
+	.metric-note-inline.empty {
+		visibility: hidden;
+	}
+
 	.profile-link {
 		color: #fff;
 		text-decoration: none;
@@ -136,7 +174,7 @@
 	.leaderboard-container {
 		padding: 1.5rem;
 		margin: 0 auto;
-		max-width: 800px;
+		width: 1000px;
 		background: rgba(255, 255, 255, 0.04);
 		border: 1px solid rgba(255, 255, 255, 0.1);
 		backdrop-filter: blur(8px);
@@ -230,7 +268,7 @@
     .leaderboard-table th:nth-child(1),
     .leaderboard-table td:nth-child(1) {
         text-align: left;
-        width: 3rem;
+        width: 6rem;
         padding-right: 0.5rem;
     }
 
@@ -244,8 +282,7 @@
     @media (min-width: 640px) {
         .leaderboard-table th:nth-child(3),
         .leaderboard-table td:nth-child(3) {
-            width: 8rem;
-            max-width: 8rem;
+            width: 10rem;
             text-align: center;
         }
     }

@@ -88,6 +88,12 @@
                     <p class='message' transition:fade>{feedback['message']}</p>
                 {/if}
 
+                {#if login}
+                  <div class="forgot-password">
+                      <a href="/forgot-password" target="_blank" rel="noopener noreferrer">Forgot Password?</a>
+                  </div>
+                {/if}
+
                 <button type="submit" class="button">
                     {#if authenticating}
                         <i class="fa-solid fa-spinner spin"></i>
@@ -120,6 +126,25 @@
 
 <style>
   @import "$lib/css/Button.css";
+
+  .forgot-password {
+    width: 100%;
+    text-align: right;
+    padding-right: 10px;
+    margin-top: -10px;
+  }
+
+  .forgot-password a {
+    font-size: 0.9rem;
+    color: rgba(93, 239, 255, 0.85);
+    text-decoration: none;
+    transition: 0.3s ease;
+  }
+
+  .forgot-password a:hover {
+    color: rgba(68, 202, 255, 0.562);
+    cursor: pointer;
+  }
 
   p {
     text-align: center;

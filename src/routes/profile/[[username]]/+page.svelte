@@ -22,7 +22,9 @@
   }
 
   function getSolveTimes(cipher) {
-    return profileStats?.[cipher]?.solveTimes ?? [];
+    return profileStats?.[cipher]?.solveTimes?.map(entry =>
+      entry.length > 0 ? entry.time / entry.length : 0
+    ) ?? [];
   }
 </script>
 
@@ -33,9 +35,7 @@
   <div class="shimmer-overlay"></div>
 
   <div class="profile-header animate-content-rise">
-    <div class="profile-picture-container">
-      <EditableProfilePicture {profilePicture} size={120} {isOwnProfile} sendError={onUploadError} />
-    </div>
+    <EditableProfilePicture {profilePicture} size={120} {isOwnProfile} sendError={onUploadError} />
     <h1 class="username animate-text-glow">@{username}</h1>
     {#if uploadError}
       <p class="upload-error animate-error-slide">{uploadError}</p>
@@ -137,43 +137,6 @@
   animation: noiseMove 8s linear infinite;
   pointer-events: none;
   opacity: 0.3;
-}
-
-.profile-picture-container {
-  position: relative;
-  border-radius: 50%;
-  overflow: hidden;
-  filter: drop-shadow(0 8px 25px rgba(0, 0, 0, 0.3));
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.profile-picture-container::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(45deg,
-    rgba(255, 255, 255, 0.1),
-    rgba(255, 255, 255, 0.05),
-    rgba(255, 255, 255, 0.1));
-  border-radius: 50%;
-  z-index: -1;
-  animation: profileBorderGlow 3s ease-in-out infinite;
-}
-
-.profile-picture-container::after {
-  content: '';
-  position: absolute;
-  top: 10%;
-  left: 10%;
-  width: 30%;
-  height: 30%;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 50%;
-  filter: blur(8px);
-  animation: highlightShift 4s ease-in-out infinite;
 }
 
 .shimmer-overlay {
@@ -418,13 +381,6 @@
   }
 }
 
-/* Hover Effects */
-.profile-picture-container:hover {
-  transform: scale(1.05);
-  filter: drop-shadow(0 12px 35px rgba(0, 0, 0, 0.4));
-}
-
-/* Responsive */
 @media (max-width: 768px) {
   .profile-page {
     padding: 2rem 1.5rem;

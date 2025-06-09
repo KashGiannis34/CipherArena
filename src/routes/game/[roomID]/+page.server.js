@@ -9,7 +9,6 @@ import { Cookies } from "@sveltejs/kit";
 
 /** @type {import('./$types').PageLoad} */
 export async function load({cookies, params}) {
-    // console.log('Loading game with roomID:', params['roomID']);
     const auth = authenticate(cookies.get("auth-token"));
     if (!auth) {
         throw error(401, {

@@ -361,7 +361,10 @@
             <div class="player-left-group">
               <ProfilePicture profilePicture={player.profilePicture} size={40} useColorRing={player.username == data.username} preserveSize={true}/>
               <div class="player-name" style={(player.connected ? "color: #ffffff;" : "color: #ff7d7d;") + (player.username === data.username ? " font-weight: 700;" : "font-weight: 200;")}>
-                {player.username + (!player.connected ? " (DISCONNECTED)" : "") + (player.host ? " (HOST)" : "")}
+                <a href={`/profile/${player.username}`} target="_blank" rel="noopener noreferrer" class="profile-link">
+                  {player.username}
+                </a>
+                {(!player.connected ? " (DISCONNECTED)" : "") + (player.host ? " (HOST)" : "")}
               </div>
             </div>
             <div class="player-elo" style={(player.connected ? "color: #ffffff;" : "color: #ff7d7d;") + (player.username === data.username ? " font-weight: 700;" : "font-weight: 200;")}>
@@ -417,6 +420,18 @@
 {/if}
 
 <style>
+  .profile-link {
+		color: #fff;
+		text-decoration: none;
+		font-weight: 500;
+		transition: color 0.2s;
+	}
+
+	.profile-link:hover {
+		color: #4e9aff;
+		text-decoration: underline;
+	}
+
   .waiting-container {
     display: flex;
     flex-direction: column;

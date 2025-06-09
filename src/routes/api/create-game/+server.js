@@ -12,7 +12,6 @@ import { generateShortCode } from '$db/generateShortCode';
 export async function POST({ request, cookies }) {
     try {
         const req = await request.json();
-        console.log(req);
 
         const auth = authenticate(cookies.get("auth-token"));
 

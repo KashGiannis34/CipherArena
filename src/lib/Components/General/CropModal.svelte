@@ -14,7 +14,6 @@
 
 	async function getCroppedImage() {
 		if (!imageSrc || !croppedAreaPixels) {
-      console.log(imageSrc, croppedAreaPixels);
 			throw new Error('Missing image source or crop area');
 		}
 

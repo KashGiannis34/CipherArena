@@ -6,7 +6,7 @@ export async function GET({ url }) {
 	const cipherType = url.searchParams.get('cipherType');
 	const metric = url.searchParams.get('metric');
 
-	if (!cipherType || !metric || !['elo', 'wins', 'winPercent', 'avg solve time', 'best solve time'].includes(metric)) {
+	if (!cipherType || !metric || !['elo', 'wins', 'winPercent', 'avg solve time per char', 'best solve time'].includes(metric)) {
 		return json({ error: 'Invalid query parameters.' }, { status: 400 });
 	}
 
@@ -22,7 +22,7 @@ export async function GET({ url }) {
                                     { $getField: { field: 'losses', input: { $getField: { field: cipherType, input: '$stats' } } } }
                                 ]
                             },
-                            1
+                            50
                         ]
                     }
                 },
@@ -66,11 +66,11 @@ export async function GET({ url }) {
             }));
 
             return json(leaderboard);
-        } else if (metric === 'avg solve time') {
+        } else if (metric === 'avg solve time per char') {
             const leaderboard = await UserGame.aggregate([
                 {
                     $match: {
-                        [`stats.${cipherType}.wins`]: { $gte: 1 },
+                        [`stats.${cipherType}.wins`]: { $gte: 50 },
                         [`stats.${cipherType}.averageSolveTime`]: { $gt: 0 }
                     }
                 },

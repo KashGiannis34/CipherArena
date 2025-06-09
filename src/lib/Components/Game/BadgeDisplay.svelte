@@ -58,7 +58,21 @@
     <div class="badge-stack">
         {#if unlockedBadgeIds.length > 0}
           {#each unlockedBadgeIds as badgeId}
-            <img class="badge-preview" src={`/badges/${badgeId}.png`} alt={badgeId} onclick={(e) => {e.stopPropagation(); selectBadgeFromId(badgeId); toggleModal()}} role="button" tabindex="0" onkeydown={() => {}}/>
+            <div
+              class="badge-wrapper"
+              role="button"
+              tabindex="0"
+              onclick={(e) => { e.stopPropagation(); selectBadgeFromId(badgeId); toggleModal(); }}
+              onkeydown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  selectBadgeFromId(badgeId);
+                  toggleModal();
+                }
+              }}
+            >
+              <img class="badge-preview" src={`/badges/${badgeId}.png`} alt={badgeId} />
+            </div>
           {/each}
         {:else}
           <div class="no-badges">
@@ -194,6 +208,12 @@
   transform: scale(1.1);
 }
 
+.badge-wrapper {
+	display: inline-block;
+	cursor: pointer;
+	outline: none;
+}
+
 .modal {
   position: fixed;
   inset: 0;
@@ -325,6 +345,10 @@
   width: 90%;
   height: 90%;
   object-fit: contain;
+}
+
+.badge-placeholder:hover {
+  transform: scale(1.1);
 }
 
 .no-badges h4 {

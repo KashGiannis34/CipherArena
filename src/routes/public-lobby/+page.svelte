@@ -85,6 +85,7 @@
         }
     }
 
+
     const debouncedFetchLobbies = debounce(fetchLobbies, 500);
 
     function changeCipherOption(option, optionObj) {

@@ -2,7 +2,7 @@ import crypto from "crypto";
 import { VerificationToken } from "$db/models/VerificationToken"; // Ensure you have a VerificationToken model
 import { UserAuth } from "$db/models/UserAuth";
 
-export async function createVerificationToken(user, limit) {
+export async function createVerificationToken(user, limit, mode = "create") {
     if (!user) {
         throw new Error("User not found");
     }
@@ -11,9 +11,9 @@ export async function createVerificationToken(user, limit) {
     const expires = new Date(Date.now() + 1000 * 60 * limit);
     const now = new Date();
 
-    // Delete any existing verification tokens for this user
+    // Delete any existing verification tokens for this user for that specific mode
     try {
-        await VerificationToken.deleteMany({ userId: user._id, expires: {$lt: now} });
+        await VerificationToken.deleteMany({ userId: user._id, expires: {$lte: now}, mode: mode });
     } catch (err) {
         return err.toString();
     }
@@ -22,6 +22,7 @@ export async function createVerificationToken(user, limit) {
         userId: user._id,
 		token: token,
 		expires: expires,
+        mode: mode
 	});
 
 	try {

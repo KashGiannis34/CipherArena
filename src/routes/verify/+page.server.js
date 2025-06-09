@@ -16,7 +16,7 @@ export async function load({params, url, cookies}) {
 
         // Find the token in the database
         const verificationToken = await VerificationToken.findOne({ token });
-        if (!verificationToken) return { message: "Invalid or expired token.", isSuccess: false };
+        if (!verificationToken || verificationToken.mode != "create") return { message: "Invalid or expired token.", isSuccess: false };
 
         // Check if token is expired
         if (new Date() > verificationToken.expires) {

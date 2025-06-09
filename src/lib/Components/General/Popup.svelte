@@ -63,8 +63,11 @@
     }
 
     .button {
-        padding: 10px 20px;
-        margin-bottom: 0px;
+        width: 100%;
+        margin-top: 10px;
+        padding: 10px;
+        font-size: 1.2rem;
+        font-weight: bold;
     }
 
     .background {

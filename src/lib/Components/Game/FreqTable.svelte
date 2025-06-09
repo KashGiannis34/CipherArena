@@ -58,7 +58,7 @@
             obj[letter] = 0; // Initialize each letter with an empty string
         });
 
-        for (let letter of text.toUpperCase()) {
+        for (let letter of text) {
             if (isLetter(letter)) {
                 obj[letter]++;
             }
@@ -160,6 +160,7 @@
         border-bottom: 1px solid var(--bColor);
         border-right: 1px solid var(--bColor);
         text-align: center;
+        font-family: 'Source Code Pro', monospace;
     }
 
     th, td {

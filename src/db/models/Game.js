@@ -40,7 +40,7 @@ const GameSchema = new mongoose.Schema({
             required: true
         },
         encodedText: {
-            type: String,
+            type: [String],
             required: true
         },
         keys: {

@@ -35,7 +35,7 @@
       data: {
         labels,
         datasets: [{
-          label: `Solve Time Distribution`,
+          label: `Solve Time Per Character Distribution`,
           data,
           backgroundColor: 'rgba(188, 174, 255, 0.7)',
           borderColor: 'rgba(188, 174, 255, 1)',
@@ -78,7 +78,7 @@
           },
           title: {
             display: true,
-            text: `Solve Time Histogram (${cipherType})`,
+            text: `Solve Time Per Character Histogram (${cipherType})`,
             color: '#e5e5ff',
             font: {
               family: 'Rubik',
@@ -92,7 +92,7 @@
           x: {
             title: {
               display: true,
-              text: 'Solve Time Range (s)',
+              text: 'Solve Time Per Character Range (s)',
               color: '#ccccff',
               font: { family: 'Rubik', size: 13, weight: '500' }
             },

@@ -19,6 +19,8 @@ export async function generateQuote(p) {
 
     const encodedQuote = p['Solve'] == "Decode" ?
         encodeQuote(randomQuote["text"], (p['cipherType'] == 'Patristocrat' ? 'Aristocrat':p['cipherType']), keys, p)
-        : randomQuote["text"];
+        : randomQuote["text"].split('').map(c => c.toUpperCase());
+    console.log("randomQuote", randomQuote['text']);
+
     return {"id": randomQuote["_id"].toString(), "quote": encodedQuote, "keys": keys};
 }

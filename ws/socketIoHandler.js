@@ -266,12 +266,13 @@ export default async function injectSocketIO(server) {
 
                     game = await Game.findById(user.currentGame).populate('users').exec();
                     if (!game || !game.users || game.users.length === 0) return;
-                    const solveTime = Math.round((Date.now() - game.metadata.startedAt.getTime()) / 1000);
+                    const solveTime = (Date.now() - game.metadata.startedAt.getTime()) / 1000;
+                    const length = ans.length;
 
                     let eloChanges = null;
                     if (game.mode === 'ranked' && game.metadata?.initialUserIds?.length > 1) {
                         const initialPlayers = await UserGame.find({ _id: { $in: game.metadata.initialUserIds } });
-                        eloChanges = await wsUtil.updateStatsAfterWin(initialPlayers, user, cipherType, solveTime);
+                        eloChanges = await wsUtil.updateStatsAfterWin(initialPlayers, user, cipherType, solveTime, length);
                     }
 
                     const initialPlayers = await UserGame.find({ _id: { $in: game.metadata.initialUserIds } });

@@ -12,7 +12,7 @@
     function formatTime(seconds) {
         if (seconds == null || isNaN(seconds)) return '—';
         const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
+        const secs = Math.round(seconds % 60);
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 
@@ -28,7 +28,7 @@
                 <th>Wins</th>
                 <th>Losses</th>
                 <th>Win %</th>
-                <th>Avg Time</th>
+                <th>Avg Seconds Per Char</th>
                 <th>Best Time</th>
             </tr>
         </thead>
@@ -40,7 +40,7 @@
                 <td>{stats[cipher]?.wins ?? 0}</td>
                 <td>{stats[cipher]?.losses ?? 0}</td>
                 <td>{winPercent(stats[cipher])}</td>
-                <td>{formatTime(stats[cipher]?.averageSolveTime)}</td>
+                <td>{stats[cipher].averageSolveTime ? stats[cipher].averageSolveTime.toFixed(2) : 'N/A'}</td>
                 <td>{formatTime(stats[cipher]?.bestSolveTime)}</td>
                 </tr>
             {/each}

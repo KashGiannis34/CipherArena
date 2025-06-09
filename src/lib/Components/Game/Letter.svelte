@@ -1,7 +1,8 @@
 <script>
-    import {isLetter} from "$lib/util/CipherUtil";
+    import { cipherTypes } from "$lib/util/CipherTypes";
+    import {isLetter, isSolvableChunk} from "$lib/util/CipherUtil";
 
-    let {inputs=$bindable(), letterInputs, cipherLetter, index, inputValue, selected, directMap, autoFocus, onArrow, onFocus, onChange, solved} = $props();
+    let {inputs=$bindable(), letterInputs, cipherLetter, index, inputValue, selected, directMap, autoFocus, onArrow, onFocus, onChange, solved, cipherType, keyLetter} = $props();
     let error = $state(false);
     let focus = $state(false);
 
@@ -28,8 +29,6 @@
             event.preventDefault();
             return;
         }
-
-        // && inputValue !== ''
 
         if (event.key !== undefined && isLetter(event.key) && event.key.length == 1) {
             onChange(cipherLetter, event.key.toUpperCase(), index);
@@ -74,9 +73,12 @@
     }
 </script>
 
-<div class="letter-container">
+<div class="letter-container {cipherTypes[cipherType].letterGap ? 'letterGap' : ''}">
+    {#if keyLetter}
+        <div class="key-letter unselectable">{keyLetter}</div>
+    {/if}
     <div class="cipher-letter unselectable">{cipherLetter.toUpperCase()}</div>
-    {#if isLetter(cipherLetter)}
+    {#if isSolvableChunk(cipherLetter, cipherType)}
         <input
             bind:this={inputs[index]}
             class:selected={selected && !solved}
@@ -105,16 +107,29 @@
         user-select: none;
     }
 
+    .key-letter {
+        font-family: 'Source Code Pro', monospace;
+        font-size: 1.0rem;
+        color: #bcd8ff8d !important;
+    }
+
+
     .letter-container {
         display: inline-block;
         text-align: center;
         margin: 0px;
         padding: 0px;
-        width: 20px;
+        min-width: 20px;
+        max-width: max-content;
+    }
+
+    .letter-container.letterGap {
+        padding-right: 10px;
     }
 
     .cipher-letter {
-        font-size: 1.2rem;
+        font-family: 'Source Code Pro', monospace;
+        font-size: 1.4rem;
         font-weight: 500;
         margin-bottom: 5px;
         position: relative;
@@ -122,8 +137,9 @@
     }
 
     input {
+        font-family: 'Source Code Pro', monospace !important;
         text-align: center;
-        font-size: 1.2rem;
+        font-size: 1.4rem;
         font-weight: 500;
         max-width: 20px;
         width: 100%;
@@ -134,7 +150,6 @@
         outline: none;
         caret-color: transparent;
         border-radius: 2px;
-        font-family: 'Rubik', sans-serif;
     }
 
     .selected {

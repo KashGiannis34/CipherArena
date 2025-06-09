@@ -34,7 +34,7 @@ export function calculateElo(players, winnerUsername, cipherType, K = 32, eloFlo
   return eloChanges;
 }
 
-function updateTotalStats(user, solveTime) {
+function updateTotalStats(user, solveTime, length) {
   let totalElo = 0, totalWins = 0, totalLosses = 0;
   let count = 0;
 
@@ -56,10 +56,12 @@ function updateTotalStats(user, solveTime) {
 
   if (solveTime != undefined) {
     allStats.solveTimes ??= [];
-    allStats.solveTimes.push(solveTime);
+    allStats.solveTimes.push({ time: solveTime, length });
 
-    allStats.bestSolveTime = Math.min(allStats.bestSolveTime ?? solveTime, solveTime);
-    allStats.averageSolveTime = Math.round(allStats.solveTimes.reduce((a, b) => a + b, 0) / allStats.solveTimes.length);
+    const times = allStats.solveTimes.map(e => e.time);
+    const timesPerLength = allStats.solveTimes.map(e => (e.time / e.length));
+    allStats.bestSolveTime = Math.min(...times);
+    allStats.averageSolveTime = timesPerLength.reduce((a, b) => a + b, 0) / timesPerLength.length;
   }
 
   user.stats.All = allStats;
@@ -73,13 +75,13 @@ export async function checkAnswerCorrectness(ans, quoteId, cipherType, keys, sol
 
   let ansText = stripQuote(quote.text);
   if (solve === 'Encode') {
-    ansText = encodeQuote(ansText, cipherType, keys);
+    ansText = encodeQuote(ansText, cipherType, keys).join('');
   }
 
   return ans === ansText;
 }
 
-export async function updateStatsAfterWin(gameUsers, winner, cipherType, solveTime) {
+export async function updateStatsAfterWin(gameUsers, winner, cipherType, solveTime, length) {
   const eloChanges = calculateElo(gameUsers, winner.username, cipherType);
 
   for (const player of gameUsers) {
@@ -96,12 +98,14 @@ export async function updateStatsAfterWin(gameUsers, winner, cipherType, solveTi
     if (player.username === winner.username) {
       stats.wins += 1;
       stats.solveTimes ??= [];
-      stats.solveTimes.push(solveTime);
+      stats.solveTimes.push({ time: solveTime, length });
 
-      stats.bestSolveTime = Math.min(stats.bestSolveTime ?? solveTime, solveTime);
-      stats.averageSolveTime = Math.round(stats.solveTimes.reduce((a, b) => a + b, 0) / stats.solveTimes.length);
+      const times = stats.solveTimes.map(e => e.time);
+      const timesPerLength = stats.solveTimes.map(e => (e.time / e.length));
+      stats.bestSolveTime = Math.min(...times);
+      stats.averageSolveTime = timesPerLength.reduce((a, b) => a + b, 0) / timesPerLength.length;
 
-      updateTotalStats(player, solveTime);
+      updateTotalStats(player, solveTime, length);
     } else {
       stats.losses += 1;
       updateTotalStats(player);

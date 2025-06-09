@@ -17,7 +17,9 @@
       <ProfilePicture profilePicture={player.profilePicture} size={40} useColorRing={player.username==username} preserveSize={true}/>
       <div class="progress-info">
         <div class="progress-username">
-          {player.username}
+          <a href={`/profile/${player.username}`} target="_blank" rel="noopener noreferrer" class="profile-link">
+            {player.username}
+          </a>
           {#if player.connected === false}
             <span class="status-tag">{player.left ? '(left game)' : '(disconnected)'}</span>
           {/if}
@@ -38,6 +40,18 @@
 </div>
 
 <style>
+  .profile-link {
+    color: #fff;
+		text-decoration: none;
+		font-weight: 500;
+		transition: color 0.2s;
+	}
+
+	.profile-link:hover {
+		color: #4e9aff;
+		text-decoration: underline;
+	}
+
   .progress-display-wrapper {
     display: flex;
     flex-direction: column;

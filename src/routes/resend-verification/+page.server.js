@@ -1,10 +1,9 @@
-import { VerificationToken } from '$db/models/VerificationToken';
 import { UserAuth } from '$db/models/UserAuth';
 import { createVerificationToken } from '$db/auth/verify';
 import { sendVerificationEmail } from '$db/auth/mailer';
 import { Cookies } from "@sveltejs/kit";
 
-const RATE_LIMIT_MINUTES = 0;
+const RATE_LIMIT_MINUTES = 5;
 const EXPIRE_LIMIT_MINUTES = 20;
 
 /** @type {import('./$types').PageLoad} */

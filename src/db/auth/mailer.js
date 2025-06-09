@@ -5,8 +5,8 @@ import { EMAIL_USER, EMAIL_PASSWORD, APP_URL } from "$env/static/private"
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: EMAIL_USER, // Your Gmail email
-    pass: EMAIL_PASSWORD, // Your App Password (not your actual Gmail password)
+    user: EMAIL_USER,
+    pass: EMAIL_PASSWORD,
   },
 });
 
@@ -35,5 +35,34 @@ export async function sendVerificationEmail(email, token, limit) {
   } catch (error) {
     console.error("Error sending email:", error);
     throw new Error("Email could not be sent.");
+  }
+}
+
+/**
+ * Sends a password reset email to the user
+ * @param {string} email - User's email address
+ * @param {string} token - Reset token
+ * @param {number} limit - Expiration time in minutes
+ */
+export async function sendPasswordResetEmail(email, token, limit) {
+  const resetLink = `${APP_URL}/reset-password?token=${token}`;
+
+  const mailOptions = {
+    from: EMAIL_USER,
+    to: email,
+    subject: "Cipher Arena: Password Reset Request",
+    html: `
+      <h1>Password Reset</h1>
+      <p>Click the link below to reset your password. This link will expire in ${limit} minutes.</p>
+      <a href="${resetLink}">${resetLink}</a>
+      <p>If you did not request a password reset, you can safely ignore this email.</p>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error("Error sending reset email:", error);
+    throw new Error("Reset email could not be sent.");
   }
 }

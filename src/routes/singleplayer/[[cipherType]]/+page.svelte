@@ -87,7 +87,7 @@
 		sessionStorage.setItem("options", JSON.stringify(options));
 	}
 
-	onMount(() => {
+	onMount(async () => {
 		// Get options
 		options = sessionStorage.getItem('options')
 			? JSON.parse(sessionStorage.getItem('options'))
@@ -100,7 +100,7 @@
 		params.cipherType = data.props.cipherType;
 
 		// Generate quote
-		fetchQuote();
+		await fetchQuote();
 		mounted = true;
 	});
 </script>
@@ -126,6 +126,7 @@
 			mode="singleplayer"
 			{newProblem}
 			fetchAnswerStatus={checkQuote}
+			autoSwitch={options.AutoSwitch}
 		/>
 
 		<Popup {visibility} onExit={toggle}>

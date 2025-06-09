@@ -72,7 +72,7 @@
 
   function formatTime(seconds) {
     const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    const secs = Math.round(seconds % 60);
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   }
 </script>
@@ -103,7 +103,9 @@
                 />
                 <div class="player-info">
                     <div class="player-name">
-                        {player.username}
+                        <a href={`/profile/${player.username}`} target="_blank" rel="noopener noreferrer" class="profile-link">
+                          {player.username}
+                        </a>
                         {#if player.username === winnerUsername} 🏆 {/if}
                         {#if player.connected === false}
                             <span class="player-status-tag">
@@ -147,7 +149,19 @@
 </div>
 
 <style>
-    .background {
+  .profile-link {
+    color: black;
+		text-decoration: none;
+		font-weight: 500;
+		transition: color 0.2s;
+	}
+
+	.profile-link:hover {
+		color: #4e9aff;
+		text-decoration: underline;
+	}
+
+  .background {
     position: fixed;
     z-index: 15;
     top: 0;

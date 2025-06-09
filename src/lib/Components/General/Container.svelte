@@ -23,8 +23,6 @@
         box-shadow:
             0 8px 32px rgba(0, 0, 0, 0.37),
             inset 0 0 0.5px rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(18px);
-        -webkit-backdrop-filter: blur(18px);
         border: 1px solid rgba(255, 255, 255, 0.18);
 
         color: var(--color, #ffffff);
