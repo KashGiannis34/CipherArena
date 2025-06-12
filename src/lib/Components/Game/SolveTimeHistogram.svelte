@@ -4,23 +4,29 @@
   Chart.register(...registerables);
 
   let { solveTimes = [], cipherType = 'All' } = $props();
+
   let chart, canvasEl;
 
   function getHistogramBuckets(times) {
     if (!times.length) return { labels: [], data: [] };
 
     const max = Math.max(...times);
+    const min = Math.min(...times);
     const binCount = Math.min(15, Math.ceil(Math.sqrt(times.length)));
-    const binSize = Math.ceil(max / binCount);
+    const binSize = (max - min) / binCount || 0.1;
 
     const buckets = Array(binCount).fill(0);
     for (let time of times) {
-      const idx = Math.min(Math.floor(time / binSize), binCount - 1);
+      const idx = Math.min(Math.floor((time - min) / binSize), binCount - 1);
       buckets[idx]++;
     }
 
     return {
-      labels: buckets.map((_, i) => `${i * binSize}s–${(i + 1) * binSize}s`),
+      labels: buckets.map((_, i) => {
+        const start = (min + i * binSize).toFixed(2);
+        const end = (min + (i + 1) * binSize).toFixed(2);
+        return `${start}s–${end}s`;
+      }),
       data: buckets
     };
   }
