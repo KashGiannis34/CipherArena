@@ -1,6 +1,6 @@
 // +page.server.js
 import { redirect } from '@sveltejs/kit';
-import { cipherTypes } from '$utils/CipherTypes';
+import { cipherTypes } from '$db/shared-utils/CipherTypes';
 
 export function load({ params }) {
     const cipherType = params['cipherType'] && cipherTypes[params['cipherType']] ? params['cipherType'] : 'Redirect';

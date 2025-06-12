@@ -7,7 +7,7 @@
     import { broadcastTabEvent } from "$lib/util/crossTabEvents";
     import Container from "$lib/Components/General/Container.svelte";
     import Options from "$lib/Components/Game/Options.svelte";
-    import {cipherTypes} from '$utils/CipherTypes';
+    import {cipherTypes} from '$db/shared-utils/CipherTypes.js';
     import { goto } from "$app/navigation";
     import { fade } from 'svelte/transition';
     import SearchBar from '$lib/Components/General/SearchBar.svelte';

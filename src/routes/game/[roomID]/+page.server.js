@@ -1,5 +1,5 @@
 import { redirect, error } from '@sveltejs/kit';
-import { cipherTypes } from '$utils/CipherTypes';
+import { cipherTypes } from '$db/shared-utils/CipherTypes';
 import { generateQuote } from '$dbutils/GenerateQuote';
 import { authenticate } from '$dbutils/authenticate';
 import { UserGame } from '$dbutils/UserGame';

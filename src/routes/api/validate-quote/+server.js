@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { Quote } from '$dbutils/Quote';
 import { ObjectId } from 'mongodb';
-import { stripQuote, encodeQuote } from '$utils/CipherUtil';
+import { stripQuote, encodeQuote } from '$db/shared-utils/CipherUtil';
 
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function POST({ request }) {

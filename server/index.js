@@ -5,16 +5,14 @@ import 'dotenv/config';
 
 // socket.io
 import { Server } from 'socket.io';
-import { Game } from '../backend-utils/Game.js';
-import { Quote } from '../backend-utils/Quote.js';
-import { encodeQuote, stripQuote } from '../shared-utils/CipherUtil.js';
+import { Game } from '../db/backend-utils/Game.js';
 import { ObjectId } from 'mongodb';
-import { authenticate } from '../backend-utils/authenticate.js';
-import { UserGame } from '../backend-utils/UserGame.js';
-import { leaveGameCleanup } from '../backend-utils/leaveGameCleanup.js';
+import { authenticate } from '../db/backend-utils/authenticate.js';
+import { UserGame } from '../db/backend-utils/UserGame.js';
+import { leaveGameCleanup } from '../db/backend-utils/leaveGameCleanup.js';
 import socketIORateLimiter from '@d3vision/socket.io-rate-limiter';
 import * as wsUtil from '../ws/wsUtil.js';
-import { generateQuote } from '../backend-utils/GenerateQuote.js';
+import { generateQuote } from '../db/backend-utils/GenerateQuote.js';
 
 const app = express();
 const server = http.createServer(app);

@@ -9,8 +9,8 @@ const config = {
 		adapter: adapter(),
 		alias: {
 			$db: './db',
-			$utils: './shared-utils',
-			$dbutils: './backend-utils',
+			$utils: './db/shared-utils',
+			$dbutils: './db/backend-utils',
 		},
 	},
 };
