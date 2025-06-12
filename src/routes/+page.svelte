@@ -35,6 +35,12 @@
 
   <div class="section" in:fade>
     <h2>Why Cipher Arena?</h2>
+    <ul class="why-list">
+      <li>🎯 Learn cryptography the fun way</li>
+      <li>🏆 Practice for Codebusters (Science Olympiad)</li>
+      <li>🧠 Boost logic and deduction skills</li>
+      <li>👾 Multiplayer, real-time cipher battles</li>
+    </ul>
     <div class="image-grid">
       {#each whyImages as image}
         <div class="grid-item">
@@ -42,24 +48,10 @@
         </div>
       {/each}
     </div>
-
-    <ul class="why-list">
-      <li>🎯 Learn cryptography the fun way</li>
-      <li>🏆 Practice for Codebusters (Science Olympiad)</li>
-      <li>🧠 Boost logic and deduction skills</li>
-      <li>👾 Multiplayer, real-time cipher battles</li>
-    </ul>
   </div>
 
   <div class="section" in:fade>
     <h2>Core Features</h2>
-    <div class="image-grid feature-grid">
-      {#each featureImages as image}
-        <div class="grid-item">
-          <img src={image.src} alt={image.alt} />
-        </div>
-      {/each}
-    </div>
 
     <div class="features">
       <div class="feature">
@@ -109,6 +101,14 @@
           <li>Compete for rankings and improve your standing</li>
         </ul>
       </div>
+    </div>
+
+    <div class="image-grid feature-grid">
+      {#each featureImages as image}
+        <div class="grid-item">
+          <img src={image.src} alt={image.alt} />
+        </div>
+      {/each}
     </div>
   </div>
 
