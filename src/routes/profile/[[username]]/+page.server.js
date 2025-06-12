@@ -1,7 +1,7 @@
 // src/routes/profile/[[username]]/+page.server.js
 import { error } from '@sveltejs/kit';
-import { UserGame } from '$db/models/UserGame';
-import { authenticate } from '$db/auth/authenticate.js';
+import { UserGame } from '$dbutils/UserGame';
+import { authenticate } from '$dbutils/authenticate.js';
 
 export async function load({ params, cookies }) {
   const auth = authenticate(cookies.get('auth-token'));

@@ -1,11 +1,10 @@
 import { redirect, error } from '@sveltejs/kit';
-import { cipherTypes } from '$lib/util/CipherTypes';
-import { generateQuote } from '$db/GenerateQuote';
-import { authenticate } from '$db/auth/authenticate';
-import { UserGame } from '$db/models/UserGame';
+import { cipherTypes } from '$utils/CipherTypes';
+import { generateQuote } from '$dbutils/GenerateQuote';
+import { authenticate } from '$dbutils/authenticate';
+import { UserGame } from '$dbutils/UserGame';
 import { ObjectId } from 'mongodb';
-import { Game } from '$db/models/Game';
-import { Cookies } from "@sveltejs/kit";
+import { Game } from '$dbutils/Game';
 import { joinGame } from '$db/joinGame';
 
 /** @type {import('./$types').PageLoad} */

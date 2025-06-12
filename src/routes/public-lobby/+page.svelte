@@ -2,11 +2,12 @@
     import { onDestroy, onMount } from 'svelte';
     import { io } from 'socket.io-client';
     import LoadingOverlay from '$lib/Components/General/LoadingOverlay.svelte';
+    import { PUBLIC_APP_URL } from '$env/static/public';
 
     import { broadcastTabEvent } from "$lib/util/crossTabEvents";
     import Container from "$lib/Components/General/Container.svelte";
     import Options from "$lib/Components/Game/Options.svelte";
-    import {cipherTypes} from '$lib/util/CipherTypes';
+    import {cipherTypes} from '$utils/CipherTypes';
     import { goto } from "$app/navigation";
     import { fade } from 'svelte/transition';
     import SearchBar from '$lib/Components/General/SearchBar.svelte';
@@ -19,6 +20,19 @@
     let cipherOptionObj = {'K':'Random'};
     let feedbackCreate = $state('');
     let showLeaveGameButton = $state(false);
+
+    let statusMessage = $state(null);
+    let statusType = $state('info');
+    let statusTimer;
+
+    function showStatus(msg, type = 'info', duration = 3000) {
+    statusMessage = msg;
+    statusType = type;
+    clearTimeout(statusTimer);
+    statusTimer = setTimeout(() => {
+        statusMessage = null;
+    }, duration);
+    }
 
     let lobbies = $state([]);
     let loading = $state(true);
@@ -42,7 +56,6 @@
         }
 
         const fetchPromise = new Promise((resolve) => {
-            // Parse search options
             const searchTerms = {};
             const words = searchValue.split(' ');
             let currentOption = null;
@@ -66,7 +79,6 @@
                 if (Array.isArray(data)) {
                     lobbies = data;
                 } else {
-                    console.error("Invalid lobbies data:", data);
                     lobbies = [];
                 }
                 resolve();
@@ -80,7 +92,7 @@
         try {
             await Promise.race([fetchPromise, timeoutPromise]);
         } catch (error) {
-            console.error('Error fetching lobbies:', error);
+            showStatus('Error fetching games', 'error');
             lobbies = [];
         }
     }
@@ -162,14 +174,15 @@
 
     onMount(() => {
         mounted = true;
-        socket = io({
+        socket = io(PUBLIC_APP_URL, {
             auth: {
                 token: decodeURIComponent(data.authToken),
                 joinLobby: true
             },
             reconnection: true,
             reconnectionAttempts: 5,
-            reconnectionDelay: 1000
+            reconnectionDelay: 1000,
+            withCredentials: true,
         });
 
         socket.on('connect', () => {
@@ -181,7 +194,7 @@
         });
 
         socket.on('connect_error', (error) => {
-            console.error('Connection error:', error);
+            showStatus('Failed to connect. Please refresh.', 'error');
             disconnected = true;
             loading = false;
         });
@@ -194,6 +207,7 @@
 
         socket.on('disconnect', (reason) => {
             disconnected = true;
+            showStatus('Disconnected from server.', 'error');
         });
     });
 
@@ -201,6 +215,12 @@
         socket?.disconnect();
     });
 </script>
+
+{#if statusMessage}
+  <div class="status-bar {statusType}" transition:fade>
+    {statusMessage}
+  </div>
+{/if}
 
 {#if !mounted || loading}
     <LoadingOverlay />
@@ -293,6 +313,36 @@
 {/if}
 
 <style>
+
+  .status-bar {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    z-index: 2000;
+    max-width: 90vw;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    text-align: center;
+    color: white;
+    opacity: 0.95;
+    }
+
+    .status-bar.info {
+    background: #555;
+    }
+
+    .status-bar.success {
+    background: #28c76f;
+    }
+
+    .status-bar.error {
+    background: #ea5455;
+    }
+
   .button-row {
     display: flex;
     gap: 12px;

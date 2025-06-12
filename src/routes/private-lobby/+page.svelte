@@ -1,7 +1,7 @@
 <script>
     import Container from "$lib/Components/General/Container.svelte";
     import Options from "$lib/Components/Game/Options.svelte";
-    import {cipherTypes} from '$lib/util/CipherTypes';
+    import {cipherTypes} from '$utils/CipherTypes';
     import { goto } from "$app/navigation";
     import { broadcastTabEvent } from "$lib/util/crossTabEvents";
     import LoadingOverlay from "$lib/Components/General/LoadingOverlay.svelte";

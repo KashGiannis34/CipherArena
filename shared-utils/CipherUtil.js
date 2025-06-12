@@ -1,4 +1,4 @@
-import { cipherTypes } from './CipherTypes';
+import { cipherTypes } from './CipherTypes.js';
 
 let splitter;
 function getSplitter() {

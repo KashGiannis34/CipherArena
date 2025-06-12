@@ -2,9 +2,9 @@
     import Letter from "./Letter.svelte";
     import FreqTable from "./FreqTable.svelte";
     import Container from "../General/Container.svelte";
-    import {isSolvableChunk} from "$lib/util/CipherUtil";
+    import {isSolvableChunk} from "$utils/CipherUtil";
     import {Confetti} from 'svelte-confetti';
-    import { cipherTypes } from "$lib/util/CipherTypes";
+    import { cipherTypes } from "$utils/CipherTypes";
     import LoadingOverlay from "../General/LoadingOverlay.svelte";
     import { fade } from "svelte/transition";
     import { onMount, onDestroy } from "svelte";

@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { generateQuote } from '$db/GenerateQuote';
+import { generateQuote } from '$dbutils/GenerateQuote';
 
 export async function POST({ request }) {
     try {

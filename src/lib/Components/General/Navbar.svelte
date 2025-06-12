@@ -1,5 +1,5 @@
 <script>
-    import { goto, preloadData } from "$app/navigation";
+    import { goto } from "$app/navigation";
 
     let isMenuOpen = $state(false);
     let isMenuClosing = $state(false);
@@ -17,22 +17,11 @@
         }
     }
 
-    // Add preload functions for each route
-    async function preloadRoute(path) {
-        try {
-            await preloadData(path);
-        } catch (error) {
-            console.error('Error preloading:', error);
-        }
-    }
-
     async function navigate(path) {
         isMenuOpen = false;
         try {
             await goto(path);
-        } catch (error) {
-            console.error('Navigation error:', error);
-        }
+        } catch (_) {}
     }
 </script>
 
@@ -41,7 +30,6 @@
         <div class="nav-left">
             <div class="logo"
                 onclick={() => navigate('/')}
-                onmouseenter={() => preloadRoute('/')}
                 onkeydown={() => {}}
                 tabindex=-1
                 role="button">
@@ -58,20 +46,15 @@
             {#if authenticated}
                 <div class="nav-links desktop-only">
                     <button class="nav-link"
-                        onclick={() => navigate('/profile')}
-                        onmouseenter={() => preloadRoute('/profile')}>Home</button>
+                        onclick={() => navigate('/profile')}>Home</button>
                     <button class="nav-link"
-                    onclick={() => navigate('/leaderboard')}
-                    onmouseenter={() => preloadRoute('/leaderboard')}>Leaderboard</button>
+                    onclick={() => navigate('/leaderboard')}>Leaderboard</button>
                     <button class="nav-link"
-                        onclick={() => navigate('/singleplayer/Aristocrat')}
-                        onmouseenter={() => preloadRoute('/singleplayer/Aristocrat')}>Play Solo</button>
+                        onclick={() => navigate('/singleplayer/Aristocrat')}>Play Solo</button>
                     <button class="nav-link"
-                        onclick={() => navigate('/private-lobby')}
-                        onmouseenter={() => preloadRoute('/private-lobby')}>Private</button>
+                        onclick={() => navigate('/private-lobby')}>Private</button>
                     <button class="nav-link"
-                        onclick={() => navigate('/public-lobby')}
-                        onmouseenter={() => preloadRoute('/public-lobby')}>Public</button>
+                        onclick={() => navigate('/public-lobby')}>Public</button>
                 </div>
             {/if}
         </div>
@@ -85,34 +68,25 @@
         <div class="nav-right {isMenuOpen ? 'open' : ''} {isMenuClosing ? 'closing' : ''}">
             {#if !authenticated}
                 <button class="nav-link"
-                onclick={() => navigate('/singleplayer/Aristocrat')}
-                onmouseenter={() => preloadRoute('/singleplayer/Aristocrat')}>Try it out</button>
+                onclick={() => navigate('/singleplayer/Aristocrat')}>Try it out</button>
                 <button class="nav-link"
-                onclick={() => navigate('/leaderboard')}
-                onmouseenter={() => preloadRoute('/leaderboard')}>Leaderboard</button>
+                onclick={() => navigate('/leaderboard')}>Leaderboard</button>
                 <div class="auth-buttons">
-                    <button class="nav-link login" onclick={() => navigate('/account/login')}
-                        onmouseenter={() => preloadRoute('/account/login')}>Login</button>
-                    <button class="nav-link signup" onclick={() => navigate('/account/register')}
-                        onmouseenter={() => preloadRoute('/account/register')}>Sign up</button>
+                    <button class="nav-link login" onclick={() => navigate('/account/login')}>Login</button>
+                    <button class="nav-link signup" onclick={() => navigate('/account/register')}>Sign up</button>
                 </div>
             {:else}
                 <div class="mobile-nav-links">
                     <button class="nav-link"
-                        onclick={() => navigate('/profile')}
-                        onmouseenter={() => preloadRoute('/profile')}>Home</button>
+                        onclick={() => navigate('/profile')}>Home</button>
                     <button class="nav-link"
-                    onclick={() => navigate('/leaderboard')}
-                    onmouseenter={() => preloadRoute('/leaderboard')}>Leaderboard</button>
+                    onclick={() => navigate('/leaderboard')}>Leaderboard</button>
                     <button class="nav-link"
-                        onclick={() => navigate('/singleplayer')}
-                        onmouseenter={() => preloadRoute('/singleplayer')}>Play Solo</button>
+                        onclick={() => navigate('/singleplayer')}>Play Solo</button>
                     <button class="nav-link"
-                        onclick={() => navigate('/private-lobby')}
-                        onmouseenter={() => preloadRoute('/private-lobby')}>Private</button>
+                        onclick={() => navigate('/private-lobby')}>Private</button>
                     <button class="nav-link"
-                        onclick={() => navigate('/public-lobby')}
-                        onmouseenter={() => preloadRoute('/public-lobby')}>Public</button>
+                        onclick={() => navigate('/public-lobby')}>Public</button>
                 </div>
                 {#if verified=="false"}
                     <button onclick={() => navigate('/resend-verification')} class="verify-btn">Verify Account</button>

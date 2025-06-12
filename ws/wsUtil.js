@@ -1,8 +1,8 @@
-import { Quote } from '../src/db/models/Quote.js';
+import { Quote } from '../backend-utils/Quote.js';
 import { ObjectId } from 'mongodb';
-import { encodeQuote, stripQuote } from '../src/lib/util/CipherUtil.js';
-import { UserGame } from '../src/db/models/UserGame.js';
-import { cipherTypes } from '../src/lib/util/CipherTypes.js';
+import { encodeQuote, stripQuote } from '../shared-utils/CipherUtil.js';
+import { UserGame } from '../backend-utils/UserGame.js';
+import { cipherTypes } from '../shared-utils/CipherTypes.js';
 
 export function calculateElo(players, winnerUsername, cipherType, K = 32, eloFloor = 100) {
   const eloChanges = {};

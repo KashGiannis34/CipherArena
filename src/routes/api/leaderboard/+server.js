@@ -1,4 +1,4 @@
-import { UserGame } from '$db/models/UserGame';
+import { UserGame } from '$dbutils/UserGame';
 import { json } from '@sveltejs/kit';
 
 /** @type {import('./$types').RequestHandler} */

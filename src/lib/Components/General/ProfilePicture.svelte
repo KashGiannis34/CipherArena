@@ -13,6 +13,7 @@
     if (!profilePicture || profilePicture === 'default') {
       src = '/default-avatar.png';
       lastFetchedProfileId = 'default';
+      loading = false;
       return;
     }
 
@@ -27,11 +28,9 @@
           src = data.url;
           lastFetchedProfileId = profilePicture;
         } else {
-          console.error(data.error);
           src = '/default-avatar.png';
         }
       } catch (err) {
-        console.error('Profile picture fetch error:', err);
         src = '/default-avatar.png';
       }
     })();
@@ -43,9 +42,7 @@
       const [r, g, b] = colorThief.getColor(imgRef);
       ringColor = `rgb(${r}, ${g}, ${b})`;
       if (onColorExtract) onColorExtract(ringColor);
-    } catch (e) {
-      console.warn('Color extraction failed:', e);
-    }
+    } catch (_) {}
   }
 
   function handleLoad() {

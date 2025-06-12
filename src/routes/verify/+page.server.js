@@ -1,7 +1,6 @@
 import { VerificationToken } from '$db/models/VerificationToken';
 import { UserAuth } from '$db/models/UserAuth';
-import { Cookies } from "@sveltejs/kit";
-import { cookie_options } from '$db/dbUtil';
+import { cookie_options } from '$dbutils/dbUtil';
 
 /** @type {import('./$types').PageLoad} */
 export async function load({params, url, cookies}) {

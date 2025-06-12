@@ -1,5 +1,5 @@
-import { Game } from '$db/models/Game';
-import { UserGame } from '$db/models/UserGame';
+import { Game } from '$dbutils/Game';
+import { UserGame } from '$dbutils/UserGame';
 import { ObjectId } from 'mongodb';
 
 /**

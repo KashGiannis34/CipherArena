@@ -2,24 +2,16 @@
   import Container from '$lib/Components/General/Container.svelte';
   import { page } from '$app/stores';
   import { fade } from 'svelte/transition';
-  import { enhance } from '$app/forms';
+
+  let { form } = $props();
 
   let password = $state('');
   let confirmPassword = $state('');
-  let feedback = $state(null);
   let submitting = $state(false);
 </script>
 
 <Container --minWidth=none --maxWidth=min(80vw,600px)>
-  <form method="POST" use:enhance={async () => {
-    return ({ result }) => {
-      submitting = false;
-      feedback = result.data;
-    };
-  }} onsubmit={() => {
-    submitting = true;
-    feedback = null;
-  }}>
+  <form method="POST">
     <h1>Reset Password</h1>
 
     <label>
@@ -34,10 +26,10 @@
 
     <input type="hidden" name="token" value={$page.url.searchParams.get('token')} />
 
-    {#if feedback?.error}
-      <p class="error" transition:fade>{feedback.error}</p>
-    {:else if feedback?.message}
-      <p class="message" transition:fade>{feedback.message}</p>
+    {#if form?.error}
+      <p class="error" transition:fade>{form?.error}</p>
+    {:else if form?.message}
+      <p class="message" transition:fade>{form?.message}</p>
     {/if}
 
     <button type="submit" class="button" disabled={submitting}>

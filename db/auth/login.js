@@ -1,6 +1,6 @@
 import { UserAuth } from "$db/models/UserAuth";
 import jwt from "jsonwebtoken";
-import { SECRET_JWT_KEY } from "$env/static/private";
+const SECRET_JWT_KEY = process.env.SECRET_JWT_KEY;
 import pkg from 'argon2';
 const argon2 = pkg;
 
@@ -15,8 +15,6 @@ async function get_user(email, password) {
     }
 
     const user = await UserAuth.findOne({ email });
-
-
 
     if (!password) {
         return { error: "Password is required." };

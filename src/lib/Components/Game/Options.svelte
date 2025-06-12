@@ -1,7 +1,7 @@
 <script>
     import Cipherdown from "../General/Cipherdown.svelte";
     import { Button, ButtonGroup, DropdownItem } from "@sveltestrap/sveltestrap";
-    import {cipherTypes} from '$lib/util/CipherTypes';
+    import {cipherTypes} from '$utils/CipherTypes';
 
     let {options, onOptionChange, cipherType, multiplayer=false, cipherOption, changeCipherOption, changeType} = $props();
 

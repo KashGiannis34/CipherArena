@@ -1,24 +1,23 @@
 import { Server } from 'socket.io';
-import { Game } from '../src/db/models/Game.js';
-import { Quote } from '../src/db/models/Quote.js';
-import { encodeQuote, stripQuote } from '../src/lib/util/CipherUtil.js';
+import { Game } from '../backend-utils/Game.js';
+import { Quote } from '../backend-utils/Quote.js';
+import { encodeQuote, stripQuote } from '../shared-utils/CipherUtil.js';
 import { ObjectId } from 'mongodb';
-import { authenticate } from '../src/db/auth/authenticate.js';
-import { UserGame } from '../src/db/models/UserGame.js';
-import { leaveGameCleanup } from '../src/db/leaveGameCleanup.js';
+import { authenticate } from '../backend-utils/authenticate.js';
+import { UserGame } from '../backend-utils/UserGame.js';
+import { leaveGameCleanup } from '../backend-utils/leaveGameCleanup.js';
 import socketIORateLimiter from '@d3vision/socket.io-rate-limiter';
 import * as wsUtil from './wsUtil.js';
-import { generateQuote } from '../src/db/GenerateQuote.js';
+import { generateQuote } from '../backend-utils/GenerateQuote.js';
 
 
 export default async function injectSocketIO(server) {
-    if (!server.httpServer) return;
 
-    const io = new Server(server.httpServer, {
+    const io = new Server(server, {
         cors: {
-            origin: 'http://localhost:5173',
+            origin: process.env.APP_URL,
             credentials: true
-        },
+        }
     });
     globalThis.io = io;
     const activeSockets = new Map(); // userId → socketId
@@ -30,7 +29,6 @@ export default async function injectSocketIO(server) {
         const token = socket.handshake.auth.token;
 
         if (!token) {
-            console.error('No token provided in socket handshake');
             return next(new Error("No token"));
         }
 
@@ -63,10 +61,7 @@ export default async function injectSocketIO(server) {
         if (!socket.handshake.auth.joinLobby) {
             try {
                 const existingSocketId = activeSockets.get(userId);
-                console.log("Existing socket ID: ", existingSocketId);
-                console.log("Socket ID: ", socketId);
                 if (existingSocketId && existingSocketId !== socketId) {
-                    console.log("Replacing socket: ", existingSocketId);
                     const existingSocket = io.sockets.sockets.get(existingSocketId);
                     if (existingSocket) {
                         existingSocket.disconnectReason = 'replaced';
@@ -80,7 +75,6 @@ export default async function injectSocketIO(server) {
                 if (user.currentGame) {
                     game = await Game.findById(user.currentGame).populate('users').exec();
                     if (!game) {
-                        console.warn(`User ${userId} has invalid game. Clearing...`);
                         user.currentGame = null;
                         await user.save();
                         socket.emit('error', 'Your game no longer exists. You have been disconnected.');
@@ -92,9 +86,7 @@ export default async function injectSocketIO(server) {
                     socket.disconnectReason = 'invalid-game';
                     socket.disconnect();
                 }
-            } catch (err) {
-                console.error('Socket error:', err);
-            }
+            } catch (_) {}
         } else {
             try {
                 user = await UserGame.findById(new ObjectId(userId));
@@ -112,9 +104,7 @@ export default async function injectSocketIO(server) {
                 socket.currentRoom = 'public-lobby';
 
                 lobbySockets.set(userId, socketId);
-            } catch (err) {
-                console.error('join-lobby error:', err);
-            }
+            } catch (_) { }
         }
 
         // Update the user's active socket in the DB
@@ -127,7 +117,6 @@ export default async function injectSocketIO(server) {
         if (socket.currentRoom != 'public-lobby') {
             socket.on('join-room', async () => {
                 try {
-                    console.log("Socket joining room: ", socketId);
                     const hostUG = await UserGame.findById(game.host);
                     if (!hostUG || !hostUG.currentSocketId) {
                         // Reassign host to the reconnecting user
@@ -140,15 +129,11 @@ export default async function injectSocketIO(server) {
 
                     socket.join(game._id);
                     socket.currentRoom = game._id;
-                    // console.log(`${user._id} joined room ${roomId}`);
                     io.to(game._id).emit('players-changed');
                     if (game.state == 'waiting') {
-                        console.log("Lobbies updated");
                         io.to('public-lobby').emit('lobbies-updated');
                     }
-                } catch (err) {
-                    console.error('join-room error:', err);
-                }
+                } catch (_) { }
             });
 
             socket.on('leave-room', () => {
@@ -162,7 +147,6 @@ export default async function injectSocketIO(server) {
                 try {
                     game = await Game.findById(user.currentGame).populate('users').exec();
                     if (!game.host.equals(user._id)) {
-                        console.log("Only host can kick players");
                         socket.emit('error', 'Only the host can kick players');
                     }
 
@@ -174,7 +158,6 @@ export default async function injectSocketIO(server) {
 
                     // 1. Run DB cleanup
                     await leaveGameCleanup(targetUser._id, game._id);
-                    console.log("CLeanup done");
 
                     // 2. Kick active socket
                     const targetSocket = io.sockets.sockets.get(activeSockets.get(targetUser._id.toString()));
@@ -187,9 +170,7 @@ export default async function injectSocketIO(server) {
                     // 3. Notify room
                     io.to(socket.currentRoom).emit('players-changed');
                     io.to('public-lobby').emit('lobbies-updated');
-                    console.log("Lobbies updated");
                 } catch (err) {
-                    console.error('kick-player error:', err);
                     socket.emit('error', 'Internal error during kick');
                 }
             });
@@ -199,7 +180,6 @@ export default async function injectSocketIO(server) {
                     game = await Game.findById(user.currentGame).populate('users').exec();
 
                     if (!game.host.equals(user._id)) {
-                        console.log("Only host can start the game");
                         socket.emit('error', 'Only the host can start the game');
                         return;
                     }
@@ -215,24 +195,18 @@ export default async function injectSocketIO(server) {
 
                     io.to(socket.currentRoom).emit('start-game', game.params, game.autoFocus, game.quote);
                     io.to('public-lobby').emit('lobbies-updated');
-                    console.log("Lobbies updated");
-                } catch (err) {
-                    console.error('start-game error:', err);
-                }
+                } catch (_) { }
             });
 
             socket.on('get-cipher-info', async (cb) => {
                 try {
                     game = await Game.findById(user.currentGame);
                     if (!game.state == 'started') {
-                        console.log("Game has not started yet");
                         socket.emit('error', 'Game has not started yet');
                     } else {
                         cb({params: game.params, autoFocus: game.autoFocus, quote: game.quote});
                     }
-                } catch (err) {
-                    console.error('retrieve info error:', err);
-                }
+                } catch (_) { }
             });
 
             socket.on('get-initial-players', async cb => {
@@ -253,7 +227,6 @@ export default async function injectSocketIO(server) {
 
                     cb(formatted);
                 } catch (err) {
-                    console.error('get-initial-players error:', err);
                     cb([]);
                 }
             });
@@ -295,7 +268,6 @@ export default async function injectSocketIO(server) {
 
                     io.to(game._id).emit('cipher-solved', matchResult);
                 } catch (error) {
-                    console.error('❌ Error in check-quote:', error);
                     socket.emit('error', 'Error validating quote.');
                 }
             });
@@ -315,7 +287,6 @@ export default async function injectSocketIO(server) {
                         cb(null);
                     }
                 } catch (err) {
-                    console.error('Error retrieving match result:', err);
                     cb(null);
                 }
             });
@@ -340,7 +311,6 @@ export default async function injectSocketIO(server) {
                 io.to(socket.currentRoom).emit('rematch-votes', Array.from(rematchSet));
 
                 if (allAgreed) {
-                    console.log("All agreed to rematch!");
                     rematchVotesMap.delete(game._id); // Reset vote tracker
 
                     // Generate a new cipher and reset game
@@ -362,18 +332,10 @@ export default async function injectSocketIO(server) {
                 }
             });
 
-            socket.onAny((event, ...args) => {
-                console.log('📡 ' + user.username + ' Received event (game):', event, args);
-            });
-
             socket.on('disconnect', async () => {
                 try {
                     let updateLobby = true;
                     let latestGame = null;
-
-                    if (socket.disconnectReason) {
-                        console.log(socket.disconnectReason+": "+socketId);
-                    }
 
                     const latestUser = await UserGame.findById(userId);
                     if (latestUser?.currentSocketId === socketId && socket.disconnectReason != "replaced") {
@@ -389,7 +351,6 @@ export default async function injectSocketIO(server) {
                     }
 
                     if (!socket.disconnectReason) {
-                        console.log(`User ${userId} disconnected no reason`);
                         if (latestUser.currentGame) {
                             latestGame = await Game.findById(latestUser.currentGame).populate('users').exec();
                             if (latestGame && (latestGame.state !== 'waiting' || latestGame.mode === 'private')) {
@@ -401,7 +362,6 @@ export default async function injectSocketIO(server) {
                             const newHost = latestGame.users.find(u => u.currentSocketId != null);
                             if (newHost) {
                                 await Game.findByIdAndUpdate(latestGame._id, { host: newHost._id });
-                                console.log(`🔁 Host transferred to ${newHost._id.toString()}`);
                             }
                         }
                     }
@@ -416,17 +376,10 @@ export default async function injectSocketIO(server) {
 
                     if (updateLobby && !latestGame) {
                         io.to('public-lobby').emit('lobbies-updated');
-                        console.log("Lobbies updated");
                     }
-                } catch (err) {
-                    console.error(`❌ Error during disconnect for user ${userId}:`, err);
-                }
+                } catch (_) { }
             });
         } else {
-            socket.onAny((event, ...args) => {
-                console.log('📡 ' + user.username + ' Received event (lobby):', event, args);
-            });
-
             socket.on('get-public-lobbies', async (request, cb) => {
                 try {
                     const { searchTerms = {}, limit = 50 } = request || {};
@@ -517,7 +470,6 @@ export default async function injectSocketIO(server) {
 
                     cb(formatted);
                 } catch (err) {
-                    console.error('Error in get-public-lobbies:', err);
                     cb([]);
                 }
             });
@@ -528,13 +480,7 @@ export default async function injectSocketIO(server) {
                     if (active === socketId) {
                         lobbySockets.delete(userId);
                     }
-
-                    if (socket.disconnectReason) {
-                        console.log(socket.disconnectReason+" (lobby): "+socketId);
-                    }
-                } catch (err) {
-                    console.error(`❌ Error during disconnect for user ${userId}:`, err);
-                }
+                } catch (_) { }
             });
         }
     });

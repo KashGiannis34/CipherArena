@@ -10,12 +10,12 @@
   import CipherModal from '$lib/Components/Game/CipherModal.svelte';
   import ProfilePicture from '$lib/Components/General/ProfilePicture.svelte';
   import ProgressDisplay from '$lib/Components/Game/ProgressDisplay.svelte';
+  import { PUBLIC_APP_URL } from '$env/static/public';
 
   let { data } = $props();
   let stopListening;
   let socket;
   let gameState = $state(data.state);
-  console.log("data.state: ", data.state);
   let cipherRetrieved = $state(false);
   let resultRetrieved = $state(false);
   let players = $state([]);
@@ -30,6 +30,19 @@
   let rematchVoters = $state([]);
   let historicalPlayers = $state([]); // Includes all players, even ones who left
   let progressMap = $state({}); // { [username]: percentageFilled }
+
+  let statusMessage = $state(null);
+  let statusType = $state('info'); // 'info', 'error', 'success'
+  let messageTimer;
+
+  function showStatus(msg, type = 'info', duration = 3000) {
+    statusMessage = msg;
+    statusType = type;
+    clearTimeout(messageTimer);
+    messageTimer = setTimeout(() => {
+      statusMessage = null;
+    }, duration);
+  }
 
   function checkQuote(quote, hash, cipherType, keys, solve, startTime) {
     return new Promise((resolve) => {
@@ -74,17 +87,17 @@
   async function leaveGame() {
       gameState = "leavingGame";
       try {
-          const res = await fetch('/api/leave-current-game', { method: 'POST', body: JSON.stringify({ gameId: data.roomID }) });
+        const res = await fetch('/api/leave-current-game', { method: 'POST', body: JSON.stringify({ gameId: data.roomID }) });
       } catch (e) {
-          console.error('Leave failed:', e);
+        showStatus('Leave game failed.', 'error');
       } finally {
-          socket?.emit('leave-room');
-          socket?.disconnect();
-          if (data.mode == 'private') {
-            goto('/private-lobby');
-          } else {
-            goto('/public-lobby');
-          }
+        socket?.emit('leave-room');
+        socket?.disconnect();
+        if (data.mode == 'private') {
+          goto('/private-lobby');
+        } else {
+          goto('/public-lobby');
+        }
       }
   }
 
@@ -102,8 +115,6 @@
       matchResult.players = matchResult.players.map(p => {
         const latest = basePlayers.get(p.username);
         const current = assignedPlayers.get(p.username);
-        console.log('p.profilePicture: ', p.profilePicture);
-        console.log('current.profilePicture: ', current?.profilePicture);
         return {
           ...p,
           profilePicture: p.profilePicture ?? current?.profilePicture,
@@ -141,25 +152,25 @@
 
   onMount(() => {
 
-    socket = io({
+    socket = io(PUBLIC_APP_URL, {
       auth: {
         token: decodeURIComponent(data['authToken']),
         joinLobby: false
-      }
+      },
+      withCredentials: true,
     });
 
     socket.on('connect', () => {
-      console.log('You are connected with id', socket.id);
+      showStatus('Connected to server', 'success');
     });
 
     socket.on('connect_error', (error) => {
-      console.error('Connection error:', error);
+      showStatus('Connection failed. Try again.', 'error');
       gameState = "disconnected";
     });
 
     socket.on('ready', () => {
       socket.emit('join-room');
-      console.log('Current game state: ', $state.snapshot(gameState));
       if (gameState == 'started') {
         socket.emit('get-cipher-info', info => {
           cipherData.params = info.params;
@@ -193,19 +204,16 @@
     stopListening = listenForTabEvents(['leave-game'], ({ type, payload }) => {
         if (payload.gameId === data['roomID']) {
             socket.disconnect();
-            console.log('Handled leave-game from another tab');
             goto('/');
         }
     });
 
     socket.on('disconnect', (message) => {
-        console.log('You are now disconnected from the server', message);
         socket?.emit('left-room');
         gameState = "disconnected";
     });
 
     socket.on('players-changed', () => {
-        console.log('Players changed');
         fetchPlayers();
     });
 
@@ -220,7 +228,6 @@
     });
 
     socket.on('start-game', (params, autoFocus, quote) => {
-      console.log('Game started');
       cipherData.params = params;
       cipherData.autoFocus = autoFocus;
       cipherData.quote = quote;
@@ -261,6 +268,12 @@
     stopListening?.();
   });
 </script>
+
+{#if statusMessage}
+  <div class="status-bar {statusType}" transition:fade>
+    {statusMessage}
+  </div>
+{/if}
 
 {#if gameState === "disconnected"}
   <div transition:fade>Disconnected.</div>
@@ -420,6 +433,35 @@
 {/if}
 
 <style>
+  .status-bar {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    z-index: 2000;
+    max-width: 90vw;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    text-align: center;
+    color: white;
+    opacity: 0.95;
+  }
+
+  .status-bar.info {
+    background: #555;
+  }
+
+  .status-bar.success {
+    background: #28c76f;
+  }
+
+  .status-bar.error {
+    background: #ea5455;
+  }
+
   .profile-link {
 		color: #fff;
 		text-decoration: none;

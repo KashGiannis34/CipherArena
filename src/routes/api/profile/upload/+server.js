@@ -1,9 +1,9 @@
-import { getS3Client } from '$lib/server/s3Client';
+import { getS3Client } from '$db/s3Client';
 import {PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { UserGame } from '$db/models/UserGame.js';
+import { UserGame } from '$dbutils/UserGame.js';
 import { json } from '@sveltejs/kit';
 import { v4 as uuidv4 } from 'uuid';
-import { authenticate } from '$db/auth/authenticate.js';
+import { authenticate } from '$dbutils/authenticate.js';
 
 export async function POST({ request, cookies }) {
   const auth = await authenticate(cookies.get('auth-token'));

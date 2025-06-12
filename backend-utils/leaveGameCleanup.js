@@ -1,6 +1,6 @@
 // src/db/game/leaveGameCleanup.js
-import { Game } from './models/Game';
-import { UserGame } from './models/UserGame';
+import { Game } from './Game.js';
+import { UserGame } from './UserGame.js';
 import { ObjectId } from 'mongodb';
 
 /**
@@ -28,16 +28,12 @@ export async function leaveGameCleanup(userId, gameId) {
 
     if (game.users.length === 0) {
         await game.deleteOne();
-        console.log(`Deleted game ${game._id} after user left`);
         return { success: true, message: 'User left and game deleted', gameId: gameId };
     } else {
         if (game.host.equals(user._id)) {
             const newHost = game.users.find(u => u.currentSocketId != null);
             if (newHost) {
                 game.host = newHost._id;
-                console.log(`🔁 Host transferred to ${newHost._id.toString()}`);
-            } else {
-                console.log(`🟡 No replacement host found (all players disconnected)`);
             }
         }
     }

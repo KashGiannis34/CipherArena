@@ -1,5 +1,5 @@
 // src/routes/api/game-players/+server.js
-import { Game } from '$db/models/Game';
+import { Game } from '$dbutils/Game';
 import { json } from '@sveltejs/kit';
 
 export async function GET({ url }) {

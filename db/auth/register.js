@@ -1,5 +1,5 @@
 import { UserAuth } from "$db/models/UserAuth";
-import { UserGame } from "$db/models/UserGame";
+import { UserGame } from "$dbutils/UserGame";
 import pkg from 'argon2';
 const argon2 = pkg;
 
@@ -11,15 +11,18 @@ export async function verify_email(email) {
 	if (!email.match(email_regexp))
 		return "Please enter a valid email.";
 
+    let previous_user;
     try {
-        const previous_user = await UserAuth.findOne({ $exists: email });
+        previous_user = await UserAuth.findOne({ email });
     } catch (err) {
-        if (err.code === 11000) {
-            throw new Error("There is already an account with this email.");
-        }
+        return "Error finding existing email.";
     }
 
-	return "";
+    if (previous_user) {
+        return "There is already an account with this email.";
+    } else {
+        return "";
+    }
 }
 
 export function verify_password(password, confirmPass) {
@@ -77,9 +80,9 @@ export async function verify_username(name) {
     const previous_user = await UserAuth.findOne({ 'username': name });
 
 	if (previous_user)
-        "There is already an account with this username.";
-
-	return "";
+        return "There is already an account with this username.";
+    else
+        return "";
 }
 
 export async function register_user(name, email, password, confirmPass) {

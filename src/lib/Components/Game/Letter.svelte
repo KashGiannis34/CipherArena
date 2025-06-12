@@ -1,6 +1,6 @@
 <script>
-    import { cipherTypes } from "$lib/util/CipherTypes";
-    import {isLetter, isSolvableChunk} from "$lib/util/CipherUtil";
+    import { cipherTypes } from "$utils/CipherTypes";
+    import {isLetter, isSolvableChunk} from "$utils/CipherUtil";
 
     let {inputs=$bindable(), letterInputs, cipherLetter, index, inputValue, selected, directMap, autoFocus, onArrow, onFocus, onChange, solved, cipherType, keyLetter} = $props();
     let error = $state(false);

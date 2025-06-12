@@ -11,9 +11,9 @@ export async function findRandomEntry(schema, query) {
 const one_day = 60 * 60 * 24;
 
 export const cookie_options = {
-	httpOnly: true,
-	secure: true,
-	sameSite: "strict",
-	path: "/",
-	maxAge: one_day,
-}
+  httpOnly: true,
+  secure: true,
+  sameSite: "strict",
+  path: "/",
+  maxAge: one_day,
+};

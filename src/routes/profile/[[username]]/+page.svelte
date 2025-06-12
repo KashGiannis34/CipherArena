@@ -3,7 +3,7 @@
   import ProfileStats from '$lib/Components/General/ProfileStats.svelte';
   import BadgeDisplay from '$lib/Components/Game/BadgeDisplay.svelte';
   import { getUnlockedBadges } from '$lib/util/badgeConfig.js';
-  import { cipherTypes } from '$lib/util/CipherTypes.js';
+  import { cipherTypes } from '$utils/CipherTypes.js';
   import SolveTimeHistogram from '$lib/Components/Game/SolveTimeHistogram.svelte';
 
 

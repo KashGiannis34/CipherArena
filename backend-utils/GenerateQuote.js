@@ -1,8 +1,8 @@
-import { findRandomEntry } from "../db/dbUtil.js";
-import { Quote } from "../db/models/Quote.js";
-import { Word } from "../db/models/Word.js";
-import { cipherTypes } from "../lib/util/CipherTypes.js";
-import { encodeQuote } from "../lib/util/CipherUtil.js";
+import { findRandomEntry } from "./dbUtil.js";
+import { Quote } from "./Quote.js";
+import { Word } from "./Word.js";
+import { cipherTypes } from "../shared-utils/CipherTypes.js";
+import { encodeQuote } from "../shared-utils/CipherUtil.js";
 
 export async function generateQuote(p) {
     const randomQuote = await findRandomEntry(Quote, {length: {$gte: cipherTypes[p['cipherType']]['length'][0], $lte: cipherTypes[p['cipherType']]['length'][1]}});
@@ -20,7 +20,6 @@ export async function generateQuote(p) {
     const encodedQuote = p['Solve'] == "Decode" ?
         encodeQuote(randomQuote["text"], (p['cipherType'] == 'Patristocrat' ? 'Aristocrat':p['cipherType']), keys, p)
         : randomQuote["text"].split('').map(c => c.toUpperCase());
-    console.log("randomQuote", randomQuote['text']);
 
     return {"id": randomQuote["_id"].toString(), "quote": encodedQuote, "keys": keys};
 }

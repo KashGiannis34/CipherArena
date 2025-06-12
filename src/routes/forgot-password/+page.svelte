@@ -1,23 +1,15 @@
 <script>
   import Container from '$lib/Components/General/Container.svelte';
   import { fade } from 'svelte/transition';
-  import { enhance } from '$app/forms';
+
+  let {form} = $props();
 
   let email = $state("");
   let sending = $state(false);
-  let feedback = $state(null);
 </script>
 
 <Container --minWidth=none --maxWidth=min(80vw,600px)>
-  <form method="POST" use:enhance={async () => {
-    return ({ result }) => {
-      sending = false;
-      feedback = result.data;
-    };
-  }} onsubmit={() => {
-    sending = true;
-    feedback = null;
-  }}>
+  <form method="POST">
     <h1>Forgot Password</h1>
 
     <label>
@@ -25,10 +17,10 @@
       <input bind:value={email} name="email" type="email" placeholder="Enter your email" required />
     </label>
 
-    {#if feedback?.error}
-      <p class="error" transition:fade>{feedback.error}</p>
-    {:else if feedback?.message}
-      <p class="message" transition:fade>{feedback.message}</p>
+    {#if form?.error}
+      <p class="error" transition:fade>{form.error}</p>
+    {:else if form?.message}
+      <p class="message" transition:fade>{form.message}</p>
     {/if}
 
     <button type="submit" class="button">

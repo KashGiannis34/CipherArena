@@ -27,6 +27,7 @@
   <div class="section hero-section" in:fade>
     <div class="hero">Welcome to Cipher Arena</div>
     <div class="subhero">Crack codes. Train your brain. Compete with friends.</div>
+    <div class="subhero"><a href="/account/register" target="_blank" rel="noopener noreferrer" class="profile-link">Create an account</a> to play multiplayer</div>
     <div class="image-container hero-image-container">
       <img src="/landing-page/hero-mock.png" alt="Cipher Arena Dashboard" />
     </div>

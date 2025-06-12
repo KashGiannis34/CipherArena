@@ -1,63 +1,24 @@
 import { register_user } from '$db/auth/register';
 import { UserAuth } from '$db/models/UserAuth';
 import {login_user} from '$db/auth/login';
-import { error, fail } from '@sveltejs/kit';
-import { Cookies } from "@sveltejs/kit";
-import { cookie_options } from '$db/dbUtil';
+import { fail, redirect } from '@sveltejs/kit';
+import { cookie_options } from '$dbutils/dbUtil';
 import { createVerificationToken } from '$db/auth/verify';
 import { sendVerificationEmail } from '$db/auth/mailer';
 
-import { redirect } from '@sveltejs/kit';
-import { authenticate } from '$db/auth/authenticate.js';
+import { authenticate } from '$dbutils/authenticate.js';
 
-export function load({ params, cookies }) {
+export function load({ cookies }) {
     const auth = authenticate(cookies.get('auth-token'));
     if (auth) {
         throw redirect(303, '/profile');
     }
-
-    const mode = params.mode;
-
-    if (mode !== 'login' && mode !== 'register') {
-        throw error(404, 'Invalid account mode');
-    }
-
-    return { login: mode === 'login' };
 }
 
 
 /** @satisfies {import('./$types').Actions} */
 export const actions = {
-    login: async ({cookies, request}) => {
-        const data = await request.formData();
-
-		const email = data.get("email");
-		const password = data.get("password");
-
-        const user_data = await login_user(email, password);
-
-
-		if ("error" in user_data) {
-			return fail(400, { email, error: user_data.error });
-		} else {
-			const { token, user } = user_data;
-
-			cookies.set("auth-token", token, {
-                httpOnly: true,
-                secure: true,
-                path: "/",
-                maxAge: 60 * 60 * 24,
-            });
-
-            cookies.set("auth-token", token, cookie_options);
-            cookies.set("email", user.email, cookie_options);
-            cookies.set("username", user.username, cookie_options);
-            cookies.set("verified", user.verified, cookie_options);
-
-            return {redirect: "/profile"};
-		}
-    },
-    register: async ({request}) => {
+    default: async ({request}) => {
         const data = await request.formData();
         const username = data.get('username');
 		const email = data.get('email');
@@ -67,7 +28,7 @@ export const actions = {
 		const { error } = await register_user(username, email, password, confirmPass);
 
 		if (error) {
-			return fail(400, { error });
+			return fail(400, { error, email, username });
 		}
 
         try {

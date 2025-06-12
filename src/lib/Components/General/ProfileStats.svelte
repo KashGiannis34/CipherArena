@@ -1,5 +1,5 @@
 <script>
-    import { cipherTypes } from '$lib/util/CipherTypes.js';
+    import { cipherTypes } from '$utils/CipherTypes.js';
     let { stats } = $props();
 
     function winPercent(stat) {

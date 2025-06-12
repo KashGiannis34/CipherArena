@@ -1,12 +1,11 @@
-import { authenticate } from '$db/auth/authenticate';
-import { Game } from '$db/models/Game';
+import { authenticate } from '$dbutils/authenticate';
+import { Game } from '$dbutils/Game';
 import { json, redirect } from '@sveltejs/kit';
 import { ObjectId } from 'mongodb';
-import { generateQuote } from '$db/GenerateQuote';
-import { Cookies } from "@sveltejs/kit";
-import { UserGame } from '$db/models/UserGame';
+import { generateQuote } from '$dbutils/GenerateQuote';
+import { UserGame } from '$dbutils/UserGame';
 import { UserAuth } from '$db/models/UserAuth';
-import { generateShortCode } from '$db/generateShortCode';
+import { generateShortCode } from '$db/GenerateShortCode';
 
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function POST({ request, cookies }) {

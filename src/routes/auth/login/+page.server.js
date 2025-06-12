@@ -1,12 +1,11 @@
 import { UserAuth } from '$db/models/UserAuth';
 import {login_user} from '$db/auth/login';
 import { fail, error } from '@sveltejs/kit';
-import { Cookies } from "@sveltejs/kit";
-import { cookie_options } from '$db/dbUtil';
+import { cookie_options } from '$dbutils/dbUtil';
 import { joinGame } from '$db/joinGame';
 
 import { redirect } from '@sveltejs/kit';
-import { authenticate } from '$db/auth/authenticate.js';
+import { authenticate } from '$dbutils/authenticate.js';
 
 export function load({ cookies }) {
   const auth = authenticate(cookies.get('auth-token'));
@@ -26,23 +25,17 @@ export const actions = {
         const user_data = await login_user(email, password);
 
         if ("error" in user_data) {
-            return fail(400, { email, error: user_data.error });
+            return fail(400, { email, error: user_data.error, roomId: data.get("roomId") });
         } else {
             const { token, user } = user_data;
-
-            cookies.set("auth-token", token, {
-                httpOnly: true,
-                secure: true,
-                path: "/",
-                maxAge: 60 * 60 * 24,
-            });
 
             cookies.set("auth-token", token, cookie_options);
             cookies.set("email", user.email, cookie_options);
             cookies.set("username", user.username, cookie_options);
             cookies.set("verified", user.verified, cookie_options);
+            console.log(data.get("roomId"));
 
-            return {redirect: ('/game-lobby/'+data.get("roomId"))};
+            redirect(303, '/game-lobby/'+data.get("roomId"));
         }
     }
 };

@@ -1,11 +1,10 @@
 import { register_user } from '$db/auth/register';
 import { UserAuth } from '$db/models/UserAuth';
 import { fail } from '@sveltejs/kit';
-import { Cookies } from "@sveltejs/kit";
 import { redirect } from '@sveltejs/kit';
 import { createVerificationToken } from '$db/auth/verify';
 import { sendVerificationEmail } from '$db/auth/mailer';
-import { authenticate } from '$db/auth/authenticate.js';
+import { authenticate } from '$dbutils/authenticate.js';
 
 export function load({ cookies }) {
   const auth = authenticate(cookies.get('auth-token'));
@@ -26,7 +25,7 @@ export const actions = {
 		const { error } = await register_user(username, email, password, confirmPass);
 
 		if (error) {
-			return fail(400, { error });
+			return fail(400, { error, roomId: data.get("roomId"), email, username });
 		}
 
         try {
@@ -37,14 +36,10 @@ export const actions = {
 
             // Send verification email
             await sendVerificationEmail(email, token, limit);
-
-            return {
-                message: "",
-                redirect: (data.get("roomId") ? "/auth/login"+"?roomId="+data.get("roomId") : '/')
-            };
         } catch (err) {
             console.error("Error sending verification email:", err);
-            return fail(500, { error: "Registration successful, but failed to send verification email." });
+        } finally {
+            redirect(303, (data.get("roomId") ? "/auth/login"+"?roomId="+data.get("roomId") : '/'));
         }
     }
 };

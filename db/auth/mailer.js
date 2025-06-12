@@ -1,5 +1,7 @@
 import nodemailer from "nodemailer";
-import { EMAIL_USER, EMAIL_PASSWORD, APP_URL } from "$env/static/private"
+const EMAIL_USER = process.env.EMAIL_USER; // Your Gmail address
+const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD; // Your Gmail app password
+const APP_URL = process.env.APP_URL;
 
 // Create a transporter using Gmail SMTP
 const transporter = nodemailer.createTransport({

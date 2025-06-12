@@ -1,8 +1,10 @@
 <script>
     import Auth from '$lib/Components/General/Auth.svelte';
-    let {data, form} = $props();
+    import { onMount } from 'svelte';
+
+    let {form} = $props();
 </script>
 
 <div style="all:inherit; padding:0 !important;">
-    <Auth login={false} toggleAvailable={false} roomId={data.roomId || form?.roomId} form={form}/>
+    <Auth login={true} toggleAvailable={true} form={form}/>
 </div>
