@@ -30,7 +30,9 @@ export const actions = {
 
         try {
             const limit = 20; // minutes
-            const user = await UserAuth.findOne({email});
+            const user = await UserAuth.findOne({
+            email: { $regex: `^${email}$`, $options: 'i' }
+            });
             // Generate verification token
             const token = await createVerificationToken(user, limit);
 

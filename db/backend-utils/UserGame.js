@@ -16,10 +16,29 @@ const CipherStatsSchema = new mongoose.Schema({
   }
 }, { _id: false });
 
+const SingleplayerCipherStatsSchema = new mongoose.Schema({
+  wins: { type: Number, default: 0 },
+  total: { type: Number, default: 0 },
+  averageSolveTime: { type: Number, default: null },
+  bestSolveTime: { type: Number, default: null },
+  solveTimes: {
+    type: [{
+      time: { type: Number, required: true },
+      length: { type: Number, required: true }
+    }],
+    default: []
+  }
+}, { _id: false });
+
 const statsShape = {};
 const allTypes = [...Object.keys(cipherTypes), 'All'];
 for (const type of allTypes) {
 	statsShape[type] = { type: CipherStatsSchema, default: () => ({}) };
+}
+
+const singleplayerStatsShape = {};
+for (const type of allTypes) {
+  singleplayerStatsShape[type] = { type: SingleplayerCipherStatsSchema, default: () => ({}) };
 }
 
 const UserGameSchema = new mongoose.Schema({
@@ -48,6 +67,20 @@ const UserGameSchema = new mongoose.Schema({
 			return initial;
 		}
 	},
+  singleplayerStats: {
+    type: singleplayerStatsShape,
+    default: () => {
+      const initial = {};
+      for (const type of allTypes) {
+        initial[type] = {
+          wins: 0,
+          total: 0,
+          solveTimes: [],
+        };
+      }
+      return initial;
+    }
+  },
   currentSocketId: {
     type: String,
     default: null

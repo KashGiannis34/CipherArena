@@ -14,7 +14,9 @@ async function get_user(email, password) {
         return { error: "Please enter a valid email." };
     }
 
-    const user = await UserAuth.findOne({ email });
+    const user = await UserAuth.findOne({
+    email: { $regex: `^${email}$`, $options: 'i' }
+    });
 
     if (!password) {
         return { error: "Password is required." };

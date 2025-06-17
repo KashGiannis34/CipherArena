@@ -4,7 +4,7 @@
   import { portal } from '$lib/util/portal.js';
   import { cubicOut } from 'svelte/easing';
 
-  let { unlockedBadgeIds = [], stats, isOwnProfile } = $props();
+  let { unlockedBadgeIds = [], stats, singleStats, isOwnProfile } = $props();
 
   let selectedBadge = $state(null);
 
@@ -100,8 +100,8 @@
                 <h3>{selectedBadge.label}</h3>
                 <p>{selectedBadge.description}</p>
                 {#if !unlockedSet.has(selectedBadge.id)}
-                  {#if selectedBadge.progress(stats)}
-                    <p class="badge-progress">Progress: {selectedBadge.progress(stats)}</p>
+                  {#if selectedBadge.progress(stats, singleStats)}
+                    <p class="badge-progress">Progress: {selectedBadge.progress(stats, singleStats)}</p>
                   {/if}
                 {/if}
               </div>

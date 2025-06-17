@@ -8,11 +8,12 @@
 
 
   let { data } = $props();
-  let { username, profilePicture, stats, isOwnProfile } = data;
+  let { username, profilePicture, stats, singleplayerStats, isOwnProfile } = data;
 
   let profileStats = stats ? JSON.parse(stats) : {};
+  let singleStats = singleplayerStats ? JSON.parse(singleplayerStats) : {};
   let uploadError = $state("");
-  let unlockedBadgeIds = $derived(getUnlockedBadges(profileStats).map(b => b.id));
+  let unlockedBadgeIds = $derived(getUnlockedBadges(profileStats, singleStats).map(b => b.id));
 
   let selectedCipher = $state('All');
   let cipherOptions = ['All', ...Object.keys(cipherTypes)];
@@ -22,9 +23,13 @@
   }
 
   function getSolveTimes(cipher) {
-    return profileStats?.[cipher]?.solveTimes?.map(entry =>
-      entry.length > 0 ? entry.time / entry.length : 0
-    ) ?? [];
+    const multi = profileStats?.[cipher]?.solveTimes ?? [];
+    const single = singleStats?.[cipher]?.solveTimes ?? [];
+
+    const normalized = (arr) =>
+      arr.map(entry => entry.length > 0 ? entry.time / entry.length : 0);
+
+    return [...normalized(multi), ...normalized(single)];
   }
 </script>
 
@@ -47,7 +52,7 @@
   </div>
 
   <div class="badges-wrapper animate-stats-float">
-    <BadgeDisplay {unlockedBadgeIds} stats={profileStats} {isOwnProfile} />
+    <BadgeDisplay {unlockedBadgeIds} stats={profileStats} singleStats={singleStats} {isOwnProfile} />
   </div>
 
   <div class="divider-section animate-divider-expand">
@@ -55,7 +60,7 @@
   </div>
 
   <div class="stats-wrapper animate-stats-float">
-    <ProfileStats stats={profileStats} />
+    <ProfileStats stats={profileStats} singleStats={singleStats} />
   </div>
 
   <div class="divider-section animate-divider-expand">

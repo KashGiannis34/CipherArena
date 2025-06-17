@@ -26,15 +26,15 @@
 	async function checkQuote(i, hash, cipherType, keys, solve, startTime) {
 		let solved = false;
         try {
+			const time = Number(((Date.now() / 1000) - startTime).toFixed(3));
             const response = await fetch('/api/validate-quote', {
                 method: 'POST',
-                body: JSON.stringify({'input':i, 'id':hash, 'cipherType':cipherType, 'keys':keys, 'solve':solve}),
+                body: JSON.stringify({'input':i, 'id':hash, 'cipherType':cipherType, 'keys':keys, 'solveTime':time, }),
                 headers: {
                     'content-type': 'application/json'
                 }
 		    });
             const answer = await response.json();
-            const time = (Date.now()/1000)-startTime;
             const strTime = Math.floor(time/60).toString().padStart(2,'0')+':'+Math.round(time%60, 0).toString().padStart(2,'0');
             if (answer) {
                 feedbackMessage = "Congratulations! The cipher was solved in " + strTime + "!";

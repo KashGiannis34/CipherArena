@@ -30,6 +30,7 @@ export async function load({ params, cookies }) {
     username: profileUser.username,
     profilePicture: profileUser.profilePicture,
     stats: JSON.stringify(profileUser.stats),
+    singleplayerStats: JSON.stringify(profileUser.singleplayerStats),
     isOwnProfile
   };
 }

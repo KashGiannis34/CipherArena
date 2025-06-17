@@ -13,7 +13,9 @@ export async function verify_email(email) {
 
     let previous_user;
     try {
-        previous_user = await UserAuth.findOne({ email });
+        previous_user = await UserAuth.findOne({
+        email: { $regex: `^${email}$`, $options: 'i' }
+        });
     } catch (err) {
         return "Error finding existing email.";
     }
@@ -101,7 +103,7 @@ export async function register_user(name, email, password, confirmPass) {
 
 	const user = new UserAuth({
         'username': name,
-		'email': email,
+		'email': email.toLowerCase(),
 		password: hashed_password,
         lastVerificationRequest: now
 	});

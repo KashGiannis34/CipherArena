@@ -276,7 +276,9 @@
                 <h4>The {cipherTypes[cipherType]['keys'][index]} is <span class="highlight" style="border-radius: 3px; padding: 3px;">{key}</span>. </h4>
             {/if}
         {/each}
-
+        {#if cipherType == 'Xenocrypt'}
+            <h4>Type "," to get "Ñ".</h4>
+        {/if}
     </div>
     <div class="cipher">
         {#each lettersWithIndices as word}

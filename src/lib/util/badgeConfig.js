@@ -90,8 +90,11 @@ export const badgeCriteria = [
     id: 'fast_solver_10s',
     label: 'Lightning Solver',
     description: 'Solve any cipher in under 10 seconds.',
-    progress: stats => {
-      const times = stats?.All?.solveTimes ?? [];
+    progress: (stats, singleStats) => {
+      const times = [
+        ...(stats?.All?.solveTimes ?? []),
+        ...(singleStats?.All?.solveTimes ?? [])
+      ];
       if (times.some(t => t.time < 10)) return undefined;
       if (times.length === 0) return 'No solves yet';
       const closest = Math.min(...times.map(t => t.time));
@@ -102,8 +105,12 @@ export const badgeCriteria = [
     id: 'under_30s_25x',
     label: 'Quick Thinker',
     description: 'Solve 25 ciphers in under 30 seconds.',
-    progress: stats => {
-      const count = stats?.All?.solveTimes?.filter(t => t.time < 30).length ?? 0;
+    progress: (stats, singleStats) => {
+      const times = [
+        ...(stats?.All?.solveTimes ?? []),
+        ...(singleStats?.All?.solveTimes ?? [])
+      ];
+      const count = times.filter(t => t.time < 30).length;
       return count >= 25 ? undefined : `${count}/25 solves`;
     }
   },
@@ -111,8 +118,12 @@ export const badgeCriteria = [
     id: 'under_60s_50x',
     label: 'Speed Demon',
     description: 'Solve 50 ciphers in under 60 seconds.',
-    progress: stats => {
-      const count = stats?.All?.solveTimes?.filter(t => t.time < 60).length ?? 0;
+    progress: (stats, singleStats) => {
+      const times = [
+        ...(stats?.All?.solveTimes ?? []),
+        ...(singleStats?.All?.solveTimes ?? [])
+      ];
+      const count = times.filter(t => t.time < 60).length;
       return count >= 50 ? undefined : `${count}/50 solves`;
     }
   },
@@ -120,8 +131,12 @@ export const badgeCriteria = [
     id: 'under_34s_34x_aristocrat',
     label: 'Freaky Fast Aristocrat',
     description: 'Solve 34 Aristocrat ciphers in under 34 seconds.',
-    progress: stats => {
-      const count = stats?.Aristocrat?.solveTimes?.filter(t => t.time < 34).length ?? 0;
+    progress: (stats, singleStats) => {
+      const times = [
+        ...(stats?.Aristocrat?.solveTimes ?? []),
+        ...(singleStats?.Aristocrat?.solveTimes ?? [])
+      ];
+      const count = times.filter(t => t.time < 34).length;
       return count >= 34 ? undefined : `${count}/34 solves`;
     }
   },
@@ -129,8 +144,11 @@ export const badgeCriteria = [
     id: 'close_call_59',
     label: 'Close Call',
     description: 'Solve a cipher in exactly 59 seconds.',
-    progress: stats => {
-      const times = stats?.All?.solveTimes ?? [];
+    progress: (stats, singleStats) => {
+      const times = [
+        ...(stats?.All?.solveTimes ?? []),
+        ...(singleStats?.All?.solveTimes ?? [])
+      ];
       if (times.some(t => Math.round(t.time) === 59)) return undefined;
       if (times.length === 0) return 'No solves yet';
       const closest = times.reduce((prev, curr) =>
@@ -142,8 +160,12 @@ export const badgeCriteria = [
     id: 'slow_grinder',
     label: 'Slow and Steady',
     description: 'Solve a cipher that took over 5 minutes.',
-    progress: stats => {
-      const times = stats?.All?.solveTimes ?? [];
+    progress: (stats, singleStats) => {
+      const times = [
+        ...(stats?.All?.solveTimes ?? []),
+        ...(singleStats?.All?.solveTimes ?? [])
+      ];
+
       if (times.some(t => t.time >= 300)) return undefined;
       if (times.length === 0) return 'No solves yet';
       const longest = Math.max(...times.map(t => t.time));
@@ -154,8 +176,11 @@ export const badgeCriteria = [
     id: 'prime_times_under_60',
     label: 'Prime Time Sniper',
     description: 'Solve at least one cipher in every 2-digit prime number of seconds (11–59).',
-    progress: stats => {
-      const times = stats?.All?.solveTimes ?? [];
+    progress: (stats, singleStats) => {
+      const times = [
+        ...(stats?.All?.solveTimes ?? []),
+        ...(singleStats?.All?.solveTimes ?? [])
+      ];
       const requiredPrimes = [11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59];
       const timeSet = new Set(times.map(t => Math.round(t.time)));
       const found = requiredPrimes.filter(p => timeSet.has(p));
@@ -164,6 +189,6 @@ export const badgeCriteria = [
   }
 ];
 
-export function getUnlockedBadges(stats) {
-  return badgeCriteria.filter(b => b.progress(stats) === undefined);
+export function getUnlockedBadges(stats, singleStats) {
+  return badgeCriteria.filter(b => b.progress(stats, singleStats) === undefined);
 }

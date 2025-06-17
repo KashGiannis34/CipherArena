@@ -8,6 +8,7 @@ import { leaveGameCleanup } from '../db/backend-utils/leaveGameCleanup.js';
 import socketIORateLimiter from '@d3vision/socket.io-rate-limiter';
 import * as wsUtil from './wsUtil.js';
 import { generateQuote } from '../db/backend-utils/GenerateQuote.js';
+import { incrementTotal, incrementWin } from '../db/backend-utils/statsUtil.js';
 
 
 export default async function injectSocketIO(server) {
@@ -222,6 +223,12 @@ export default async function injectSocketIO(server) {
                         game = await Game.findById(game._id).populate('users').exec();
                     }
 
+                    // If it's really just a singleplayer game, count it toward singleplayer total
+                    if (game.mode === 'ranked' && game.users.length === 1 && user._id.equals(game.users[0]._id)) {
+                        const cipherType = game.params.cipherType;
+                        user = await incrementTotal(user._id, cipherType, true);
+                    }
+
                     game.state = 'started';
                     game.metadata = {
                         initialUserIds: game.users,
@@ -292,6 +299,10 @@ export default async function injectSocketIO(server) {
                     }
 
                     const initialPlayers = await UserGame.find({ _id: { $in: game.metadata.initialUserIds } });
+
+                    if (game.mode === 'ranked' && game.metadata?.initialUserIds?.length === 1 && game.metadata.initialUserIds[0].equals(user._id)) {
+                        user = await incrementWin(user._id, cipherType, solveTime, length, true);
+                    }
 
                     const matchResult = {
                         winner: user.username,
@@ -520,7 +531,6 @@ export default async function injectSocketIO(server) {
         }
     });
 
-    console.log('SocketIO injected');
 }
 
 async function handleForfeitRequest(game, shouldForfeit, io, forfeitVotesMap, rematchVotesMap, user) {

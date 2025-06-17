@@ -22,7 +22,7 @@ export async function GET({ url }) {
                                     { $getField: { field: 'losses', input: { $getField: { field: cipherType, input: '$stats' } } } }
                                 ]
                             },
-                            50
+                            10
                         ]
                     }
                 },
@@ -70,7 +70,7 @@ export async function GET({ url }) {
             const leaderboard = await UserGame.aggregate([
                 {
                     $match: {
-                        [`stats.${cipherType}.wins`]: { $gte: 50 },
+                        [`stats.${cipherType}.wins`]: { $gte: 5 },
                         [`stats.${cipherType}.averageSolveTime`]: { $gt: 0 }
                     }
                 },

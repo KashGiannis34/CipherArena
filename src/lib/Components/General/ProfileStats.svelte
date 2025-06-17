@@ -1,55 +1,128 @@
 <script>
-    import { cipherTypes } from '$db/shared-utils/CipherTypes.js';
-    let { stats } = $props();
+  import { cipherTypes } from '$db/shared-utils/CipherTypes.js';
+  let { stats, singleStats } = $props();
 
-    function winPercent(stat) {
-        const info = stat ?? { wins: 0, losses: 0 };
-        const total = info.wins + info.losses;
-        const winPct = total == 0 ? 0 : (info.wins / total) * 100;
-        return winPct.toFixed(2) + '%';
+  const orderedStatKeys = ['All', ...Object.keys(cipherTypes)];
+
+  let statMode = $state('multiplayer'); // 'multiplayer' or 'singleplayer'
+
+  function winPercent(stat) {
+    const info = stat ?? { wins: 0, losses: 0, total: 0 };
+    let total = 0;
+    if (statMode == 'multiplayer') {
+        total = (info.wins ?? 0) + (info.losses ?? 0);
+    } else {
+        total = info.total;
     }
 
-    function formatTime(seconds) {
-        if (seconds == null || isNaN(seconds)) return '—';
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.round(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
+    const winPct = total === 0 ? 0 : (info.wins / total) * 100;
+    return winPct.toFixed(2) + '%';
+  }
 
-    const orderedStatKeys = ['All', ...Object.keys(cipherTypes)];
+  function formatTime(seconds) {
+    if (seconds == null || isNaN(seconds)) return '—';
+    const rounded = Math.round(seconds);
+    const mins = Math.floor(rounded / 60);
+    const secs = rounded % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  function getStat(cipher) {
+    return statMode === 'multiplayer' ? stats?.[cipher] : singleStats?.[cipher];
+  }
 </script>
 
+<div class="note-wrapper">
+    {#if statMode === 'singleplayer'}
+        <p class="note-inline empty">* Singleplayer stats do not count towards leaderboard.</p>
+    {/if}
+</div>
+
+<div class="stat-mode-selector">
+  <button
+    class:selected={statMode === 'multiplayer'}
+    onclick={() => statMode = 'multiplayer'}
+  >Multiplayer</button>
+  <button
+    class:selected={statMode === 'singleplayer'}
+    onclick={() => statMode = 'singleplayer'}
+  >Singleplayer</button>
+</div>
+
 <div class="table-wrapper">
-    <table class="leaderboard-table">
-        <thead>
-            <tr>
-                <th>Cipher</th>
-                <th>Elo</th>
-                <th>Wins</th>
-                <th>Losses</th>
-                <th>Win %</th>
-                <th>Avg Seconds Per Char</th>
-                <th>Best Time</th>
-            </tr>
-        </thead>
-        <tbody>
-            {#each orderedStatKeys as cipher}
-                <tr class="table-row">
-                <td><strong>{cipher}</strong></td>
-                <td>{stats[cipher]?.elo ?? 1000}</td>
-                <td>{stats[cipher]?.wins ?? 0}</td>
-                <td>{stats[cipher]?.losses ?? 0}</td>
-                <td>{winPercent(stats[cipher])}</td>
-                <td>{stats[cipher]?.averageSolveTime ? stats[cipher].averageSolveTime.toFixed(2) : 'N/A'}</td>
-                <td>{formatTime(stats[cipher]?.bestSolveTime)}</td>
-                </tr>
-            {/each}
-        </tbody>
-    </table>
+  <table class="leaderboard-table">
+    <thead>
+      <tr>
+        <th>Cipher</th>
+        {#if statMode === 'multiplayer'}
+          <th>Elo</th>
+        {/if}
+        <th>{statMode === 'singleplayer' ? 'Solves' : 'Wins'}</th>
+        {#if statMode === 'multiplayer'}
+          <th>Losses</th>
+        {/if}
+        <th>{statMode === 'singleplayer' ? 'Solve Rate' : 'Win %'}</th>
+        <th>Avg Seconds Per Char</th>
+        <th>Best Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {#each orderedStatKeys as cipher}
+        <tr class="table-row">
+          <td><strong>{cipher}</strong></td>
+          {#if statMode === 'multiplayer'}
+            <td>{getStat(cipher)?.elo ?? 1000}</td>
+          {/if}
+          <td>{getStat(cipher)?.wins ?? 0}{statMode == 'singleplayer' && (getStat(cipher)?.total) > 0 ? " / "+getStat(cipher).total : ""}</td>
+          {#if statMode === 'multiplayer'}
+            <td>{getStat(cipher)?.losses ?? 0}</td>
+          {/if}
+          <td>{winPercent(getStat(cipher))}</td>
+          <td>{getStat(cipher)?.averageSolveTime ? getStat(cipher).averageSolveTime.toFixed(2) : 'N/A'}</td>
+          <td>{formatTime(getStat(cipher)?.bestSolveTime)}</td>
+        </tr>
+      {/each}
+    </tbody>
+  </table>
 </div>
 
 <style>
-    .table-wrapper {
+    .note-wrapper {
+        height: 1.25rem; /* consistent vertical space */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .note-inline {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.5);
+        margin: 0;
+    }
+
+  .stat-mode-selector {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .stat-mode-selector button {
+    padding: 0.4rem 0.8rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+  }
+
+  .stat-mode-selector button.selected {
+    background: rgba(148, 131, 255, 0.25);
+    border-color: rgba(148, 131, 255, 0.6);
+  }
+
+  .table-wrapper {
         overflow-x: auto;
         margin-top: 1rem;
     }

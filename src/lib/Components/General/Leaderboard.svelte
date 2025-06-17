@@ -84,9 +84,9 @@
 
 	<div class="metric-note-wrapper">
 		{#if metric === 'win%'}
-			<p class="metric-note-inline">* Only users with 50+ ranked games are shown.</p>
+			<p class="metric-note-inline">* Only users with 10+ ranked games are shown.</p>
 		{:else if metric === 'avg solve time per char'}
-			<p class="metric-note-inline">* Only users with 50+ ranked wins are shown.</p>
+			<p class="metric-note-inline">* Only users with 5+ ranked wins are shown.</p>
 		{:else}
 			<!-- Invisible element to preserve height -->
 			<p class="metric-note-inline empty">&nbsp;</p>
