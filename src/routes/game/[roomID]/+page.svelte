@@ -49,9 +49,9 @@
     }, duration);
   }
 
-  function checkQuote(quote, hash, cipherType, keys, solve, startTime) {
+  function checkQuote(quote, hash, cipherType, keys, solve) {
     return new Promise((resolve) => {
-      socket.emit('check-quote', quote, hash, cipherType, keys, solve, startTime, result => {
+      socket.emit('check-quote', quote, hash, cipherType, keys, solve, result => {
         resolve({ solved: result });
       });
     });

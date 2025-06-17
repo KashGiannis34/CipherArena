@@ -36,7 +36,6 @@ const GameSchema = new mongoose.Schema({
     quote: {
         id: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Quote',
             required: true
         },
         encodedText: {

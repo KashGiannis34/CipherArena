@@ -2,7 +2,7 @@
     import { cipherTypes } from "$db/shared-utils/CipherTypes";
     import {isLetter, isSolvableChunk} from "$db/shared-utils/CipherUtil";
 
-    let {inputs=$bindable(), letterInputs, cipherLetter, index, inputValue, selected, directMap, autoFocus, onArrow, onFocus, onChange, solved, cipherType, keyLetter, checkQuote} = $props();
+    let {inputs=$bindable(), letterInputs, cipherLetter, index, inputValue, selected, directMap, autoFocus, onArrow, onFocus, onChange, solved, cipherType, keyLetter, checkQuote, spanish} = $props();
     let error = $state(false);
     let focus = $state(false);
 
@@ -14,6 +14,12 @@
             "Backspace",
             "Delete",
         ];
+
+        if (event.key == ',' && spanish) {
+            onChange(cipherLetter, 'Ñ', index);
+            event.preventDefault();
+            return;
+        }
 
         if (event.key == "ArrowLeft" || event.key == "ArrowRight") {
             onArrow(event.key, index);
@@ -67,9 +73,9 @@
         focus = false;
     }
 
-    if (isLetter(cipherLetter) && directMap) {
+    if (isLetter(cipherLetter, spanish) && directMap) {
         $effect(() => {
-            if (inputValue !== undefined && isLetter(inputValue)) {
+            if (inputValue !== undefined && isLetter(inputValue, spanish)) {
                 let vals = Object.values(letterInputs);
                 error = vals.indexOf(inputValue) != vals.lastIndexOf(inputValue);
             }
@@ -81,7 +87,7 @@
     {#if keyLetter}
         <div class="key-letter unselectable">{keyLetter}</div>
     {/if}
-    <div class="cipher-letter unselectable">{cipherLetter.toUpperCase()}</div>
+    <div class="cipher-letter unselectable">{cipherLetter ? cipherLetter.toUpperCase() : cipherLetter}</div>
     {#if isSolvableChunk(cipherLetter, cipherType)}
         <input
             bind:this={inputs[index]}

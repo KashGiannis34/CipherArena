@@ -1,4 +1,5 @@
 import { cipherTypes } from './CipherTypes.js';
+import GraphemeSplitter from 'grapheme-splitter';
 
 let splitter;
 function getSplitter() {
@@ -6,33 +7,25 @@ function getSplitter() {
   return splitter;
 }
 
-export function isLetter(character) {
-    return character !== '' && character !== ' ' && /^[a-zA-Z]*$/.test(character);
+export const ENGLISH_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+export const SPANISH_ALPHABET = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
+
+export function isLetter(character, isSpanish = false) {
+    const alphabet = isSpanish ? SPANISH_ALPHABET : ENGLISH_ALPHABET;
+    return alphabet.includes(character ? character.toUpperCase() : character);
 }
 
-export function letterToNumber(char) {
-    if (typeof char !== 'string' || char.length !== 1) {
-        return -1;
-    }
-    const charCode = char.toUpperCase().charCodeAt(0);
+export function letterToNumber(char, isSpanish = false) {
+    if (typeof char !== 'string' || char.length !== 1) return -1;
+    const alphabet = isSpanish ? SPANISH_ALPHABET : ENGLISH_ALPHABET;
 
-    if (charCode >= 65 && charCode <= 90) { // A-Z
-        return charCode - 65;
-    }
-
-    if (charCode >= 97 && charCode <= 122) { // a-z
-        return charCode - 97;
-    }
-
-    return -1; // Not a letter
+    const index = alphabet.indexOf(char.toUpperCase());
+    return index !== -1 ? index : -1;
 }
 
-export function numberToLetter(num) {
-    if (num < 0 || num > 25) {
-        return '';
-    }
-
-    return String.fromCharCode(65+num);
+export function numberToLetter(num, isSpanish = false) {
+    const alphabet = isSpanish ? SPANISH_ALPHABET : ENGLISH_ALPHABET;
+    return (num >= 0 && num < alphabet.length) ? alphabet[num] : '';
 }
 
 function shiftArray(arr, shiftAmount) {
@@ -44,9 +37,9 @@ function shiftArray(arr, shiftAmount) {
     return arr.slice(-shiftAmount).concat(arr.slice(0, -shiftAmount));
 }
 
-function checkSelfDecode(arr) {
+function checkSelfDecode(arr, isSpanish = false) {
     for (let i = 0; i < arr.length; i++) {
-        if (letterToNumber(arr[i]) == i)
+        if (letterToNumber(arr[i], isSpanish) === i)
             return true;
     }
     return false;
@@ -66,6 +59,9 @@ export function encodeQuote(plaintext, cipherType, keys, params) {
         return encodeBaconian(plaintext);
     } else if (cipherType === 'Nihilist') {
         return encodeNihilist(plaintext, keys[0], keys[1]);
+    } else if (cipherType === 'Xenocrypt') {
+        const k = params['K'] == '-1' ? '0' : params['K'];
+        return encodeXenocrypt(plaintext, k, keys[0]);
     } else {
         return encodeAristocrat(plaintext, '0');
     }
@@ -101,7 +97,7 @@ function encodeAtbash(plaintext) {
 }
 
 function encodeAristocrat(plaintext, k, key) {
-    const freqTable = freqTableInit(k || '0', key);
+    const freqTable = freqTableInit(k || '0', key, false);
     const useInverseMapping = k === '1' || k === '3';
     const ciphertext = [];
 
@@ -113,6 +109,28 @@ function encodeAristocrat(plaintext, k, key) {
                 ? numberToLetter(freqTable.indexOf(letter.toUpperCase()))
                 : freqTable[letterToNumber(letter)]
             );
+        }
+    }
+
+    return ciphertext;
+}
+
+function encodeXenocrypt(plaintext, k, key) {
+    const freqTable = freqTableInit(k || '0', key, true); // true → include Ñ
+    const useInverseMapping = k === '1' || k === '3';
+    const ciphertext = [];
+
+    for (let letter of getSplitter().splitGraphemes(plaintext)) {
+        const upper = letter.toUpperCase();
+
+        if (!isLetter(letter, true)) {
+            ciphertext.push(letter); // Leave punctuation/space unchanged
+        } else if (useInverseMapping) {
+            const index = freqTable.indexOf(upper);
+            ciphertext.push(numberToLetter(index, true));
+        } else {
+            const num = letterToNumber(upper, true);
+            ciphertext.push(freqTable[num]);
         }
     }
 
@@ -140,8 +158,7 @@ function encodePorta(plaintext, key) {
     return ciphertext;
 }
 
-function setArray(key) {
-    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+function setArray(key, alphabet) {
     let freqTable = [];
     let count = 0;
     for (let i = 0; i < key.length; i++) {
@@ -163,46 +180,55 @@ function setArray(key) {
     return freqTable;
 }
 
-function freqTableInit(k, key) {
-    if (k=='1' || k=='2') {
-        let freqTable = setArray(key);
+function freqTableInit(k, key, isSpanish = false) {
+    const baseAlphabet = isSpanish
+        ? "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("")
+        : "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+    if (k === '1' || k === '2') {
+        let freqTable = setArray(key, baseAlphabet);
         let selfDecode = false;
         do {
-            const shift = (Math.random() * 26);
+            const shift = Math.floor(Math.random() * baseAlphabet.length);
             freqTable = shiftArray(freqTable, shift);
-            selfDecode = checkSelfDecode(freqTable);
+            selfDecode = checkSelfDecode(freqTable, isSpanish);
         } while (selfDecode);
-
         return freqTable;
-    } else if (k=='3') {
-        let freqTable = setArray(key);
-        let freqTable2 = freqTable;
+    }
+
+    if (k === '3') {
+        let freqTable = setArray(key, baseAlphabet);
+        let freqTable2 = [...freqTable];
         let finalTable = [];
         let selfDecode = false;
 
         do {
             finalTable = [];
-            const shift1 = (Math.random() * 26);
-            const shift2 = (Math.random() * 26);
+            const shift1 = Math.floor(Math.random() * baseAlphabet.length);
+            const shift2 = Math.floor(Math.random() * baseAlphabet.length);
             freqTable = shiftArray(freqTable, shift1);
             freqTable2 = shiftArray(freqTable2, shift2);
-            for (let n = 0; n < 26; n++) {
-                finalTable[n] = freqTable2[freqTable.indexOf(numberToLetter(n))];
+
+            for (let n = 0; n < baseAlphabet.length; n++) {
+                finalTable[n] = freqTable2[freqTable.indexOf(numberToLetter(n, isSpanish))];
             }
-            selfDecode = checkSelfDecode(finalTable);
+
+            selfDecode = checkSelfDecode(finalTable, isSpanish);
         } while (selfDecode);
 
         return finalTable;
-    } else {
-        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-        for (let i = alphabet.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * i);
-            const temp = alphabet[i];
-            alphabet[i] = alphabet[j];
-            alphabet[j] = temp;
-        }
-        return alphabet;
     }
+
+    // Default randomized table
+    let shuffled;
+    do {
+        shuffled = [...baseAlphabet];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+    } while (checkSelfDecode(shuffled, isSpanish));
+    return shuffled;
 }
 
 export const baconianMap = {
@@ -370,7 +396,7 @@ function baconianMapToSymbols(baconianText, aGroup, bGroup) {
 
 function encodeNihilist(plaintext, keyword, polybiusKey) {
     const square = generatePolybiusSquare(polybiusKey);
-    const stripped = stripQuote(plaintext); // remove spaces, punctuation, lowercase
+    const stripped = stripQuote(plaintext, false); // remove spaces, punctuation, lowercase
     const keywordCoords = getCoordsFromKeyword(keyword, square);
 
     const coords = [];
@@ -427,10 +453,11 @@ function getCoordsFromKeyword(keyword, square) {
     return coords;
 }
 
-export function stripQuote(text) {
+export function stripQuote(text, isSpanish) {
+    const graphemes = getSplitter().splitGraphemes(text);
     let stripped = '';
-    for (let letter of text) {
-        if (isLetter(letter)) {
+    for (let letter of graphemes) {
+        if (isLetter(letter, isSpanish)) {
             stripped += letter.toUpperCase();
         }
     }
@@ -439,7 +466,11 @@ export function stripQuote(text) {
 
 export function isSolvableChunk(chunk, cipherType) {
     if (!cipherTypes[cipherType].bypassCheck) {
-        return chunk && chunk.length == 1 && isLetter(chunk[0]);
+        if (chunk && chunk.length == 1 && isLetter(chunk[0], cipherType == 'Xenocrypt')) {
+            return true;
+        } else {
+            return false;
+        }
     } else {
         return chunk !== '';
     }

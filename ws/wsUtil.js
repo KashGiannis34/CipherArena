@@ -1,4 +1,4 @@
-import { Quote } from '../db/backend-utils/Quote.js';
+import { getQuoteModel } from '../db/backend-utils/getQuoteModel.js';
 import { ObjectId } from 'mongodb';
 import { encodeQuote, stripQuote } from '../db/shared-utils/CipherUtil.js';
 import { UserGame } from '../db/backend-utils/UserGame.js';
@@ -70,11 +70,13 @@ function updateTotalStats(user, solveTime, length) {
 export async function checkAnswerCorrectness(ans, quoteId, cipherType, keys, solve) {
   if (ans.includes(' ')) return false;
 
-  const quote = await Quote.findById(new ObjectId(quoteId));
+  const QuoteModel = getQuoteModel(cipherType);
+
+  const quote = await QuoteModel.findById(new ObjectId(quoteId));
   if (!quote) return false;
   let displayText = quote.text;
 
-  let ansText = stripQuote(quote.text);
+  let ansText = stripQuote(quote.text, cipherType == 'Xenocrypt');
   if (solve === 'Encode') {
     ansText = encodeQuote(ansText, cipherType, keys).join('');
     displayText = ansText;
@@ -88,12 +90,13 @@ export async function checkAnswerCorrectness(ans, quoteId, cipherType, keys, sol
 }
 
 export async function getQuote(quoteId, cipherType, keys, solve) {
-  const quote = await Quote.findById(new ObjectId(quoteId));
+  const QuoteModel = getQuoteModel(cipherType);
+  const quote = await QuoteModel.findById(new ObjectId(quoteId));
   if (!quote) return '';
   let displayText = quote.text;
 
   if (solve === 'Encode') {
-    let ansText = stripQuote(quote.text);
+    let ansText = stripQuote(quote.text, cipherType == 'Xenocrypt');
     displayText = encodeQuote(ansText, cipherType, keys).join('');
   }
 

@@ -235,7 +235,6 @@ io.on('connection', async (socket) => {
 
                 game.state = 'started';
                 game.metadata = {
-                    ...(game.metadata ?? {}),
                     initialUserIds: game.users,
                     startedAt: new Date()
                 };
@@ -280,7 +279,7 @@ io.on('connection', async (socket) => {
             }
         });
 
-        socket.on('check-quote', async (ans, hash, cipherType, keys, solve, startTime, cb) => {
+        socket.on('check-quote', async (ans, hash, cipherType, keys, solve, cb) => {
             try {
                 const res = await wsUtil.checkAnswerCorrectness(ans, hash, cipherType, keys, solve);
                 const isCorrect = res.correct;
@@ -636,7 +635,6 @@ async function handleRematchRequest(game, io, rematchVotesMap, forfeitVotesMap, 
     };
     game.state = 'started';
     game.metadata = {
-        ...(game.metadata ?? {}),
         initialUserIds: game.users,
         startedAt: new Date()
     };

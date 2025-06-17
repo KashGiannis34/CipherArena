@@ -1,7 +1,7 @@
 <script>
     import {isLetter, numberToLetter} from "$db/shared-utils/CipherUtil";
 
-    let {inputs=$bindable(), letterInputs=$bindable(), cipherLetter, index, inputValue, autoFocus, onArrow, onFocus, onChange, onDelete, solved} = $props();
+    let {inputs=$bindable(), letterInputs=$bindable(), cipherLetter, index, inputValue, autoFocus, onArrow, onFocus, onChange, onDelete, solved, spanish} = $props();
     let error = $state(false);
     let focus = $state(false);
 
@@ -13,6 +13,12 @@
             "Backspace",
             "Delete",
         ];
+
+        if (event.key == ',' && spanish) {
+            onChange(cipherLetter, 'Ñ', index);
+            event.preventDefault();
+            return;
+        }
 
         if (event.key == "ArrowLeft" || event.key == "ArrowRight") {
             onArrow(event.key, index);
@@ -30,7 +36,7 @@
             return;
         }
 
-        if (event.key !== undefined && isLetter(event.key) && inputValue !== '' && event.key.length == 1) {
+        if (event.key !== undefined && (isLetter(event.key) || (spanish && event.key == ',')) && inputValue !== '' && event.key.length == 1) {
             onChange(inputValue, '', index);
             onChange(event.key.toUpperCase(), cipherLetter, index);
             event.preventDefault();
@@ -58,8 +64,9 @@
         if (inputValue != '') {
             onFocus(inputValue, true);
         } else {
-            for (let n = 0; n < 26; n++) {
-                onFocus(numberToLetter(n), false);
+            const max = spanish ? 27 : 26;
+            for (let n = 0; n < max; n++) {
+                onFocus(numberToLetter(n, spanish), false);
             }
         }
         focus = true;
@@ -78,16 +85,17 @@
         if (inputValue != '') {
             onFocus(inputValue, true);
         } else {
-            for (let n = 0; n < 26; n++) {
-                onFocus(numberToLetter(n), false);
+            const max = spanish ? 27 : 26;
+            for (let n = 0; n < max; n++) {
+                onFocus(numberToLetter(n, spanish), false);
             }
         }
         focus = true;
     }
 
-    if (isLetter(cipherLetter)) {
+    if (isLetter(cipherLetter, spanish)) {
         $effect(() => {
-            if (inputValue !== undefined && isLetter(inputValue)) {
+            if (inputValue !== undefined && isLetter(inputValue, spanish)) {
                 let vals = Object.values(letterInputs);
                 error = vals.indexOf(inputValue) != vals.lastIndexOf(inputValue);
             }
@@ -95,7 +103,7 @@
     }
 </script>
 
-<td class:last={index==25}
+<td class:last={spanish ? index==26 : index==25}
 class:focus={focus && !solved} onclick={handleClick}>
     <input
         bind:this={inputs[index]}

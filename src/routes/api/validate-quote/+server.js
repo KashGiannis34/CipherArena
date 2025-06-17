@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { Quote } from '$dbutils/Quote';
+import { getQuoteModel } from '$dbutils/getQuoteModel';
 import { ObjectId } from 'mongodb';
 import { stripQuote, encodeQuote } from '$db/shared-utils/CipherUtil';
 
@@ -12,8 +12,10 @@ export async function POST({ request }) {
             return json(false);
         }
 
-        const quote = await Quote.findOne({_id: new ObjectId(req['id'])});
-        let ansText = stripQuote(quote["text"]);
+        const QuoteModel = getQuoteModel(req['cipherType']);
+
+        const quote = await QuoteModel.findOne({_id: new ObjectId(req['id'])});
+        let ansText = stripQuote(quote["text"], req['cipherType'] == 'Xenocrypt');
         if (req['solve'] == 'Encode') {
             ansText = encodeQuote(ansText, req['cipherType'], req['keys']).join('');
         }

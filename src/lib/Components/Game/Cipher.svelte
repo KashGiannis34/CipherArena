@@ -2,7 +2,7 @@
     import Letter from "./Letter.svelte";
     import FreqTable from "./FreqTable.svelte";
     import Container from "../General/Container.svelte";
-    import {isLetter, isSolvableChunk} from "$db/shared-utils/CipherUtil";
+    import {ENGLISH_ALPHABET, isSolvableChunk, SPANISH_ALPHABET} from "$db/shared-utils/CipherUtil";
     import {Confetti} from 'svelte-confetti';
     import { cipherTypes } from "$db/shared-utils/CipherTypes";
     import LoadingOverlay from "../General/LoadingOverlay.svelte";
@@ -15,6 +15,7 @@
     import PolybiusSquare from "./PolybiusSquare.svelte";
 
     let {quote, hash, cipherType, autoFocus, params, keys, onSolved, mode, newProblem, fetchAnswerStatus, onProgressUpdate, autoSwitch} = $props();
+    let spanish = cipherType == 'Xenocrypt';
     let startTime = Date.now()/1000;
     let solved=$state(false);
     let gaveUp=$state(false);
@@ -115,9 +116,10 @@
             while (currIndex + 1 < info.inputs.length) {
                 currIndex++;
                 if (directMap) {
-                    if (isSolvableChunk(info.cipherTextTrim[currIndex], cipherType) &&
-                    info.cipherTextTrim[currIndex].toUpperCase() !== letter &&
-                    info.letterInputs[info.cipherTextTrim[currIndex].toUpperCase()] == '') {
+                    const normalizedLetter = info.cipherTextTrim[currIndex].toUpperCase();
+                    if (isSolvableChunk(normalizedLetter, cipherType) &&
+                    normalizedLetter !== letter &&
+                    info.letterInputs[normalizedLetter] == '') {
                         break;
                     }
                 } else {
@@ -152,7 +154,7 @@
     }
 
     function initLetterInputs() {
-        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const alphabet = spanish ? SPANISH_ALPHABET : ENGLISH_ALPHABET;
         const letterInputs = {};
         alphabet.split('').forEach(letter => {
             letterInputs[letter] = ''; // Initialize each letter with an empty string
@@ -161,7 +163,7 @@
     }
 
     function initLetterFocus() {
-        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const alphabet = spanish ? SPANISH_ALPHABET : ENGLISH_ALPHABET;
         const letterFocus = {};
         alphabet.split('').forEach(letter => {
             letterFocus[letter] = false;
@@ -282,14 +284,14 @@
                 {#each word as {letter, index, keyLetter}}
                     <Letter bind:inputs={info.inputs} letterInputs={info.letterInputs} cipherLetter={letter} index={index} inputValue={info.letterInputs[letter]}
                     selected={info.letterFocus[letter]} directMap={directMap} autoFocus={autoFocus} onArrow={onArrow}
-                    onFocus={onFocus} onChange={onChange} solved={solved} cipherType={cipherType} keyLetter={keyLetter} checkQuote={checkQuote}/>
+                    onFocus={onFocus} onChange={onChange} solved={solved} cipherType={cipherType} keyLetter={keyLetter} checkQuote={checkQuote} spanish={spanish}/>
                 {/each}
             </div>
         {/each}
     </div>
     {#if cipherTypes[cipherType]['addOn']=="freqTable"}
         <FreqTable bind:info={info} solved={solved} autoFocus={autoFocus}
-        k={params['K']}/>
+        k={params['K']} spanish={spanish}/>
     {:else if cipherTypes[cipherType]['addOn']=="atbashTable"}
         <AtbashTable />
     {:else if cipherTypes[cipherType]['addOn']=="baconTable"}

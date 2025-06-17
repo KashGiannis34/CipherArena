@@ -1,7 +1,7 @@
 <script>
     import {isLetter} from "$db/shared-utils/CipherUtil";
 
-    let {inputs=$bindable(), letterInputs=$bindable(), cipherLetter, index, inputValue, selected, autoFocus, onArrow, onFocus, onChange, solved} = $props();
+    let {inputs=$bindable(), letterInputs=$bindable(), cipherLetter, index, inputValue, selected, autoFocus, onArrow, onFocus, onChange, solved, spanish} = $props();
     let error = $state(false);
     let focus = $state(false);
 
@@ -13,6 +13,12 @@
             "Backspace",
             "Delete",
         ];
+
+        if (event.key == ',' && spanish) {
+            onChange(cipherLetter, 'Ñ', index);
+            event.preventDefault();
+            return;
+        }
 
         if (event.key == "ArrowLeft" || event.key == "ArrowRight") {
             onArrow(event.key, index);
@@ -81,7 +87,7 @@
     }
 </script>
 
-<td class:last={index==25} class:selected={selected && !solved}
+<td class:last={spanish ? index==26 : index==25} class:selected={selected && !solved}
 class:focus={focus && !solved} onclick={handleClick}>
     <input
         bind:this={inputs[index]}

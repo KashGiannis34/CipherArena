@@ -1,6 +1,5 @@
 import { Server } from 'socket.io';
 import { Game } from '../db/backend-utils/Game.js';
-import { Quote } from '../db/backend-utils/Quote.js';
 import { encodeQuote, stripQuote } from '../db/shared-utils/CipherUtil.js';
 import { ObjectId } from 'mongodb';
 import { authenticate } from '../db/backend-utils/authenticate.js';
@@ -225,7 +224,6 @@ export default async function injectSocketIO(server) {
 
                     game.state = 'started';
                     game.metadata = {
-                        ...(game.metadata ?? {}),
                         initialUserIds: game.users,
                         startedAt: new Date()
                     };
@@ -270,7 +268,7 @@ export default async function injectSocketIO(server) {
                 }
             });
 
-            socket.on('check-quote', async (ans, hash, cipherType, keys, solve, startTime, cb) => {
+            socket.on('check-quote', async (ans, hash, cipherType, keys, solve, cb) => {
                 try {
                     const res = await wsUtil.checkAnswerCorrectness(ans, hash, cipherType, keys, solve);
                     const isCorrect = res.correct;
@@ -629,7 +627,6 @@ async function handleRematchRequest(game, io, rematchVotesMap, forfeitVotesMap, 
     };
     game.state = 'started';
     game.metadata = {
-        ...(game.metadata ?? {}),
         initialUserIds: game.users,
         startedAt: new Date()
     };

@@ -3,8 +3,10 @@
     import CipherReplacement from "./CipherReplacement.svelte";
     import Replacement from "./Replacement.svelte";
 
-    let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let {info=$bindable(), solved, autoFocus, k} = $props();
+
+    let {info=$bindable(), solved, autoFocus, k, spanish} = $props();
+
+    let alphabet = spanish ? "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ" : "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     let frequencies = initFreq(info.cipherTextTrim);
     let inputs = $state([]);
 
@@ -59,7 +61,7 @@
         });
 
         for (let letter of text) {
-            if (isLetter(letter)) {
+            if (isLetter(letter, spanish)) {
                 obj[letter]++;
             }
         }
@@ -72,7 +74,7 @@
         if (index == -1)
             return '';
         else
-            return numberToLetter(index);
+            return numberToLetter(index, spanish);
     }
 </script>
 
@@ -92,7 +94,7 @@
                         <td>{frequencies[letter]}</td>
                         <Replacement bind:inputs={inputs} bind:letterInputs={info.letterInputs} cipherLetter={letter}
                         index={index} inputValue={info.letterInputs[letter]} selected={info.letterFocus[letter]}
-                        autoFocus={autoFocus} onArrow={onArrow} onFocus={onFocus} onChange={onChange} solved={solved}/>
+                        autoFocus={autoFocus} onArrow={onArrow} onFocus={onFocus} onChange={onChange} solved={solved} spanish={spanish}/>
                     </tr>
                 {/each}
             {:else}
@@ -107,7 +109,7 @@
                         <CipherReplacement bind:inputs={inputs} letterInputs={info.letterInputs} cipherLetter={letter}
                         index={index} inputValue={findInputValue(letter)}
                         autoFocus={autoFocus} onArrow={onArrow} onFocus={onFocus} onChange={onChange}
-                        onDelete={onDelete} solved={solved}/>
+                        onDelete={onDelete} solved={solved} spanish={spanish}/>
                         <td class:selected={info.letterFocus[letter]}>{letter}</td>
                         <td class:selected={info.letterFocus[letter]}>{frequencies[letter]}</td>
                     </tr>

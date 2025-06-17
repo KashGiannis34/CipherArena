@@ -29,7 +29,6 @@ export function listenForTabEvents(eventTypes, callback) {
 
         try {
           const data = JSON.parse(e.newValue);
-          console.log(`[CrossTabEvent] ${eventType} received`, data);
           callback(data);
           localStorage.removeItem(e.key); // Clean up
         } catch (err) {
