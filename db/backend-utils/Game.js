@@ -100,6 +100,8 @@ const GameSchema = new mongoose.Schema({
             of: Number
             },
             solveTime: Number,
+            plainText: String,
+            forfeit: { type: Boolean, default: false }
         },
         default: null
     }

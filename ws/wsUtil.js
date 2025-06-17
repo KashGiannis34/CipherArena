@@ -72,13 +72,32 @@ export async function checkAnswerCorrectness(ans, quoteId, cipherType, keys, sol
 
   const quote = await Quote.findById(new ObjectId(quoteId));
   if (!quote) return false;
+  let displayText = quote.text;
 
   let ansText = stripQuote(quote.text);
   if (solve === 'Encode') {
     ansText = encodeQuote(ansText, cipherType, keys).join('');
+    displayText = ansText;
   }
 
-  return ans === ansText;
+  if (ans === ansText) {
+    return { correct: true, text: displayText };
+  } else {
+    return { correct: false };
+  }
+}
+
+export async function getQuote(quoteId, cipherType, keys, solve) {
+  const quote = await Quote.findById(new ObjectId(quoteId));
+  if (!quote) return '';
+  let displayText = quote.text;
+
+  if (solve === 'Encode') {
+    let ansText = stripQuote(quote.text);
+    displayText = encodeQuote(ansText, cipherType, keys).join('');
+  }
+
+  return displayText;
 }
 
 export async function updateStatsAfterWin(gameUsers, winner, cipherType, solveTime, length) {

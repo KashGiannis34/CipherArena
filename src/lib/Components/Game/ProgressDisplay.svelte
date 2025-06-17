@@ -1,6 +1,6 @@
 <script>
   import ProfilePicture from "../General/ProfilePicture.svelte";
-  let {username, players = [], progressMap = {}} = $props();
+  let {username, players = [], progressMap = {}, forfeitVoters = []} = $props();
 
   function getProgressColor(progress) {
     if (progress >= 80) return '#4caf50'; // green
@@ -13,7 +13,7 @@
 
 <div class="progress-display-wrapper">
   {#each players.slice().sort((a, b) => (a.username === username ? -1 : b.username === username ? 1 : 0)) as player (player.username)}
-    <div class="progress-player-card {player.connected === false ? 'disconnected' : ''}">
+    <div class="progress-player-card {player.connected === false ? 'disconnected' : ''} {forfeitVoters.includes(player.username) ? 'forfeited' : ''}">
       <ProfilePicture profilePicture={player.profilePicture} size={40} useColorRing={player.username==username} preserveSize={true}/>
       <div class="progress-info">
         <div class="progress-username">
@@ -22,6 +22,9 @@
           </a>
           {#if player.connected === false}
             <span class="status-tag">{player.left ? '(left game)' : '(disconnected)'}</span>
+          {/if}
+          {#if player.connected && forfeitVoters.includes(player.username)}
+            <span class="status-tag forfeit-tag">(forfeited)</span>
           {/if}
         </div>
 
@@ -40,6 +43,15 @@
 </div>
 
 <style>
+  .progress-player-card.forfeited {
+    border-left-color: #ff5c5c;
+    background: rgba(255, 92, 92, 0.08);
+  }
+
+  .status-tag.forfeit-tag {
+    color: #ffa1a1;
+  }
+
   .profile-link {
     color: #fff;
 		text-decoration: none;

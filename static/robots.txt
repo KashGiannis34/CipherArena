@@ -1,0 +1,15 @@
+# Allow all search engines to index public content
+User-agent: *
+Disallow: /account/
+Disallow: /singleplayer/test/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /socket.io/
+Disallow: /auth/
+Allow: /
+
+# Optional: Crawl-delay (in seconds) to reduce server load
+# Crawl-delay: 2
+
+# Sitemap (add this if you’ve created one)
+Sitemap: https://cipher-arena.fly.dev/sitemap.xml

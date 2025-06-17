@@ -1,8 +1,8 @@
 <script>
-    import { cipherTypes } from "$utils/CipherTypes";
-    import {isLetter, isSolvableChunk} from "$utils/CipherUtil";
+    import { cipherTypes } from "$db/shared-utils/CipherTypes";
+    import {isLetter, isSolvableChunk} from "$db/shared-utils/CipherUtil";
 
-    let {inputs=$bindable(), letterInputs, cipherLetter, index, inputValue, selected, directMap, autoFocus, onArrow, onFocus, onChange, solved, cipherType, keyLetter} = $props();
+    let {inputs=$bindable(), letterInputs, cipherLetter, index, inputValue, selected, directMap, autoFocus, onArrow, onFocus, onChange, solved, cipherType, keyLetter, checkQuote} = $props();
     let error = $state(false);
     let focus = $state(false);
 
@@ -18,6 +18,10 @@
         if (event.key == "ArrowLeft" || event.key == "ArrowRight") {
             onArrow(event.key, index);
             return;
+        }
+
+        if (event.key == "Enter") {
+            checkQuote();
         }
 
         if (deleteKeys.includes(event.key)) {

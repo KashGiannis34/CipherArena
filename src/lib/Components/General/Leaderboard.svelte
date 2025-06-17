@@ -1,5 +1,5 @@
 <script>
-	import { cipherTypes } from '$utils/CipherTypes.js';
+	import { cipherTypes } from '$db/shared-utils/CipherTypes.js';
     import { onMount } from 'svelte';
 
     const defaultStats = () => ({ elo: 1000, wins: 0, losses: 0 });

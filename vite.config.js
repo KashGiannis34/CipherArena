@@ -1,11 +1,11 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import {webSocketServer} from './ws/webSocketPluginVite.js';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
 export default defineConfig({
-
 	server: {
 		port: process.env.PORT,
         fs: {
@@ -16,7 +16,7 @@ export default defineConfig({
 	preview: {
 		port: process.env.PORT
 	},
-	plugins: [sveltekit()],
+	plugins: [sveltekit(), webSocketServer],
 	build: {
 		rollupOptions: {
 			external: ['mongoose', 'argon2', 'jsonwebtoken', 'mongodb', 'nanoid']

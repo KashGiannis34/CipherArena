@@ -1,5 +1,5 @@
 <script>
-    import { cipherTypes } from '$utils/CipherTypes.js';
+    import { cipherTypes } from '$db/shared-utils/CipherTypes.js';
     let { stats } = $props();
 
     function winPercent(stat) {
@@ -40,7 +40,7 @@
                 <td>{stats[cipher]?.wins ?? 0}</td>
                 <td>{stats[cipher]?.losses ?? 0}</td>
                 <td>{winPercent(stats[cipher])}</td>
-                <td>{stats[cipher].averageSolveTime ? stats[cipher].averageSolveTime.toFixed(2) : 'N/A'}</td>
+                <td>{stats[cipher]?.averageSolveTime ? stats[cipher].averageSolveTime.toFixed(2) : 'N/A'}</td>
                 <td>{formatTime(stats[cipher]?.bestSolveTime)}</td>
                 </tr>
             {/each}

@@ -1,5 +1,5 @@
 <script>
-    import {isLetter, numberToLetter} from "$utils/CipherUtil";
+    import {isLetter, numberToLetter} from "$db/shared-utils/CipherUtil";
     import CipherReplacement from "./CipherReplacement.svelte";
     import Replacement from "./Replacement.svelte";
 

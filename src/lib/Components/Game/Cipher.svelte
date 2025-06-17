@@ -2,9 +2,9 @@
     import Letter from "./Letter.svelte";
     import FreqTable from "./FreqTable.svelte";
     import Container from "../General/Container.svelte";
-    import {isSolvableChunk} from "$utils/CipherUtil";
+    import {isLetter, isSolvableChunk} from "$db/shared-utils/CipherUtil";
     import {Confetti} from 'svelte-confetti';
-    import { cipherTypes } from "$utils/CipherTypes";
+    import { cipherTypes } from "$db/shared-utils/CipherTypes";
     import LoadingOverlay from "../General/LoadingOverlay.svelte";
     import { fade } from "svelte/transition";
     import { onMount, onDestroy } from "svelte";
@@ -17,6 +17,7 @@
     let {quote, hash, cipherType, autoFocus, params, keys, onSolved, mode, newProblem, fetchAnswerStatus, onProgressUpdate, autoSwitch} = $props();
     let startTime = Date.now()/1000;
     let solved=$state(false);
+    let gaveUp=$state(false);
     let isChecking=$state(false);
     let submissionError=$state(false);
     let clearPolybius = $state(false);
@@ -217,12 +218,10 @@
 
     async function checkQuote() {
         let i = getInputText();
-        let feedbackMessage = '';
         isChecking = true;
 
         const answer = await fetchAnswerStatus(i, hash, cipherType, keys, params.Solve, startTime);
         if (mode == 'singleplayer') {
-            feedbackMessage = answer.feedbackMessage;
             solved = answer.solved;
         } else {
             solved = answer.solved;
@@ -283,7 +282,7 @@
                 {#each word as {letter, index, keyLetter}}
                     <Letter bind:inputs={info.inputs} letterInputs={info.letterInputs} cipherLetter={letter} index={index} inputValue={info.letterInputs[letter]}
                     selected={info.letterFocus[letter]} directMap={directMap} autoFocus={autoFocus} onArrow={onArrow}
-                    onFocus={onFocus} onChange={onChange} solved={solved} cipherType={cipherType} keyLetter={keyLetter}/>
+                    onFocus={onFocus} onChange={onChange} solved={solved} cipherType={cipherType} keyLetter={keyLetter} checkQuote={checkQuote}/>
                 {/each}
             </div>
         {/each}
@@ -318,7 +317,7 @@
     {/if}
 </Container>
 
-{#if solved && mode == "singleplayer"}
+{#if solved && mode == "singleplayer" && !gaveUp}
     <div style="
     position: fixed;
     z-index: 25;

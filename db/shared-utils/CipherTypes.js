@@ -1,5 +1,6 @@
 export const cipherTypes = {
     'Aristocrat' : {'directMap':true, 'keys':['!'], 'addOn':'freqTable', 'spacing':-1, 'length':[70, 130], 'options':['K',"!Random","1","2","3"], letterGap: false, bypassCheck: false, stackKey: false}, //! means no frontend visibility
+    'Xenocrypt' : {'directMap':true, 'keys':['!'], 'addOn':'freqTable', 'spacing':-1, 'length':[70, 130], 'options':['K',"!Random","1","2","3"], letterGap: false, bypassCheck: false, stackKey: false},
     'Patristocrat' : {'directMap':true, 'keys':['!'], 'addOn':'freqTable', 'spacing':5, 'length':[100, 140], 'options':['K',"!Random","1","2","3"], letterGap: false, bypassCheck: false, stackKey: false},
     'Porta' : {'directMap':false, 'keys':['key'], 'addOn':'portaTable', 'spacing':5, 'length':[30, 80], 'options':["Solve", "!Decode", "!Encode"], letterGap: false, bypassCheck: false, stackKey: true},
     'Atbash' : {'directMap':false, 'keys':[], 'addOn':'atbashTable', 'spacing':-1, 'length':[60, 100], 'options':["Solve", "!Decode", "!Encode"], letterGap: false, bypassCheck: false, stackKey: false},

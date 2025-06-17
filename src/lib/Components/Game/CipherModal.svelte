@@ -3,7 +3,7 @@
   import { Tween } from "svelte/motion";
   import ProfilePicture from "../General/ProfilePicture.svelte";
   import { onMount, tick } from "svelte";
-  let { username, won, players, ranked, eloChanges, onRematch, onLeaveGame, winnerUsername, rematchVoters = [], solveTime } = $props();
+  let { username, won, players, ranked, eloChanges, onRematch, onLeaveGame, winnerUsername, rematchVoters = [], solveTime, plainText, forfeit } = $props();
 
   let animatedElos = $state({});
   let animatedChanges = $state({});
@@ -81,12 +81,21 @@
 <div class="modal-wrapper" in:zoom out:zoom>
   <div class="innerModal">
     <h2 class="result-text {won ? 'win' : 'lose'}">
-      {won ? 'You Won!' : 'You Lost'}
+      {won ? 'You Won!' : (forfeit ? "You Forfeited" : "You Lost")}
     </h2>
 
     {#if won && solveTime > 0}
       <div class="solve-time-display">
         ⏱ Solve Time: <span>{formatTime(solveTime)}</span>
+      </div>
+    {/if}
+
+    {#if plainText}
+      <div class="plaintext-wrapper">
+        <div class="plaintext-title">✨ Decrypted Quote</div>
+        <div class="plaintext-body">
+          {plainText}
+        </div>
       </div>
     {/if}
 
@@ -149,6 +158,38 @@
 </div>
 
 <style>
+  .plaintext-wrapper {
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    width: 100%;
+    text-align: center;
+    animation: fadeSlideIn 0.4s ease-out;
+  }
+
+  .plaintext-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    color: #444;
+    opacity: 0.8;
+  }
+
+  .plaintext-body {
+    background: #fefefe;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: #2a2a2a;
+    white-space: normal;
+    word-break: break-word;
+    box-shadow: inset 0 1px 4px rgba(0,0,0,0.08);
+    border: 1px solid #ccc;
+    width: 100%;
+    text-align: center;
+    line-height: 1.5;
+  }
+
   .profile-link {
     color: black;
 		text-decoration: none;

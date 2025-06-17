@@ -11,6 +11,7 @@
   import ProfilePicture from '$lib/Components/General/ProfilePicture.svelte';
   import ProgressDisplay from '$lib/Components/Game/ProgressDisplay.svelte';
   import { PUBLIC_APP_URL } from '$env/static/public';
+  import Confetti from 'svelte-confetti';
 
   let { data } = $props();
   let stopListening;
@@ -28,6 +29,10 @@
   let cipherData = $state({});
   let matchResult = $state({});
   let rematchVoters = $state([]);
+
+  let forfeitVoters = $state([]);
+  let hasForfeited = $derived.by(() => forfeitVoters.includes(data.username));
+
   let historicalPlayers = $state([]); // Includes all players, even ones who left
   let progressMap = $state({}); // { [username]: percentageFilled }
 
@@ -101,6 +106,10 @@
       }
   }
 
+  function requestForfeit() {
+    socket.emit('forfeit-request', !hasForfeited);
+  }
+
   async function fetchPlayers() {
     const res = await fetch(`/api/game-players?gameId=${data.roomID}`);
     players = await res.json(); // array of { username, elo }
@@ -157,6 +166,7 @@
         token: decodeURIComponent(data['authToken']),
         joinLobby: false
       },
+      transports: ['websocket', 'polling'],
       withCredentials: true,
     });
 
@@ -164,13 +174,20 @@
       showStatus('Connected to server', 'success');
     });
 
-    socket.on('connect_error', (error) => {
+    socket.on('connect_error', () => {
       showStatus('Connection failed. Try again.', 'error');
       gameState = "disconnected";
     });
 
-    socket.on('ready', () => {
+    socket.on('error', (error) => {
+      showStatus(error, 'error');
+    })
+
+    socket.on('ready', (val) => {
       socket.emit('join-room');
+      if (val) {
+        gameState = val;
+      }
       if (gameState == 'started') {
         socket.emit('get-cipher-info', info => {
           cipherData.params = info.params;
@@ -193,7 +210,9 @@
               players: result.players,
               ranked: !!result.eloChanges,
               eloChanges: result.eloChanges ?? {},
-              solveTime: result.solveTime
+              solveTime: result.solveTime,
+              plainText: result.plainText,
+              forfeit: result.forfeit,
             };
             resultRetrieved = true;
           }
@@ -217,9 +236,17 @@
         fetchPlayers();
     });
 
+    socket.on('forfeit-votes', (votes) => {
+      forfeitVoters = votes;
+    });
+
     socket.on('kicked', () => {
       alert('You have been kicked from the game.');
-      goto('/private-lobby');
+      if (data.mode === 'public') {
+        goto('/public-lobby');
+      } else {
+        goto('/private-lobby');
+      }
     });
 
     socket.on('replaced', () => {
@@ -397,7 +424,7 @@
   </div>
 {:else if gameState === "started" && cipherRetrieved}
   <div transition:fade>
-    <ProgressDisplay username={data.username} players={historicalPlayers} progressMap={progressMap} />
+    <ProgressDisplay username={data.username} players={historicalPlayers} progressMap={progressMap} forfeitVoters={forfeitVoters}/>
 
     <Cipher
       quote={cipherData.quote.encodedText}
@@ -411,7 +438,17 @@
       onProgressUpdate={handleProgressUpdate}
     />
 
-    <button class="button leave-button leave-button-game-start" onclick={leaveGame}>Leave Game</button>
+    <div class="in-game-button-row">
+      <button class="button leave-button leave-button-game-start" onclick={leaveGame}>
+        Leave Game
+      </button>
+      <button
+        class="button forfeit-button"
+        onclick={requestForfeit}
+      >
+        {hasForfeited ? 'Undo Forfeit' : 'Give Up'}
+      </button>
+    </div>
   </div>
 {:else if gameState === "finished"}
   {#if matchResult.players}
@@ -426,13 +463,47 @@
       rematchVoters={rematchVoters}
       username={data.username}
       solveTime={matchResult.solveTime}
+      plainText={matchResult.plainText}
+      forfeit={matchResult.forfeit}
     />
+
+    {#if matchResult.won}
+        <div style="
+        position: fixed;
+        z-index: 25;
+        top: -3vh;
+        left: 0;
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+        overflow: hidden;
+        pointer-events: none;">
+            <Confetti duration=3000 x={[-5, 5]} delay={[0, 3000]} amount=200 fallDistance="100vh" colorRange={[75, 175]}/>
+        </div>
+    {/if}
   {/if}
 {:else}
   <LoadingOverlay />
 {/if}
 
 <style>
+  .in-game-button-row {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .forfeit-button {
+    background-color: #ff5c5c;
+    color: white;
+  }
+
+  .forfeit-button:hover {
+    background-color: #e64444;
+  }
+
   .status-bar {
     position: fixed;
     bottom: 1.5rem;

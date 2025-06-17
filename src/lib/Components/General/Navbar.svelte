@@ -91,7 +91,7 @@
                 {#if verified=="false"}
                     <button onclick={() => navigate('/resend-verification')} class="verify-btn">Verify Account</button>
                 {/if}
-                <form action="/logout" method="POST">
+                <form method="POST" action="/logout">
                     <button class="nav-link logout">Logout</button>
                 </form>
             {/if}

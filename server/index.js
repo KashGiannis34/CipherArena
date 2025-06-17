@@ -14,8 +14,13 @@ import socketIORateLimiter from '@d3vision/socket.io-rate-limiter';
 import * as wsUtil from '../ws/wsUtil.js';
 import { generateQuote } from '../db/backend-utils/GenerateQuote.js';
 
+// cron scheduler
+import '../db/cron/handleInactiveGames.js';
+
 const app = express();
 const server = http.createServer(app);
+
+console.log(`[server] ENV PORT = ${process.env.PORT}`);
 
 // Inject SocketIO
 const io = new Server(server, {
@@ -28,6 +33,7 @@ globalThis.io = io;
 const activeSockets = new Map(); // userId → socketId
 const lobbySockets = new Map(); // userId → socketId
 const rematchVotesMap = new Map(); // gameId → Set of usernames who requested rematch
+const forfeitVotesMap = new Map(); // gameId → Set of usernames who gave up
 
 io.use(async (socket, next) => {
     // Authenticate socket before allowing connection
@@ -117,9 +123,15 @@ io.on('connection', async (socket) => {
         user.currentSocketId = socketId;
         await user.save();
     }
-    io.to(socketId).emit('ready');
+
 
     if (socket.currentRoom != 'public-lobby') {
+        if (game?.state) {
+            io.to(socketId).emit('ready', game.state);
+        } else {
+            io.to(socketId).emit('ready');
+        }
+
         socket.on('join-room', async () => {
             try {
                 const hostUG = await UserGame.findById(game.host);
@@ -138,13 +150,31 @@ io.on('connection', async (socket) => {
                 if (game.state == 'waiting') {
                     io.to('public-lobby').emit('lobbies-updated');
                 }
+
+                const forfeitSet = forfeitVotesMap.get(game._id);
+                if (forfeitSet && forfeitSet.has(user.username)) {
+                    forfeitSet.delete(user.username);
+                    io.to(game._id).emit('forfeit-votes', Array.from(forfeitSet));
+                }
+
+                const rematchSet = rematchVotesMap.get(game._id);
+                if (rematchSet?.has(user.username)) {
+                    rematchSet.delete(user.username);
+                    io.to(game._id).emit('rematch-votes', Array.from(rematchSet));
+                }
             } catch (_) { }
         });
 
         socket.on('leave-room', () => {
+            socket.disconnectReason = 'leftGame';
             if (game._id && rematchVotesMap.has(game._id)) {
                 rematchVotesMap.delete(game._id);
-                io.to(game._id).emit('rematch-votes', []); // Notify clients of vote reset
+                io.to(game._id).emit('rematch-votes', []);
+            }
+
+            if (game._id && forfeitVotesMap.has(game._id)) {
+                forfeitVotesMap.delete(game._id);
+                io.to(game._id).emit('rematch-votes', []);
             }
         });
 
@@ -184,9 +214,23 @@ io.on('connection', async (socket) => {
             try {
                 game = await Game.findById(user.currentGame).populate('users').exec();
 
+                if (game.state != 'waiting') {
+                    socket.emit('error', 'The game is not in the waiting state, please refresh the page');
+                    return;
+                }
+
                 if (!game.host.equals(user._id)) {
                     socket.emit('error', 'Only the host can start the game');
                     return;
+                }
+
+                const toRemove = game.users.filter(u => !u.currentSocketId);
+                for (const user of toRemove) {
+                    await leaveGameCleanup(user._id, game._id);
+                }
+
+                if (toRemove.length > 0) {
+                    game = await Game.findById(game._id).populate('users').exec();
                 }
 
                 game.state = 'started';
@@ -238,11 +282,17 @@ io.on('connection', async (socket) => {
 
         socket.on('check-quote', async (ans, hash, cipherType, keys, solve, startTime, cb) => {
             try {
-                const isCorrect = await wsUtil.checkAnswerCorrectness(ans, hash, cipherType, keys, solve);
+                const res = await wsUtil.checkAnswerCorrectness(ans, hash, cipherType, keys, solve);
+                const isCorrect = res.correct;
                 cb(isCorrect);
                 if (!isCorrect) return;
 
                 game = await Game.findById(user.currentGame).populate('users').exec();
+                if (game.state != 'started') {
+                    socket.emit('error', 'The game is not in the game started state, please refresh the page');
+                    return;
+                }
+
                 if (!game || !game.users || game.users.length === 0) return;
                 const solveTime = (Date.now() - game.metadata.startedAt.getTime()) / 1000;
                 const length = ans.length;
@@ -261,10 +311,11 @@ io.on('connection', async (socket) => {
                         username: u.username,
                         host: game.host.equals(u._id),
                         elo: u.stats?.[game.params.cipherType]?.elo ?? 1000,
-                        profilePicture: u.profilePicture
+                        profilePicture: u.profilePicture,
                     })),
                     eloChanges: eloChanges ?? {},
-                    solveTime: solveTime
+                    solveTime: solveTime,
+                    plainText: res.text
                 };
 
                 game.state = 'finished';
@@ -275,6 +326,18 @@ io.on('connection', async (socket) => {
             } catch (error) {
                 socket.emit('error', 'Error validating quote.');
             }
+        });
+
+        socket.on('forfeit-request', async (shouldForfeit) => {
+            game = await Game.findById(user.currentGame).populate('users').exec();
+            if (!game) return;
+
+            if (game.state != 'started') {
+                socket.emit('error', 'The game is not in the game started state, please refresh the page');
+                return;
+            }
+
+            await handleForfeitRequest(game, shouldForfeit, io, forfeitVotesMap, rematchVotesMap, user);
         });
 
         socket.on('progress-update', ({ username, progress }) => {
@@ -300,41 +363,12 @@ io.on('connection', async (socket) => {
             game = await Game.findById(user.currentGame).populate('users').exec();
             if (!game) return;
 
-            const username = user.username;
-
-            if (!rematchVotesMap.has(game._id)) {
-                rematchVotesMap.set(game._id, new Set());
+            if (game.state != 'finished') {
+                socket.emit('error', 'The game is not in a finished state, please refresh the page');
+                return;
             }
 
-            const rematchSet = rematchVotesMap.get(game._id);
-            rematchSet.add(username);
-
-            // If all players have voted:
-            const allUsernames = game.users.map(u => u.username);
-            const allAgreed = allUsernames.every(name => rematchSet.has(name));
-
-            io.to(socket.currentRoom).emit('rematch-votes', Array.from(rematchSet));
-
-            if (allAgreed) {
-                rematchVotesMap.delete(game._id); // Reset vote tracker
-
-                // Generate a new cipher and reset game
-                const newQuote = await generateQuote(game.params);
-                game.quote = {
-                    id: newQuote.id,
-                    encodedText: newQuote.quote,
-                    keys: newQuote.keys
-                };
-                game.state = 'started';
-                game.metadata = {
-                    ...(game.metadata ?? {}),
-                    initialUserIds: game.users
-                };
-                await game.save();
-
-                io.to(socket.currentRoom).emit('start-game', game.params, game.autoFocus, game.quote);
-                io.to(socket.currentRoom).emit('rematch-votes', []);
-            }
+            await handleRematchRequest(game, io, rematchVotesMap, forfeitVotesMap, user);
         });
 
         socket.on('disconnect', async () => {
@@ -349,21 +383,27 @@ io.on('connection', async (socket) => {
                     await latestUser.save();
                 }
 
-                const rematchSet = rematchVotesMap.get(latestUser.currentGame);
-                if (rematchSet) {
-                    rematchSet.delete(user.username);
-                    io.to(latestUser.currentGame).emit('rematch-votes', Array.from(rematchSet));
-                }
-
-                if (!socket.disconnectReason) {
+                if (!socket.disconnectReason || socket.disconnectReason == 'leftGame') {
                     if (latestUser.currentGame) {
                         latestGame = await Game.findById(latestUser.currentGame).populate('users').exec();
                         if (latestGame && (latestGame.state !== 'waiting' || latestGame.mode === 'private')) {
                             updateLobby = false;
                         }
+
+                        if (socket.disconnectReason != 'leftGame') {
+                            if (latestGame.state == 'started') {
+                                forfeitVotesMap.delete(game._id);
+                                await handleForfeitRequest(latestGame, true, io, forfeitVotesMap, rematchVotesMap, latestUser);
+                            }
+
+                            if (latestGame.state == 'finished') {
+                                rematchVotesMap.delete(game._id);
+                                await handleRematchRequest(latestGame, io, rematchVotesMap, forfeitVotesMap, latestUser);
+                            }
+                        }
                     }
 
-                    if (latestGame && latestGame.host.equals(latestUser._id)) {
+                    if (latestGame && latestGame.host.equals(latestUser._id) && (latestGame.state !== 'waiting' || socket.disconnectReason === 'leftGame')) {
                         const newHost = latestGame.users.find(u => u.currentSocketId != null);
                         if (newHost) {
                             await Game.findByIdAndUpdate(latestGame._id, { host: newHost._id });
@@ -375,7 +415,7 @@ io.on('connection', async (socket) => {
                     updateLobby = false;
                 }
 
-                if (socket.currentRoom) {
+                if (socket.currentRoom && socket.disconnectReason != 'replaced') {
                     io.to(socket.currentRoom).emit('players-changed');
                 }
 
@@ -385,6 +425,8 @@ io.on('connection', async (socket) => {
             } catch (_) { }
         });
     } else {
+        io.to(socketId).emit('ready');
+
         socket.on('get-public-lobbies', async (request, cb) => {
             try {
                 const { searchTerms = {}, limit = 50 } = request || {};
@@ -490,9 +532,140 @@ io.on('connection', async (socket) => {
     }
 });
 
+async function handleForfeitRequest(game, shouldForfeit, io, forfeitVotesMap, rematchVotesMap, user) {
+    if (!forfeitVotesMap.has(game._id)) {
+        forfeitVotesMap.set(game._id, new Set());
+    }
+
+    const forfeitSet = forfeitVotesMap.get(game._id);
+
+    if (user.currentSocketId) {
+        const username = user.username;
+        if (shouldForfeit) {
+            forfeitSet.add(username);
+        } else {
+            if (!forfeitSet.has(username)) return;
+            forfeitSet.delete(username);
+        }
+    }
+
+    const connectedUsernames = game.users
+        .filter(u => u.currentSocketId)
+        .map(u => u.username);
+    const allGaveUp = connectedUsernames.every(name => forfeitSet.has(name));
+
+    if (allGaveUp) {
+        forfeitVotesMap.delete(game._id);
+        rematchVotesMap.delete(game._id);
+
+        const plainQuote = await wsUtil.getQuote(
+            game.quote.id,
+            game.params.cipherType,
+            game.quote.keys,
+            game.params.Solve
+        );
+
+        const initialPlayers = await UserGame.find({ _id: { $in: game.metadata.initialUserIds } });
+
+        const matchResult = {
+            winner: null,
+            players: initialPlayers.map(u => ({
+                username: u.username,
+                host: game.host.equals(u._id),
+                elo: u.stats?.[game.params.cipherType]?.elo ?? 1000,
+                profilePicture: u.profilePicture,
+            })),
+            eloChanges: game.mode === 'ranked'
+                ? Object.fromEntries(initialPlayers.map(u => [u.username, 0]))
+                : {},
+            solveTime: null,
+            plainText: plainQuote,
+            forfeit: true,
+        };
+
+        game.state = 'finished';
+        game.lastMatchResult = matchResult;
+        await game.save();
+
+        io.to(game._id).emit('cipher-solved', matchResult);
+    }
+
+    io.to(game._id).emit('forfeit-votes', Array.from(forfeitSet));
+}
+
+async function handleRematchRequest(game, io, rematchVotesMap, forfeitVotesMap, user) {
+    if (!rematchVotesMap.has(game._id)) {
+        rematchVotesMap.set(game._id, new Set());
+    }
+
+    const rematchSet = rematchVotesMap.get(game._id);
+
+    if (user.currentSocketId) {
+        const username = user.username;
+        rematchSet.add(username);
+    }
+
+    io.to(game._id).emit('rematch-votes', Array.from(rematchSet));
+
+    const connectedUsernames = game.users
+        .filter(u => u.currentSocketId)
+        .map(u => u.username);
+    const allAgreed = connectedUsernames.every(name => rematchSet.has(name));
+
+    if (!allAgreed) return;
+
+    rematchVotesMap.delete(game._id);
+    forfeitVotesMap.delete(game._id);
+
+    // Remove disconnected users BEFORE rematch
+    const toRemove = game.users.filter(u => !u.currentSocketId);
+    for (const user of toRemove) {
+        await leaveGameCleanup(user._id, game._id);
+    }
+
+    if (toRemove.length > 0) {
+        game = await Game.findById(game._id).populate('users').exec();
+    }
+
+    // Generate new cipher and reset game
+    const newQuote = await generateQuote(game.params);
+    game.quote = {
+        id: newQuote.id,
+        encodedText: newQuote.quote,
+        keys: newQuote.keys
+    };
+    game.state = 'started';
+    game.metadata = {
+        ...(game.metadata ?? {}),
+        initialUserIds: game.users,
+        startedAt: new Date()
+    };
+    await game.save();
+
+    io.to(game._id).emit('start-game', game.params, game.autoFocus, game.quote);
+    io.to(game._id).emit('rematch-votes', []);
+    io.to(game._id).emit('forfeit-votes', []);
+}
+
 // SvelteKit handlers
 app.use(handler);
 
 server.listen(process.env.PORT || 3000, '0.0.0.0', () => {
     console.log('Server is running');
+});
+
+process.on('SIGTERM', () => {
+  console.log('[server] SIGTERM received');
+});
+
+process.on('SIGINT', () => {
+  console.log('[server] SIGINT received');
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[server] Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.error('[server] Unhandled Promise Rejection:', err);
 });

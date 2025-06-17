@@ -14,7 +14,7 @@
 
     let { data } = $props();
 
-    let options = $state({'AutoFocus':true, 'Ranked':false, 'playerLimit': 2});
+    let options = $state({'AutoFocus':true, 'Ranked':true, 'playerLimit': 2});
     let cipherType = $state('Aristocrat');
     let cipherOption = $state('Random');
     let cipherOptionObj = {'K':'Random'};
@@ -179,6 +179,7 @@
                 token: decodeURIComponent(data.authToken),
                 joinLobby: true
             },
+            transports: ['websocket', 'polling'],
             reconnection: true,
             reconnectionAttempts: 5,
             reconnectionDelay: 1000,
