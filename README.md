@@ -2,21 +2,21 @@
 
 [![LIVE](https://img.shields.io/badge/visit-live-green?style=for-the-badge&logo=vercel)](https://cipher-arena.fly.dev)
 
-Cipher Arena is a fast-paced multiplayer web app where players compete in real-time to solve cryptograms. Built with SvelteKit and Socket.IO, the platform supports classic cipher types like Aristocrat, Patristocrat, Caesar, Affine, Porta, and even Baconian — all while tracking rankings, stats, and speed-based achievements.
+Cipher Arena is a fast-paced multiplayer web app where players compete in real-time to solve cryptograms. Built with SvelteKit and Socket.IO, the platform supports classic cipher types like Aristocrat, Patristocrat, Caesar, Affine, Porta, Baconian, etc. The website also tracks rankings, stats, and speed-based achievements.
 
 ![Game Preview](https://cipher-arena.fly.dev/landing-page/hero-mock.png)
 
 ## Features
 
 - **Multiplayer Battles** – Go head-to-head solving ciphers with real-time progress tracking.
-- **Ranked Elo System** – Per-cipher Glicko-2 ratings with dynamic updates after every match.
+- **Ranked Elo System** – Per-cipher ELO ratings with dynamic updates after every match.
 - **Achievements & Badges** – Unlock unique badges based on obscure solve conditions and personal milestones (including nods to #34).
 - **Secure Auth** – JWT-based login with email-first autofill and profile picture cropping.
 - **Live Lobby System** – Discover and join public lobbies with real-time player lists and cipher metadata.
-- **Leaderboards** – Filter by cipher type and performance metric (Elo, win %, best time, etc.).
+- **Leaderboards** – Filter by cipher type and performance metric (Elo, win %, best time, avg time per char, etc.).
 - **Glassmorphic UI** – Responsive and animated UI built with Svelte 5 and runes.
 
-## 🛠 Tech Stack
+## Tech Stack
 
 - **Frontend**: SvelteKit
 - **Backend**: Node.js, Socket.IO, MongoDB (via Mongoose)
