@@ -20,8 +20,9 @@
             return;
         }
 
-        if (event.key == "ArrowLeft" || event.key == "ArrowRight") {
+        if (event.key == "ArrowLeft" || event.key == "ArrowRight" || event.key == " " || event.key == "Tab") {
             onArrow(event.key, index);
+            event.preventDefault();
             return;
         }
 

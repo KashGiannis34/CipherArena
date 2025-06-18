@@ -34,16 +34,15 @@
 
     function onArrow(key, index) {
         let inc;
-        if (key == "ArrowLeft") {
-            inc = -1;
-        } else {
+        if (key == "ArrowRight" || event.key == " " || event.key == "Tab") {
             inc = 1;
+        } else {
+            inc = -1;
         }
 
-        let currIndex = index;
-        if (currIndex + inc < info.inputs.length && currIndex >= 0) {
-            currIndex += inc;
-        }
+        const length = info.inputs.length;
+        let currIndex = (index + inc + length) % length;
+
         inputs[currIndex]?.focus();
     }
 

@@ -18,8 +18,6 @@ export async function incrementTotal(userId, cipherType, returnUser = false) {
         user.singleplayerStats[type].total += 1;
     }
 
-    console.log(user);
-
     await user.save();
     return returnUser ? user : null;
 }

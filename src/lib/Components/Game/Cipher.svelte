@@ -76,20 +76,33 @@
 
     function onArrow(key, index) {
         let inc;
-        if (key == "ArrowLeft") {
-            inc = -1;
-        } else {
+        if (key == "ArrowRight" || event.key == " " || event.key == "Tab") {
             inc = 1;
+        } else {
+            inc = -1;
         }
 
+        const len = info.inputs.length;
         let currIndex = index;
-        while (currIndex + inc < info.inputs.length && currIndex >= 0) {
+        let triedAll = false;
+
+        while (!triedAll) {
+            let nextIndex = (currIndex + inc + len) % len;
             let prevChar = info.cipherTextTrim[currIndex];
-            currIndex += inc;
-            if (isSolvableChunk(info.cipherTextTrim[currIndex], cipherType) && (info.cipherTextTrim[currIndex] != prevChar || !directMap)) {
+            let nextChar = info.cipherTextTrim[nextIndex];
+
+            if (isSolvableChunk(nextChar, cipherType) && (nextChar !== prevChar || !directMap)) {
+                currIndex = nextIndex;
                 break;
             }
+
+            currIndex = nextIndex;
+            if (currIndex === index) {
+                currIndex = (index + inc + len) % len;
+                triedAll = true;
+            }
         }
+
         info.inputs[currIndex]?.focus();
     }
 
@@ -100,34 +113,48 @@
     }
 
     function onChange(letter, val, index) {
-        if (debouncedProgressUpdate && mode === "multiplayer" && info.inputs[index].value != val && (val == '' || info.inputs[index].value == '')) {
+        if (debouncedProgressUpdate && mode === "multiplayer" && info.inputs[index].value != val && (val === '' || info.inputs[index].value === '')) {
             debouncedProgressUpdate();
         }
 
         if (!directMap) {
             info.inputs[index].value = val;
-        }
-        else {
+        } else {
             info.letterInputs[letter] = val;
         }
 
-        if (autoFocus && val != '') {
+        if (autoFocus && val !== '') {
+            const len = info.inputs.length;
             let currIndex = index;
-            while (currIndex + 1 < info.inputs.length) {
-                currIndex++;
+            let triedAll = false;
+
+            while (!triedAll) {
+                currIndex = (currIndex + 1) % len;
+
                 if (directMap) {
                     const normalizedLetter = info.cipherTextTrim[currIndex].toUpperCase();
-                    if (isSolvableChunk(normalizedLetter, cipherType) &&
-                    normalizedLetter !== letter &&
-                    info.letterInputs[normalizedLetter] == '') {
+                    if (
+                        isSolvableChunk(normalizedLetter, cipherType) &&
+                        normalizedLetter !== letter &&
+                        info.letterInputs[normalizedLetter] === ''
+                    ) {
                         break;
                     }
                 } else {
-                    if (isSolvableChunk(info.cipherTextTrim[currIndex], cipherType) && info.inputs[currIndex].value == '') {
+                    if (
+                        isSolvableChunk(info.cipherTextTrim[currIndex], cipherType) &&
+                        info.inputs[currIndex].value === ''
+                    ) {
                         break;
                     }
                 }
+
+                if (currIndex === index) {
+                    // We've looped all the way around; no valid input found
+                    triedAll = true;
+                }
             }
+
             info.inputs[currIndex]?.focus();
         }
     }

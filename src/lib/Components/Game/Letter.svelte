@@ -21,8 +21,9 @@
             return;
         }
 
-        if (event.key == "ArrowLeft" || event.key == "ArrowRight") {
+        if (event.key == "ArrowLeft" || event.key == "ArrowRight" || event.key == " " || event.key == "Tab") {
             onArrow(event.key, index);
+            event.preventDefault();
             return;
         }
 
@@ -176,19 +177,19 @@
     }
 
     .focus {
-        background-color: rgba(255, 255, 255, 0.06); /* softer base */
+        background-color: rgba(199, 171, 255, 0.236) !important; /* softer base */
         animation: focusPulse 1.5s ease-in-out infinite;
-        box-shadow: 0 0 4px rgba(255, 255, 255, 0.15);
+        box-shadow: 0 0 4px #9558ff26;
         transition: background-color 0.25s ease, box-shadow 0.25s ease;
         border-radius: 4px;
     }
 
     @keyframes focusPulse {
         0%, 100% {
-            box-shadow: 0 0 4px rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 4px rgba(13, 20, 143, 0.15);
         }
         50% {
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
+            box-shadow: 0 0 14px rgba(182, 126, 255, 0.35);
         }
     }
 
