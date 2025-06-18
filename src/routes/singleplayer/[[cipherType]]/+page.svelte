@@ -6,6 +6,7 @@
 	import LoadingOverlay from "$lib/Components/General/LoadingOverlay.svelte";
 	import { fade } from "svelte/transition";
 	import { onMount } from "svelte";
+  	import { generateSeo } from "$lib/util/generateSEO.js";
 
 	let { data } = $props();
 	let mounted = $state(false);
@@ -103,7 +104,16 @@
 		await fetchQuote();
 		mounted = true;
 	});
+
+	const seo = generateSeo({
+	title: `Singleplayer ${params.cipherType} — Cipher Arena`,
+	description: `Practice solving ${params.cipherType} cryptograms solo to sharpen your skills before entering multiplayer battles.`,
+	url: `https://cipher-arena.fly.dev/singleplayer/${params.cipherType}`,
+	image: 'https://cipher-arena.fly.dev/landing-page/cipher-solved.png'
+	});
 </script>
+
+<svelte:head>{@html seo}</svelte:head>
 
 {#if !mounted || loading}
 	<LoadingOverlay />

@@ -2,6 +2,7 @@
   import "$lib/css/StrapBtn.css";
   import { fade, fly } from 'svelte/transition';
   import { goto } from '$app/navigation';
+  import { generateSeo } from "$lib/util/generateSEO";
 
   let whyImages = [
     { src: '/landing-page/cipher-solved.png', alt: 'Cipher Solved' },
@@ -21,7 +22,16 @@
     { src: '/landing-page/leaderboard.png', alt: 'Leaderboard' },
     { src: '/landing-page/waiting-room.png', alt: 'Waiting Room' },
   ];
+
+  const seo = generateSeo({
+    title: 'Cipher Arena — Multiplayer Cryptogram Battles',
+    description: 'Battle real opponents solving classic cryptograms in real-time. Compete across multiple cipher types, climb the leaderboard, and unlock badges.',
+    url: 'https://cipher-arena.fly.dev/',
+    image: 'https://cipher-arena.fly.dev/landing-page/hero-mock.png'
+  });
 </script>
+
+<svelte:head>{@html seo}</svelte:head>
 
 <div class="container">
   <div class="section hero-section" in:fade>

@@ -1,9 +1,21 @@
 <script>
     import Navbar from "$lib/Components/General/Navbar.svelte";
+    import { PUBLIC_APP_URL } from '$env/static/public';
     import { page } from '$app/stores';
 
     let {data, children} = $props();
 </script>
+
+<svelte:head>
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "url": "https://cipher-arena.fly.dev",
+      "logo": "https://cipher-arena.fly.dev/logo.png"
+    })}
+  </script>
+</svelte:head>
 
 <div id="modals"></div>
 <div class="app-container">
