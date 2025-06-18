@@ -25,7 +25,7 @@
 
   const seo = generateSeo({
     title: 'Cipher Arena — Multiplayer Cryptogram Battles',
-    description: 'Battle real opponents solving classic cryptograms in real-time. Compete across multiple cipher types, climb the leaderboard, and unlock badges.',
+    description: 'Battle opponents solving classic cryptograms in real-time. Compete across multiple cipher types, climb the leaderboard, and unlock badges.',
     url: 'https://cipher-arena.fly.dev/',
     image: 'https://cipher-arena.fly.dev/landing-page/hero-mock.png'
   });
