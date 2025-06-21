@@ -173,7 +173,8 @@
 	.leaderboard-container {
 		padding: 1.5rem;
 		margin: 0 auto;
-		width: 1000px;
+		max-width: 1000px;
+		width: 100%;
 		background: rgba(255, 255, 255, 0.04);
 		border: 1px solid rgba(255, 255, 255, 0.1);
 		backdrop-filter: blur(8px);
