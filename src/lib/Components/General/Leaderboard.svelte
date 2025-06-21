@@ -6,8 +6,8 @@
 
     let leaderboardData = $state([]);
 
-	let selectedCipherType = $state('All');
-	const cipherTypeOptions = ['All', ...Object.keys(cipherTypes)];
+	const cipherTypeOptions = [...Object.keys(cipherTypes), 'All'];
+	let selectedCipherType = $state(cipherTypeOptions[0]);
 
 	let metric = $state('elo');
 	const metricOptions = ['elo', 'wins', 'win%', 'avg solve time per char', 'best solve time'];
