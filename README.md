@@ -36,6 +36,8 @@ Cipher Arena is a fast-paced multiplayer web app where players compete in real-t
 | Atbash         | Letter reversal substitution       |
 | Nihilist       | Numeric key cipher                 |
 | Xenocrypt      | Spanish Substitution cipher        |
+| Hill           | Matrix algebra based cipher        |
+| Checkerboard   | Polybius square based cipher       |
 
 ## Game Mechanics
 
