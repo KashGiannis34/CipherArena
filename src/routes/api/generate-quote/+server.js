@@ -10,7 +10,7 @@ export async function POST({ request, cookies }) {
 
         // --- Authenticate user and increment total ---
         const auth = authenticate(cookies.get('auth-token'));
-        console.log(auth);
+
         if (auth?.id) {
             await incrementTotal(auth.id, params.cipherType);
         }

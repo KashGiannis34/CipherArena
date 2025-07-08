@@ -224,7 +224,6 @@
     font-size: 1.4rem;
     margin-bottom: 2.5rem;
     color: rgba(255, 255, 255, 0.8);
-    font-weight: 300;
     letter-spacing: 0.5px;
   }
 

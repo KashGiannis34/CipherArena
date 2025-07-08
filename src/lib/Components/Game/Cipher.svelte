@@ -13,6 +13,9 @@
     import PortaTable from "./PortaTable.svelte";
     import CaesarTable from "./CaesarTable.svelte";
     import PolybiusSquare from "./PolybiusSquare.svelte";
+    import CheckerboardTable from "./CheckerboardTable.svelte";
+  import HillMatrix from "./HillMatrix.svelte";
+  import DeterminantTable from "./DeterminantTable.svelte";
 
     let {quote, hash, cipherType, autoFocus, params, keys, onSolved, mode, newProblem, fetchAnswerStatus, onProgressUpdate, autoSwitch} = $props();
     let spanish = cipherType == 'Xenocrypt';
@@ -57,7 +60,7 @@
             debouncedProgressUpdate();
         }
 
-        if (cipherType == "Nihilist") {
+        if (cipherType == "Nihilist" || cipherType == "Checkerboard") {
             clearPolybius = true;
         }
     }
@@ -331,6 +334,14 @@
         <CaesarTable />
     {:else if cipherTypes[cipherType]['addOn']=="polybiusSquare"}
         <PolybiusSquare {autoFocus} {clearPolybius} {resetClear} />
+    {:else if cipherTypes[cipherType]['addOn']=="checkerboardTable"}
+        <CheckerboardTable {autoFocus} {clearPolybius} {resetClear} />
+    {:else if cipherTypes[cipherType]['addOn']=="hillMatrix"}
+        <CaesarTable />
+        <HillMatrix keyword={keys[0]} encode={params["Solve"] == 'Encode'} />
+        {#if params['Solve'] == 'Decode'}
+            <DeterminantTable />
+        {/if}
     {/if}
 
     <div class="buttons">

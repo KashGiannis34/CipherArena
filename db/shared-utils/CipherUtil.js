@@ -62,9 +62,50 @@ export function encodeQuote(plaintext, cipherType, keys, params) {
     } else if (cipherType === 'Xenocrypt') {
         const k = params['K'] == '-1' ? '0' : params['K'];
         return encodeXenocrypt(plaintext, k, keys[0]);
+    } else if (cipherType === 'Checkerboard') {
+        return encodeCheckerboard(plaintext, keys[0], keys[1], keys[2]);
+    } else if (cipherType === 'Hill') {
+        return encodeHill(plaintext, keys[0]);
     } else {
         return encodeAristocrat(plaintext, '0');
     }
+}
+
+export function findDeterminant(word) {
+    if (word.length !== 4) return -1;
+
+    const a = letterToNumber(word[0]);
+    const b = letterToNumber(word[1]);
+    const c = letterToNumber(word[2]);
+    const d = letterToNumber(word[3]);
+
+    if (a === -1 || b === -1 || c === -1 || d === -1) return -1;
+
+    return (a * d - b * c + 26) % 26;
+}
+
+function encodeHill(plaintext, key) {
+    const matrix = [];
+    const res = [];
+    for (let letter of key) {
+        matrix.push(letterToNumber(letter));
+    }
+    const stripped = stripQuote(plaintext, false);
+
+
+    for (let i = 0; i < stripped.length; i += 2) {
+        const a = letterToNumber(stripped[i]);
+        const b = i+1 >= plaintext.length ? 25 : letterToNumber(stripped[i + 1]);
+
+        const c = (matrix[0] * a + matrix[1] * b) % 26;
+        const d = (matrix[2] * a + matrix[3] * b) % 26;
+
+        res.push(numberToLetter(c));
+        if (i + 1 < stripped.length) {
+            res.push(numberToLetter(d));
+        }
+    }
+    return res;
 }
 
 function encodeCaesar(plaintext) {
@@ -333,6 +374,45 @@ function encodeBaconian(plaintext) {
     }
 
     return ciphertext;
+}
+
+function encodeCheckerboard(plaintext, rowKey, colKey, polybiusKey) {
+    const square = generateCheckerboardSquare(rowKey, colKey, polybiusKey);
+    const stripped = stripQuote(plaintext, false);
+
+    const coords = [];
+    for (let char of stripped) {
+        if (square[char]) {
+            coords.push(square[char]);
+        }
+    }
+
+    return coords;
+}
+
+function generateCheckerboardSquare(rowKey, colKey, key) {
+    const alphabet = 'ABCDEFGHIKLMNOPQRSTUVWXYZ'; // I/J combined
+    key = key.toUpperCase().replace(/[^A-Z]/g, '').replace(/J/g, 'I');
+    const seen = new Set();
+    const square = [];
+    const coordsMap = {};
+
+    const fullKey = key + alphabet;
+
+    for (let char of fullKey) {
+        if (!seen.has(char) && alphabet.includes(char)) {
+            seen.add(char);
+            square.push(char);
+        }
+    }
+
+    for (let i = 0; i < square.length; i++) {
+        const row = rowKey[Math.floor(i / 5)];
+        const col = colKey[i % 5];
+        coordsMap[square[i]] = row + col;
+    }
+
+    return coordsMap;
 }
 
 function generateDecoratedWordSet(baseWord) {

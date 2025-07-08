@@ -30,7 +30,7 @@
 			const time = Number(((Date.now() / 1000) - startTime).toFixed(3));
             const response = await fetch('/api/validate-quote', {
                 method: 'POST',
-                body: JSON.stringify({'input':i, 'id':hash, 'cipherType':cipherType, 'keys':keys, 'solveTime':time, }),
+                body: JSON.stringify({'input':i, 'id':hash, 'cipherType':cipherType, 'keys':keys, 'solveTime':time, 'solve':params.Solve }),
                 headers: {
                     'content-type': 'application/json'
                 }

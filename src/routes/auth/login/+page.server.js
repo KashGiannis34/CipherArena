@@ -33,7 +33,6 @@ export const actions = {
             cookies.set("email", user.email, cookie_options);
             cookies.set("username", user.username, cookie_options);
             cookies.set("verified", user.verified, cookie_options);
-            console.log(data.get("roomId"));
 
             redirect(303, '/game-lobby/'+data.get("roomId"));
         }

@@ -28,9 +28,9 @@
 		let nextCol = col;
 
 		// arrow key movement
-		if (key === 'ArrowUp') nextRow = Math.max(0, row - 1);
+		if (key === 'ArrowUp') nextRow = Math.max(-1, row - 1);
 		else if (key === 'ArrowDown') nextRow = Math.min(gridSize - 1, row + 1);
-		else if (key === 'ArrowLeft') nextCol = Math.max(0, col - 1);
+		else if (key === 'ArrowLeft') nextCol = Math.max(-1, col - 1);
 		else if (key === 'ArrowRight') nextCol = Math.min(gridSize - 1, col + 1);
 		else if (key === 'Backspace' || key === 'Delete') {
 			// clear input
@@ -41,13 +41,22 @@
 			// allow letter input
 			e.target.value = key.toUpperCase();
 			if (autoFocus) {
-				nextCol += 1;
-				if (nextCol >= gridSize) {
-					nextCol = nextRow >= gridSize - 1 ? nextCol : 0;
-					nextRow += 1;
-				}
-				if (nextRow >= gridSize) {
-					nextRow = gridSize - 1; // stay within bounds
+				if (col == -1) {
+					if (row == 4) {
+						nextCol = 0;
+						nextRow = 0;
+					} else {
+						nextRow += 1;
+					}
+				} else {
+					nextCol += 1;
+					if (nextCol >= gridSize) {
+						nextCol = nextRow >= gridSize - 1 ? nextCol : 0;
+						nextRow += 1;
+					}
+					if (nextRow >= gridSize) {
+						nextRow = gridSize - 1; // stay within bounds
+					}
 				}
 			}
 		} else {
@@ -93,7 +102,15 @@
 						onmouseenter={() => handleHover(null, colIndex)}
 						onmouseleave={clearHover}
 					>
-						{col}
+						<input
+							type="text"
+							placeholder="="
+							maxlength="1"
+							data-row={-1}
+							data-col={colIndex}
+							onkeydown={(e) => handleKeydown(e, -1, colIndex)}
+							oninput={handleInput}
+						/>
 					</th>
 				{/each}
 			</tr>
@@ -104,7 +121,15 @@
 						onmouseenter={() => handleHover(rowIndex, null)}
 						onmouseleave={clearHover}
 					>
-						{row}
+						<input
+							type="text"
+							placeholder="="
+							maxlength="1"
+							data-row={rowIndex}
+							data-col={-1}
+							onkeydown={(e) => handleKeydown(e, rowIndex, -1)}
+							oninput={handleInput}
+						/>
 					</th>
 					{#each colLabels as col, colIndex}
 						<td
@@ -164,7 +189,11 @@
 	}
 
 	th {
-		padding: .65vw 0;
+		padding: .5vw;
+	}
+
+	td {
+		padding: .5vw;
 	}
 
 	input {
@@ -174,11 +203,12 @@
 		height: 100%;
 		background-color: transparent;
 		border: none;
+		border-radius: 5px;
 		outline: none;
 		caret-color: transparent;
 		font-size: inherit;
 		font-family: 'Source Code Pro', monospace !important;
-		padding: 0.65vw;
+		padding: 0.5vw;
 	}
 
 	input:focus {
