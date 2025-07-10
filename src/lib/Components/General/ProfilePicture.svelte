@@ -72,7 +72,7 @@
     <img
       bind:this={imgRef}
       src={src}
-      alt="avatar"
+      alt=""
       class="avatar"
       crossorigin="anonymous"
       onload={handleLoad}
