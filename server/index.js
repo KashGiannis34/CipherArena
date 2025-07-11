@@ -637,6 +637,12 @@ async function handleRematchRequest(game, io, rematchVotesMap, forfeitVotesMap, 
         game = await Game.findById(game._id).populate('users').exec();
     }
 
+    // If it's really just a singleplayer game, count it toward singleplayer total
+    if (game.mode === 'ranked' && game.users.length === 1 && user._id.equals(game.users[0]._id)) {
+        const cipherType = game.params.cipherType;
+        user = await incrementTotal(user._id, cipherType, true);
+    }
+
     // Generate new cipher and reset game
     const newQuote = await generateQuote(game.params);
     game.quote = {
