@@ -10,6 +10,10 @@
   let submitting = $state(false);
 </script>
 
+<svelte:head>
+  <title>Reset Password</title>
+</svelte:head>
+
 <Container --minWidth=none --maxWidth=min(80vw,600px)>
   <form method="POST">
     <h1>Reset Password</h1>

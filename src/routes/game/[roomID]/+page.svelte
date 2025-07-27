@@ -296,6 +296,10 @@
   });
 </script>
 
+<svelte:head>
+  <title>Game</title>
+</svelte:head>
+
 {#if statusMessage}
   <div class="status-bar {statusType}" transition:fade>
     {statusMessage}

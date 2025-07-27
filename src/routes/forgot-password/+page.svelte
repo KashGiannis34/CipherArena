@@ -8,6 +8,10 @@
   let sending = $state(false);
 </script>
 
+<svelte:head>
+  <title>Forgot Password</title>
+</svelte:head>
+
 <Container --minWidth=none --maxWidth=min(80vw,600px)>
   <form method="POST">
     <h1>Forgot Password</h1>

@@ -217,6 +217,10 @@
     });
 </script>
 
+<svelte:head>
+  <title>Public Lobby</title>
+</svelte:head>
+
 {#if statusMessage}
   <div class="status-bar {statusType}" transition:fade>
     {statusMessage}

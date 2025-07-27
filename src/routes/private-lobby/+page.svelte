@@ -134,6 +134,10 @@
     }
 </script>
 
+<svelte:head>
+  <title>Private Lobby</title>
+</svelte:head>
+
 {#if authenticating}
     <LoadingOverlay />
 {/if}

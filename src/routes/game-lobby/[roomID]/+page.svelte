@@ -65,6 +65,10 @@
     }
 </script>
 
+<svelte:head>
+  <title>Game Lobby</title>
+</svelte:head>
+
 {#if authenticating}
     <LoadingOverlay />
 {/if}

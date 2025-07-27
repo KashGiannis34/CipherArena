@@ -90,6 +90,10 @@
   </div>
 </section>
 
+<svelte:head>
+  <title>{username}'s Profile</title>
+</svelte:head>
+
 <style>
 .profile-page {
   position: relative;
