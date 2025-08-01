@@ -4,6 +4,7 @@ import { UserGame } from '$dbutils/UserGame.js';
 import { json } from '@sveltejs/kit';
 import { v4 as uuidv4 } from 'uuid';
 import { authenticate } from '$dbutils/authenticate.js';
+import sharp from 'sharp';
 
 export async function POST({ request, cookies }) {
   const auth = await authenticate(cookies.get('auth-token'));
@@ -22,18 +23,31 @@ export async function POST({ request, cookies }) {
 		return json({ success: false, error: 'Invalid file type. Must be an image.' }, { status: 415 });
 	}
 
-	try {
-		const buffer = Buffer.from(await file.arrayBuffer());
+	const MAX_SIZE_MB = 5;
+    const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+    if (file.size > MAX_SIZE_BYTES) {
+        return json({ success: false, error: `File size must be less than ${MAX_SIZE_MB}MB.` }, { status: 413 });
+    }
 
-		const originalName = file.name || 'image.png';
-		const ext = originalName.includes('.') ? originalName.split('.').pop() : 'png';
-		const filename = `${uuidv4()}.${ext}`;
+	try {
+		const originalBuffer = Buffer.from(await file.arrayBuffer());
+		const compressedBuffer = await sharp(originalBuffer)
+            .resize({
+                width: 512,          // Set a max width
+                height: 512,         // Set a max height
+                fit: 'inside',       // Keep aspect ratio, fitting within 512x512
+                withoutEnlargement: true, // Don't scale up images that are already small
+            })
+            .webp({ quality: 80 })   // Convert to WebP format with 80% quality
+            .toBuffer();
+
+		const filename = `${uuidv4()}.webp`;
 
 		await s3.send(new PutObjectCommand({
 			Bucket: process.env.S3_BUCKET_NAME,
 			Key: `profilePictures/${filename}`,
-			Body: buffer,
-			ContentType: file.type,
+			Body: compressedBuffer,
+			ContentType: "image/webp",
 			ACL: 'private'
 		}));
 
