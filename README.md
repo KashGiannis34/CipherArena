@@ -4,7 +4,7 @@ Visit Site: [https://cipher-arena.fly.dev](https://cipher-arena.fly.dev)
 
 Cipher Arena is a fast-paced multiplayer web app where players compete in real-time to solve cryptograms. Built with SvelteKit and Socket.IO, the platform supports classic cipher types like Aristocrat, Patristocrat, Caesar, Affine, Porta, Baconian, etc. The website also tracks rankings, stats, and speed-based achievements.
 
-![Game Preview](https://cipher-arena.fly.dev/landing-page/hero-mock.png)
+![Game Preview](https://cipher-arena.fly.dev/landing-page/hero-mock.webp)
 
 ## Features
 

@@ -9,7 +9,7 @@
     title: 'Login: Cipher Arena',
     description: 'Log in to your Cipher Arena account to join multiplayer battles, track stats, and unlock new badges.',
     url: 'https://cipher-arena.fly.dev/account/login',
-    image: 'https://cipher-arena.fly.dev/landing-page/pfp-badges.png'
+    image: 'https://cipher-arena.fly.dev/landing-page/pfp-badges.webp'
     });
 </script>
 

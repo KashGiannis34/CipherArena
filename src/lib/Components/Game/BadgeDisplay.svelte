@@ -71,7 +71,7 @@
                 }
               }}
             >
-              <img class="badge-preview" src={`/badges/${badgeId}.png`} alt={badgeId} />
+              <img class="badge-preview" src={`/badges/${badgeId}.webp`} alt={badgeId} />
             </div>
           {/each}
         {:else}
@@ -95,7 +95,7 @@
           {#if selectedBadge}
           <i class="fa-solid fa-arrow-left back-icon" onclick={returnToGrid} onkeydown={() => {}} role="button" tabindex="0"></i>
             <div class="badge-detail">
-              <img class="badge-large {unlockedSet.has(selectedBadge.id) ? '' : 'locked'}" src={`/badges/${selectedBadge.id}.png`} alt={selectedBadge.label} />
+              <img class="badge-large {unlockedSet.has(selectedBadge.id) ? '' : 'locked'}" src={`/badges/${selectedBadge.id}.webp`} alt={selectedBadge.label} />
               <div class="badge-info">
                 <h3>{selectedBadge.label}</h3>
                 <p>{selectedBadge.description}</p>
@@ -113,7 +113,7 @@
                 <div class="badge-grid-item" onclick={() => selectBadge(badge)} onkeydown={() => {}} role="button" tabindex="0">
                   <div class="tooltip-wrapper">
                     <img
-                      src={`/badges/${badge.id}.png`}
+                      src={`/badges/${badge.id}.webp`}
                       alt={badge.label}
                       class="{unlockedSet.has(badge.id) ? '' : 'locked'}"
                     />

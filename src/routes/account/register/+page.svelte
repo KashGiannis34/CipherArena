@@ -9,7 +9,7 @@
     title: 'Register: Cipher Arena',
     description: 'Create your Cipher Arena account and start competing in real-time cryptogram battles. Track your stats and climb the leaderboard.',
     url: 'https://cipher-arena.fly.dev/account/register',
-    image: 'https://cipher-arena.fly.dev/landing-page/pfp-badges.png'
+    image: 'https://cipher-arena.fly.dev/landing-page/pfp-badges.webp'
     });
 </script>
 

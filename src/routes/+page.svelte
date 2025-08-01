@@ -5,29 +5,29 @@
   import { generateSeo } from "$lib/util/generateSEO";
 
   let whyImages = [
-    { src: '/landing-page/cipher-solved.png', alt: 'Cipher Solved' },
-    { src: '/landing-page/aristo.png', alt: 'Aristocrat' },
-    { src: '/landing-page/atbash.png', alt: 'Atbash' },
-    { src: '/landing-page/baconian.png', alt: 'Baconian' },
-    { src: '/landing-page/nihilist-2.png', alt: 'Nihilist' },
-    { src: '/landing-page/caesar.png', alt: 'Caesar' },
-    { src: '/landing-page/porta.png', alt: 'Porta' },
+    { src: '/landing-page/cipher-solved.webp', alt: 'Cipher Solved' },
+    { src: '/landing-page/aristo.webp', alt: 'Aristocrat' },
+    { src: '/landing-page/atbash.webp', alt: 'Atbash' },
+    { src: '/landing-page/baconian.webp', alt: 'Baconian' },
+    { src: '/landing-page/nihilist-2.webp', alt: 'Nihilist' },
+    { src: '/landing-page/caesar.webp', alt: 'Caesar' },
+    { src: '/landing-page/porta.webp', alt: 'Porta' },
   ];
 
   let featureImages = [
-    { src: '/landing-page/pfp-badges.png', alt: 'User Achievements' },
-    { src: '/landing-page/public-lobby.png', alt: 'Public Lobby' },
-    { src: '/landing-page/profile-stats.png', alt: 'Stats' },
-    { src: '/landing-page/profile-histogram.png', alt: 'Histogram' },
-    { src: '/landing-page/leaderboard.png', alt: 'Leaderboard' },
-    { src: '/landing-page/waiting-room.png', alt: 'Waiting Room' },
+    { src: '/landing-page/pfp-badges.webp', alt: 'User Achievements' },
+    { src: '/landing-page/public-lobby.webp', alt: 'Public Lobby' },
+    { src: '/landing-page/profile-stats.webp', alt: 'Stats' },
+    { src: '/landing-page/profile-histogram.webp', alt: 'Histogram' },
+    { src: '/landing-page/leaderboard.webp', alt: 'Leaderboard' },
+    { src: '/landing-page/waiting-room.webp', alt: 'Waiting Room' },
   ];
 
   const seo = generateSeo({
     title: 'Cipher Arena: Multiplayer Cryptogram Battles',
     description: 'Battle opponents solving classic cryptograms in real-time. Compete across multiple cipher types, climb the leaderboard, and unlock badges.',
     url: 'https://cipher-arena.fly.dev/',
-    image: 'https://cipher-arena.fly.dev/landing-page/hero-mock.png'
+    image: 'https://cipher-arena.fly.dev/landing-page/hero-mock.webp'
   });
 </script>
 
@@ -39,7 +39,7 @@
     <div class="subhero">Crack codes. Train your brain. Compete with friends.</div>
     <div class="subhero"><a href="/account/register" target="_blank" rel="noopener noreferrer" class="profile-link">Create an account</a> to play multiplayer</div>
     <div class="image-container hero-image-container">
-      <img src="/landing-page/hero-mock.png" alt="Cipher Arena Dashboard" />
+      <img src="/landing-page/hero-mock.webp" alt="Cipher Arena Dashboard" />
     </div>
   </div>
 
