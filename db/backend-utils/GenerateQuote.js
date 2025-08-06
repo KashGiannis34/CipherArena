@@ -9,24 +9,30 @@ export async function generateQuote(p) {
 
     const keyCount = cipherTypes[p['cipherType']]['keys'];
     let keys = [];
-    for (let keyName of keyCount) {
-        let randomWord = '';
-        do {
-            if (keyName != 'polybius key' && p['cipherType'] == 'Checkerboard') {
-                randomWord = await findRandomEntry(Word, {length: 5});
-                continue;
-            }
-            if (p['cipherType'] == 'Hill') {
-                let determinant = -1;
-                do {
-                    randomWord = await findRandomEntry(Word, {length: 4});
-                    determinant = findDeterminant(randomWord["text"].toUpperCase());
-                } while (determinant == -1 || determinant % 2 == 0 || determinant % 13 == 0);
-                continue;
-            }
-            randomWord = await findRandomEntry(Word, {length: { $gte: 5, $lte: 9}})
-        } while (keys.includes(randomWord));
-        keys.push(randomWord["text"].toUpperCase());
+    if (p['cipherType'] == 'Affine') {
+        const aVals = [1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25];
+        keys.push(aVals[Math.floor(Math.random() * aVals.length)] * (Math.random() < 0.5 ? -1 : 1));
+        keys.push(Math.random() < 0.5 ? Math.floor(Math.random() * 26) - 26 : Math.floor(Math.random() * 25) + 1);
+    } else {
+        for (let keyName of keyCount) {
+            let randomWord = '';
+            do {
+                if (keyName != 'polybius key' && p['cipherType'] == 'Checkerboard') {
+                    randomWord = await findRandomEntry(Word, {length: 5});
+                    continue;
+                }
+                if (p['cipherType'] == 'Hill') {
+                    let determinant = -1;
+                    do {
+                        randomWord = await findRandomEntry(Word, {length: 4});
+                        determinant = findDeterminant(randomWord["text"].toUpperCase());
+                    } while (determinant == -1 || determinant % 2 == 0 || determinant % 13 == 0);
+                    continue;
+                }
+                randomWord = await findRandomEntry(Word, {length: { $gte: 5, $lte: 9}})
+            } while (keys.includes(randomWord));
+            keys.push(randomWord["text"].toUpperCase());
+        }
     }
 
     const encodedQuote = p['Solve'] == "Decode" ?

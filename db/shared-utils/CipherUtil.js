@@ -66,6 +66,8 @@ export function encodeQuote(plaintext, cipherType, keys, params) {
         return encodeCheckerboard(plaintext, keys[0], keys[1], keys[2]);
     } else if (cipherType === 'Hill') {
         return encodeHill(plaintext, keys[0]);
+    } else if (cipherType === 'Affine') {
+        return encodeAffine(plaintext, keys[0], keys[1]);
     } else {
         return encodeAristocrat(plaintext, '0');
     }
@@ -493,6 +495,20 @@ function encodeNihilist(plaintext, keyword, polybiusKey) {
     }
 
     return ciphertext.map(n => n.toString().padStart(2, '0'));
+}
+
+function encodeAffine(plaintext, a, b) {
+    const ciphertext = [];
+
+    for (let letter of plaintext) {
+        const num = letterToNumber(letter);
+        if (num != -1) {
+            const encodedNum = ((a * num + b) % 26 + 26) % 26;
+            ciphertext.push(numberToLetter(encodedNum));
+        }
+    }
+
+    return ciphertext;
 }
 
 function generatePolybiusSquare(key) {
