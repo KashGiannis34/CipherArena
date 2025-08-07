@@ -2,7 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { cubicOut } from "svelte/easing";
 
-  let { visible = false, onClose, position = { x: 100, y: 100 } } = $props();
+  let { visible = false, onClose, position = { x: 100, y: 100 }, onFocusSwitch, calculatorFocused = $bindable(), toggleCalculator } = $props();
 
   let calculatorElement = $state();
   let isDragging = $state(false);
@@ -12,6 +12,9 @@
   let operation = $state(null);
   let waitingForNumber = $state(false);
   let justCalculated = $state(false);
+  let calculatorDisplayElement = $state();
+  let lastOperation = $state(null);
+  let lastValue = $state(null);
 
   // Calculator functions
   function inputNumber(num) {
@@ -42,21 +45,33 @@
     } else if (!waitingForNumber) {
       calculate();
     }
-    
+
     operation = op;
     waitingForNumber = true;
     justCalculated = false;
   }
 
   function calculate() {
-    if (previousValue === null || operation === null || waitingForNumber) {
-      return;
+    let current;
+    let op;
+
+    if (justCalculated && lastOperation) {
+      current = lastValue;
+      op = lastOperation;
+    } else {
+      if (previousValue === null || operation === null || waitingForNumber) {
+        return;
+      }
+      current = parseFloat(display);
+      op = operation;
+
+      lastOperation = operation;
+      lastValue = current;
     }
 
-    const current = parseFloat(display);
     let result;
 
-    switch (operation) {
+    switch (op) {
       case '+':
         result = previousValue + current;
         break;
@@ -78,17 +93,16 @@
         return;
     }
 
-    // Format the result
     if (isNaN(result) || !isFinite(result)) {
       display = 'Error';
       clear();
       return;
     }
 
-    // Round to avoid floating point precision issues
     result = Math.round(result * 1000000000) / 1000000000;
     display = result.toString();
-    
+
+    // Update state for the next calculation
     previousValue = result;
     operation = null;
     waitingForNumber = true;
@@ -101,19 +115,21 @@
     operation = null;
     waitingForNumber = false;
     justCalculated = false;
+    lastOperation = null;
+    lastValue = null;
   }
 
   // Dragging functions
   function handleMouseDown(e) {
     if (e.target.closest('.calc-button') || e.target.closest('.close-btn')) {
-      return; // Don't start dragging when clicking buttons
+      return;
     }
-    
+
     isDragging = true;
     const rect = calculatorElement.getBoundingClientRect();
     dragOffset.x = e.clientX - rect.left;
     dragOffset.y = e.clientY - rect.top;
-    
+
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
     e.preventDefault();
@@ -121,15 +137,15 @@
 
   function handleMouseMove(e) {
     if (!isDragging) return;
-    
+
     const newX = e.clientX - dragOffset.x;
     const newY = e.clientY - dragOffset.y;
-    
+
     // Keep calculator within viewport bounds
     const rect = calculatorElement.getBoundingClientRect();
     const maxX = window.innerWidth - rect.width;
     const maxY = window.innerHeight - rect.height;
-    
+
     position.x = Math.max(0, Math.min(newX, maxX));
     position.y = Math.max(0, Math.min(newY, maxY));
   }
@@ -141,12 +157,9 @@
   }
 
   // Focus management
-  let calculatorFocused = $state(false);
-  let calculatorDisplayElement = $state();
-
   function focusCalculator() {
-    if (calculatorDisplayElement) {
-      calculatorDisplayElement.focus();
+    if (calculatorElement) {
+      calculatorElement.focus();
       calculatorFocused = true;
     }
   }
@@ -159,42 +172,73 @@
     calculatorFocused = false;
   }
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts - Fixed to work properly and prevent ghost characters
   function handleKeydown(e) {
     if (!visible) return;
-    
-    // Handle Alt+F for focus switching - don't prevent default for this
-    if (e.altKey && e.key.toLowerCase() === 'f') {
-      if (calculatorFocused) {
-        // Calculator is focused, switch focus back to main input
-        calculatorDisplayElement.blur();
-        calculatorFocused = false;
-        // Let the cipher component handle finding and focusing the main input
-      } else {
-        // Calculator is not focused, focus it
-        focusCalculator();
-      }
+
+    if (e.altKey && e.key.toLowerCase() === 'k' && calculatorFocused) {
       e.preventDefault();
       e.stopPropagation();
+      toggleCalculator();
       return;
     }
-    
-    // Only handle calculator shortcuts if calculator is actually focused
-    if (!calculatorFocused) return;
-    
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (e.key >= '0' && e.key <= '9') {
-      inputNumber(e.key);
-    } else if (e.key === '.') {
-      inputDecimal();
-    } else if (['+', '-', '*', '/'].includes(e.key)) {
-      inputOperation(e.key);
-    } else if (e.key === 'Enter' || e.key === '=') {
-      calculate();
-    } else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') {
-      clear();
+
+    if (e.altKey && e.key.toLowerCase() === 'l') {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (calculatorFocused) {
+        if (onFocusSwitch) {
+          calculatorFocused = false;
+          onFocusSwitch();
+        }
+      } else {
+        // If not focused, focus the calculator.
+        focusCalculator();
+      }
+      return;
+    }
+
+    // Handle calculator shortcuts if calculator is focused
+    if (calculatorFocused) {
+      if (e.key.startsWith('Arrow')) {
+        e.preventDefault();
+        e.stopPropagation();
+        const moveSpeed = e.shiftKey ? 50 : 10;
+
+        switch (e.key) {
+          case 'ArrowUp':
+            position.y -= moveSpeed;
+            break;
+          case 'ArrowDown':
+            position.y += moveSpeed;
+            break;
+          case 'ArrowLeft':
+            position.x -= moveSpeed;
+            break;
+          case 'ArrowRight':
+            position.x += moveSpeed;
+            break;
+        }
+        return;
+      }
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Full keyboard support for calculator operations
+      if (e.key >= '0' && e.key <= '9') {
+        inputNumber(e.key);
+      } else if (e.key === '.') {
+        inputDecimal();
+      } else if (['+', '-', '*', '/'].includes(e.key)) {
+        inputOperation(e.key);
+      } else if (e.key === 'Enter' || e.key === '=') {
+        calculate();
+      } else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') {
+        clear();
+      }
+      // Don't handle other keys - let them pass through to other components
     }
   }
 
@@ -224,16 +268,21 @@
 </script>
 
 {#if visible}
-  <div 
+  <div
     class="calculator-container"
+    class:calculator-focused={calculatorFocused}
     bind:this={calculatorElement}
     style="left: {position.x}px; top: {position.y}px;"
     onmousedown={handleMouseDown}
+    onclick={focusCalculator}
+    onkeydown={handleKeydown}
+    onfocus={handleCalculatorFocus}
+    onblur={handleCalculatorBlur}
     in:zoom
     out:zoom
     role="dialog"
     aria-label="Calculator"
-    tabindex="-1"
+    tabindex="0"
   >
     <div class="calculator-header">
       <div class="calculator-title">🧮 Calculator</div>
@@ -241,46 +290,44 @@
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
-    
+
     <div class="calculator-body">
-      <div 
-        class="display" 
+      <div
+        class="display"
         bind:this={calculatorDisplayElement}
-        tabindex="0"
-        onfocus={handleCalculatorFocus}
-        onblur={handleCalculatorBlur}
+        tabindex="-1"
         role="textbox"
         aria-label="Calculator display"
         aria-readonly="true"
       >
         {display}
       </div>
-      
+
       <div class="button-grid">
         <!-- Row 1 -->
         <button class="calc-button clear" onclick={clear}>C</button>
         <button class="calc-button operator" onclick={() => inputOperation('/')}>/</button>
         <button class="calc-button operator" onclick={() => inputOperation('*')}>×</button>
         <button class="calc-button operator" onclick={() => inputOperation('-')}>-</button>
-        
+
         <!-- Row 2 -->
         <button class="calc-button number" onclick={() => inputNumber('7')}>7</button>
         <button class="calc-button number" onclick={() => inputNumber('8')}>8</button>
         <button class="calc-button number" onclick={() => inputNumber('9')}>9</button>
         <button class="calc-button operator plus" onclick={() => inputOperation('+')}>+</button>
-        
+
         <!-- Row 3 -->
         <button class="calc-button number" onclick={() => inputNumber('4')}>4</button>
         <button class="calc-button number" onclick={() => inputNumber('5')}>5</button>
         <button class="calc-button number" onclick={() => inputNumber('6')}>6</button>
         <!-- Plus button spans 2 rows -->
-        
+
         <!-- Row 4 -->
         <button class="calc-button number" onclick={() => inputNumber('1')}>1</button>
         <button class="calc-button number" onclick={() => inputNumber('2')}>2</button>
         <button class="calc-button number" onclick={() => inputNumber('3')}>3</button>
         <button class="calc-button equals" onclick={calculate}>=</button>
-        
+
         <!-- Row 5 -->
         <button class="calc-button number zero" onclick={() => inputNumber('0')}>0</button>
         <button class="calc-button decimal" onclick={inputDecimal}>.</button>
@@ -302,6 +349,22 @@
     cursor: move;
     min-width: 280px;
     backdrop-filter: blur(10px);
+    transition: opacity 0.3s ease, border-color 0.3s ease;
+  }
+
+  .calculator-container:not(.calculator-focused) {
+    opacity: 0.6;
+    border-color: #2d3748;
+  }
+
+  .calculator-container.calculator-focused {
+    opacity: 1;
+    border-color: #4adede;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 0 3px rgba(74, 222, 222, 0.4);
+  }
+
+  .calculator-container.calculator-focused .calculator-title {
+    color: #4adede;
   }
 
   .calculator-header {

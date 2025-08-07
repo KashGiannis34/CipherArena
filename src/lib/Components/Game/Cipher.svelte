@@ -41,13 +41,16 @@
     let lettersWithIndices = initLWI();
     let directMap = initDirectMap(cipherType);
     let paramString = paramToString(params);
-    
+
     // Calculator state
     const mathIntensiveCiphers = ['Affine', 'Caesar', 'Nihilist', 'Hill'];
     const showCalculatorButton = mathIntensiveCiphers.includes(cipherType);
     let calculatorVisible = $state(false);
-    let calculatorPosition = $state({ x: 100, y: 100 });
+    let calculatorPosition = $state({ x: 50, y: 50 });
     let mainInputElement;
+    let cipherFocused = $state(false);
+    let calculatorFocused = $state(false);
+    let lastFocusedInputIndex = $state(-1);
 
     function debounce(func, delay) {
         let timeout;
@@ -162,7 +165,6 @@
                 }
 
                 if (currIndex === index) {
-                    // We've looped all the way around; no valid input found
                     triedAll = true;
                 }
             }
@@ -196,7 +198,7 @@
         const alphabet = spanish ? SPANISH_ALPHABET : ENGLISH_ALPHABET;
         const letterInputs = {};
         alphabet.split('').forEach(letter => {
-            letterInputs[letter] = ''; // Initialize each letter with an empty string
+            letterInputs[letter] = '';
         });
         return letterInputs;
     }
@@ -282,7 +284,7 @@
         submissionError = true;
         setTimeout(() => {
             submissionError = false;
-        }, 2000); // error disappears after 2 seconds
+        }, 2000);
     }
 
     function resetClear() {
@@ -300,18 +302,17 @@
     }
 
     function handleGlobalKeydown(e) {
-        // Calculator toggle: Alt + K
-        if (e.altKey && e.key.toLowerCase() === 'k' && showCalculatorButton) {
+        if (e.altKey && e.key.toLowerCase() === 'k' && showCalculatorButton && !calculatorFocused) {
             e.preventDefault();
+            e.stopPropagation();
             toggleCalculator();
             return;
         }
 
-        // Focus toggle: Alt + F (switch between calculator and main input)
-        if (e.altKey && e.key.toLowerCase() === 'f' && calculatorVisible) {
+        // Prevent any Alt key combination from typing letters
+        if (e.altKey && e.key.length === 1) {
             e.preventDefault();
-            // Try to focus the first available input in the cipher
-            focusFirstAvailableInput();
+            e.stopPropagation();
             return;
         }
     }
@@ -323,10 +324,38 @@
                 const input = info.inputs[i];
                 if (input && typeof input.focus === 'function') {
                     input.focus();
+                    cipherFocused = true;
+                    lastFocusedInputIndex = i;
                     break;
                 }
             }
         }
+    }
+
+    function focusLastOrFirstAvailableInput() {
+        // Try to focus the last focused input, or the first available input
+        if (info.inputs && info.inputs.length > 0) {
+            // Try last focused input first
+            if (lastFocusedInputIndex >= 0 && lastFocusedInputIndex < info.inputs.length) {
+                const lastInput = info.inputs[lastFocusedInputIndex];
+                if (lastInput && typeof lastInput.focus === 'function') {
+                    lastInput.focus();
+                    cipherFocused = true;
+                    return;
+                }
+            }
+
+            // Fall back to first available input
+            focusFirstAvailableInput();
+        }
+    }
+
+    function handleCipherFocus() {
+        cipherFocused = true;
+    }
+
+    function handleCipherBlur() {
+        cipherFocused = false;
     }
 
     onMount(() => {
@@ -341,13 +370,45 @@
             debouncedProgressUpdate();
         }
 
-        // Add global keyboard event listener for calculator shortcuts
         document.addEventListener('keydown', handleGlobalKeydown);
+
+        document.addEventListener('focusin', handleGlobalFocusIn);
+        document.addEventListener('focusout', handleGlobalFocusOut);
     });
 
     onDestroy(() => {
         document.removeEventListener('keydown', handleGlobalKeydown);
+        document.removeEventListener('focusin', handleGlobalFocusIn);
+        document.removeEventListener('focusout', handleGlobalFocusOut);
     });
+
+    function handleGlobalFocusIn(e) {
+        // Check if the focused element is a cipher input
+        if (e.target && e.target.closest && e.target.closest('.cipher')) {
+            cipherFocused = true;
+
+            // Track which input is focused
+            if (info.inputs && info.inputs.length > 0) {
+                const inputIndex = info.inputs.indexOf(e.target);
+                if (inputIndex !== -1) {
+                    lastFocusedInputIndex = inputIndex;
+                }
+            }
+        }
+    }
+
+    function handleGlobalFocusOut(e) {
+        // Check if we're losing focus from a cipher input
+        if (e.target && e.target.closest && e.target.closest('.cipher')) {
+            // Use a small delay to check if focus moved to another cipher input
+            setTimeout(() => {
+                const activeElement = document.activeElement;
+                if (!activeElement || !activeElement.closest || !activeElement.closest('.cipher')) {
+                    cipherFocused = false;
+                }
+            }, 10);
+        }
+    }
 </script>
 
 {#if isChecking}
@@ -419,15 +480,23 @@
             ❌ Incorrect submission. Try again!
         </div>
     {/if}
-    
+
     <!-- Calculator Button -->
     {#if showCalculatorButton}
         <div class="calculator-toggle-container">
-            <button class="calculator-toggle-btn" onclick={toggleCalculator} title="Calculator (Alt+K)">
+            <button class="calculator-toggle-btn" class:cipher-focused={cipherFocused} onclick={toggleCalculator} title="Calculator (Alt+K to toggle, Alt+L to focus)">
                 🧮
             </button>
             {#if !calculatorVisible}
-                <span class="calculator-hint">Alt+K</span>
+                <div class="calculator-hint-container">
+                    <span class="calculator-hint">Alt+K</span>
+                    <span class="calculator-hint-label">Toggle</span>
+                </div>
+            {:else}
+                <div class="calculator-hint-container">
+                    <span class="calculator-hint">Alt+L</span>
+                    <span class="calculator-hint-label">Focus</span>
+                </div>
             {/if}
         </div>
     {/if}
@@ -435,10 +504,13 @@
 
 <!-- Calculator Component -->
 {#if showCalculatorButton}
-    <Calculator 
-        visible={calculatorVisible} 
+    <Calculator
+        visible={calculatorVisible}
         onClose={closeCalculator}
         bind:position={calculatorPosition}
+        onFocusSwitch={focusLastOrFirstAvailableInput}
+        bind:calculatorFocused={calculatorFocused}
+        toggleCalculator={toggleCalculator}
     />
 {/if}
 
@@ -551,6 +623,7 @@
         flex-direction: column;
         align-items: center;
         gap: 4px;
+        transition: all 0.25s ease-in-out;
     }
 
     .calculator-toggle-btn {
@@ -580,6 +653,16 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
+    .calculator-toggle-btn.cipher-focused {
+        background: linear-gradient(145deg, #38a169, #2f855a);
+        border-color: #4adede;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(74, 222, 222, 0.3);
+    }
+
+    .calculator-toggle-btn.cipher-focused:hover {
+        background: linear-gradient(145deg, #2f855a, #38a169);
+    }
+
     .calculator-hint {
         color: #cbd5e0;
         font-size: 11px;
@@ -590,6 +673,23 @@
         white-space: nowrap;
         text-align: center;
         backdrop-filter: blur(5px);
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .calculator-hint-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+    }
+
+    .calculator-hint-label {
+        font-size: 9px;
+        color: #a0aec0;
+        font-weight: 400;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
     /* Mobile responsive adjustments */

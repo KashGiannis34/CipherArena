@@ -10,6 +10,12 @@
         if (solved)
             return;
 
+        // Prevent Alt key combinations from being processed as letter input
+        if (event.altKey) {
+            event.preventDefault();
+            return;
+        }
+
         const deleteKeys = [
             "Backspace",
             "Delete",
