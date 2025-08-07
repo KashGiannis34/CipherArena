@@ -17,6 +17,7 @@
     import DeterminantTable from "./DeterminantTable.svelte";
     import MatrixInput from "./MatrixInput.svelte";
     import AffineInput from "./AffineInput.svelte";
+    import Calculator from "./Calculator.svelte";
 
     let {quote, hash, cipherType, autoFocus, params, keys, onSolved, mode, newProblem, fetchAnswerStatus, onProgressUpdate, autoSwitch} = $props();
     let spanish = cipherType == 'Xenocrypt';
@@ -40,6 +41,13 @@
     let lettersWithIndices = initLWI();
     let directMap = initDirectMap(cipherType);
     let paramString = paramToString(params);
+    
+    // Calculator state
+    const mathIntensiveCiphers = ['Affine', 'Caesar', 'Nihilist', 'Hill'];
+    const showCalculatorButton = mathIntensiveCiphers.includes(cipherType);
+    let calculatorVisible = $state(false);
+    let calculatorPosition = $state({ x: 100, y: 100 });
+    let mainInputElement;
 
     function debounce(func, delay) {
         let timeout;
@@ -281,6 +289,46 @@
         clearPolybius = false;
     }
 
+    // Calculator functions
+    function toggleCalculator() {
+        if (!showCalculatorButton) return;
+        calculatorVisible = !calculatorVisible;
+    }
+
+    function closeCalculator() {
+        calculatorVisible = false;
+    }
+
+    function handleGlobalKeydown(e) {
+        // Calculator toggle: Alt + K
+        if (e.altKey && e.key.toLowerCase() === 'k' && showCalculatorButton) {
+            e.preventDefault();
+            toggleCalculator();
+            return;
+        }
+
+        // Focus toggle: Alt + F (switch between calculator and main input)
+        if (e.altKey && e.key.toLowerCase() === 'f' && calculatorVisible) {
+            e.preventDefault();
+            // Try to focus the first available input in the cipher
+            focusFirstAvailableInput();
+            return;
+        }
+    }
+
+    function focusFirstAvailableInput() {
+        // Find the first input element that can be focused
+        if (info.inputs && info.inputs.length > 0) {
+            for (let i = 0; i < info.inputs.length; i++) {
+                const input = info.inputs[i];
+                if (input && typeof input.focus === 'function') {
+                    input.focus();
+                    break;
+                }
+            }
+        }
+    }
+
     onMount(() => {
         if (mode == "multiplayer") {
             debouncedProgressUpdate = debounce(() => {
@@ -292,6 +340,13 @@
 
             debouncedProgressUpdate();
         }
+
+        // Add global keyboard event listener for calculator shortcuts
+        document.addEventListener('keydown', handleGlobalKeydown);
+    });
+
+    onDestroy(() => {
+        document.removeEventListener('keydown', handleGlobalKeydown);
     });
 </script>
 
@@ -364,7 +419,28 @@
             ❌ Incorrect submission. Try again!
         </div>
     {/if}
+    
+    <!-- Calculator Button -->
+    {#if showCalculatorButton}
+        <div class="calculator-toggle-container">
+            <button class="calculator-toggle-btn" onclick={toggleCalculator} title="Calculator (Alt+K)">
+                🧮
+            </button>
+            {#if !calculatorVisible}
+                <span class="calculator-hint">Alt+K</span>
+            {/if}
+        </div>
+    {/if}
 </Container>
+
+<!-- Calculator Component -->
+{#if showCalculatorButton}
+    <Calculator 
+        visible={calculatorVisible} 
+        onClose={closeCalculator}
+        bind:position={calculatorPosition}
+    />
+{/if}
 
 {#if solved && mode == "singleplayer" && !gaveUp}
     <div style="
@@ -463,5 +539,88 @@
 
     .cipher-error {
         animation: shake 0.4s ease;
+    }
+
+    /* Calculator Button Styles */
+    .calculator-toggle-container {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        z-index: 999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .calculator-toggle-btn {
+        background: linear-gradient(145deg, #8d2fff, #5619f0);
+        border: 2px solid #4a5568;
+        border-radius: 50%;
+        width: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+    }
+
+    .calculator-toggle-btn:hover {
+        background: linear-gradient(145deg, #5619f0, #8d2fff);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .calculator-toggle-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .calculator-hint {
+        color: #cbd5e0;
+        font-size: 11px;
+        font-weight: 500;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 2px 6px;
+        border-radius: 4px;
+        white-space: nowrap;
+        text-align: center;
+        backdrop-filter: blur(5px);
+    }
+
+    /* Mobile responsive adjustments */
+    @media (max-width: 768px) {
+        .calculator-toggle-container {
+            top: 80px;
+            right: 16px;
+        }
+
+        .calculator-toggle-btn {
+            width: 48px;
+            height: 48px;
+            font-size: 20px;
+        }
+
+        .calculator-hint {
+            font-size: 10px;
+            padding: 1px 4px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .calculator-toggle-container {
+            top: 70px;
+            right: 12px;
+        }
+
+        .calculator-toggle-btn {
+            width: 44px;
+            height: 44px;
+            font-size: 18px;
+        }
     }
 </style>
