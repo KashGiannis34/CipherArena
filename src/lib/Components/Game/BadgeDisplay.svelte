@@ -77,7 +77,7 @@
         {:else}
           <div class="no-badges">
             <div class="badge-placeholder">
-              <img src="/locked-badge-icon.png" alt="No Badges Yet" />
+              <img src="/locked-badge-icon.webp" alt="No Badges Yet" />
             </div>
             <h4>No badges… yet.</h4>
             <p>Solve cryptograms, rank up, and uncover secrets to earn your first badge! Stats count only in public ranked matches with multiple users.</p>

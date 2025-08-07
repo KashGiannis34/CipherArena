@@ -11,7 +11,7 @@
 
   $effect(() => {
     if (!profilePicture || profilePicture === 'default') {
-      src = '/default-avatar.png';
+      src = '/default-avatar.webp';
       lastFetchedProfileId = 'default';
       loading = false;
       return;
@@ -28,10 +28,10 @@
           src = data.url;
           lastFetchedProfileId = profilePicture;
         } else {
-          src = '/default-avatar.png';
+          src = '/default-avatar.webp';
         }
       } catch (err) {
-        src = '/default-avatar.png';
+        src = '/default-avatar.webp';
       }
     })();
   });
@@ -51,7 +51,7 @@
   }
 
   function handleError() {
-    src = '/default-avatar.png';
+    src = '/default-avatar.webp';
   }
 </script>
 
@@ -68,7 +68,7 @@
   {#if loading}
     <div class="spinner"></div>
   {/if}
-  {#if src !== '' && (!loading || src !== '/default-avatar.png')}
+  {#if src !== '' && (!loading || src !== '/default-avatar.webp')}
     <img
       bind:this={imgRef}
       src={src}

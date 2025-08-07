@@ -4,7 +4,7 @@
   import BadgeDisplay from '$lib/Components/Game/BadgeDisplay.svelte';
   import { getUnlockedBadges } from '$lib/util/badgeConfig.js';
   import { cipherTypes } from '$db/shared-utils/CipherTypes.js';
-  import SolveTimeHistogram from '$lib/Components/Game/SolveTimeHistogram.svelte';
+  let SolveTimeHistogram = $state();
 
 
   let { data } = $props();
@@ -17,6 +17,15 @@
 
   let selectedCipher = $state('All');
   let cipherOptions = ['All', ...Object.keys(cipherTypes)];
+
+  // Lazy load the histogram component
+  $effect(() => {
+    if (getSolveTimes(selectedCipher).length > 0 && !SolveTimeHistogram) {
+      import('$lib/Components/Game/SolveTimeHistogram.svelte').then((module) => {
+        SolveTimeHistogram = module.default;
+      });
+    }
+  });
 
   function onUploadError(error) {
     uploadError = error;
@@ -80,10 +89,17 @@
     </div>
 
     {#if getSolveTimes(selectedCipher).length}
-      <SolveTimeHistogram
-        solveTimes={getSolveTimes(selectedCipher)}
-        cipherType={selectedCipher}
-      />
+      {#if SolveTimeHistogram}
+        {@const Component = SolveTimeHistogram}
+        <Component
+          solveTimes={getSolveTimes(selectedCipher)}
+          cipherType={selectedCipher}
+        />
+      {:else}
+        <div style="height: 400px; display: flex; align-items: center; justify-content: center;">
+          Loading chart...
+        </div>
+      {/if}
     {:else}
       <p class="no-data">No solve time data available for {selectedCipher}.</p>
     {/if}

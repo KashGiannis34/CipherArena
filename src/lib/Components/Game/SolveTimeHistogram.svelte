@@ -1,7 +1,23 @@
 <script>
   import { onMount } from 'svelte';
-  import { Chart, registerables } from 'chart.js';
-  Chart.register(...registerables);
+  import {
+    Chart,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+  } from 'chart.js';
+  
+  Chart.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+  );
 
   let { solveTimes = [], cipherType = 'All' } = $props();
 
