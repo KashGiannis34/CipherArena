@@ -499,43 +499,29 @@
     margin-top: 2rem;
   }
 
-  .forfeit-button {
-    background-color: #ff5c5c;
-    color: white;
-  }
-
-  .forfeit-button:hover {
-    background-color: #e64444;
-  }
-
   .status-bar {
     position: fixed;
     bottom: 1.5rem;
     left: 50%;
     transform: translateX(-50%);
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
     font-weight: 600;
     font-size: 1rem;
     z-index: 2000;
     max-width: 90vw;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.08);
     text-align: center;
     color: white;
-    opacity: 0.95;
+    opacity: 0.96;
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.16);
+    background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
   }
 
-  .status-bar.info {
-    background: #555;
-  }
-
-  .status-bar.success {
-    background: #28c76f;
-  }
-
-  .status-bar.error {
-    background: #ea5455;
-  }
+  .status-bar.info { border-color: rgba(255,255,255,0.16); }
+  .status-bar.success { border-color: rgba(54, 214, 125, 0.4); }
+  .status-bar.error { border-color: rgba(225, 76, 76, 0.4); }
 
   .profile-link {
 		color: #fff;
@@ -574,6 +560,8 @@
     margin: 2vh 0;
     width: 100%;
     max-width: 1100px;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(255,255,255,0.25), 0 2px 4px rgba(0,0,0,0.35);
   }
 
   .player-list {
@@ -588,14 +576,16 @@
     align-items: center;
     justify-content: flex-start;
     gap: 1rem;
-    padding: 1rem 1.5rem;
-    background-color: #7555ff;
-    border: 1px solid #703cff;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+    border: 1px solid rgba(255,255,255,0.14);
     border-radius: 12px;
-    box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.08);
     position: relative;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    backdrop-filter: blur(12px);
   }
+  .player-card:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(0,0,0,0.28); }
 
   .button-row {
     display: flex;
@@ -607,9 +597,9 @@
 
   .button {
     padding: 0.75rem 1.5rem;
-    font-size: clamp(1rem, 1vw + 0.5rem, 1.3rem);
+    font-size: clamp(1rem, 1vw + 0.5rem, 1.2rem);
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     white-space: nowrap;
   }
@@ -627,20 +617,18 @@
   .copy-box {
     position: relative;
     cursor: pointer;
-    padding: 0.5rem 1rem;
-    background-color: #7555ff;
-    border: 1px solid #703cff;
+    padding: 0.6rem 1rem;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.14);
     color: #ffffff;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: background-color 0.2s ease;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     user-select: none;
     font-size: clamp(0.9rem, 1vw + 0.3rem, 1.1rem);
+    backdrop-filter: blur(12px);
   }
-
-  .copy-box:hover {
-    background-color: #7455ff8f;
-  }
+  .copy-box:hover { transform: translateY(-1px); box-shadow: 0 10px 28px rgba(0,0,0,0.25); }
 
   .top-bar {
     display: flex;
@@ -791,18 +779,19 @@
   }
 
   .game-settings-pill {
-    background-color: #7555ff;
-    border: 1px solid #703cff;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 500;
+    background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+    border: 1px solid rgba(255,255,255,0.14);
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
     text-align: center;
     color: white;
     display: flex;
     flex-direction: column;
     align-items: center;
     margin: 0 1rem;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.08);
+    backdrop-filter: blur(12px);
   }
 
   .game-title {

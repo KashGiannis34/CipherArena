@@ -1,6 +1,7 @@
 <script>
     import { cubicOut } from "svelte/easing";
     import Container from "./Container.svelte";
+    import { portal } from '$lib/util/portal.js';
 
     let {children, visibility, onExit} = $props();
 
@@ -10,16 +11,14 @@
             css: t => {
                 const eased = cubicOut(t); // Apply easing
                 return `
-                    transform: translate(-50%, 0%) scale(${eased});
+                    transform: scale(${eased});
                     opacity: ${eased};
-                    top: 30%;
-                    left: 50%;
                 `;
             }
         };
     }
 
-    function fade(node, {duration = 400}) {
+    function fade(node, {duration = 300}) {
         return {
             duration,
             css: t => {
@@ -34,76 +33,75 @@
 </script>
 
 {#if visibility}
-    <div class='background' onclick={onExit} onkeydown={() => {}} role="button" tabindex=-1 in:fade out:fade></div>
-    <div class='modal' in:zoom out:zoom>
-        <div class='innerModal'>
-            <i class="fa-solid fa-xmark" onclick={onExit} onkeydown={() => {}} role="button" tabindex=0></i>
+    <div use:portal class='overlay' onclick={onExit} onkeydown={() => {}} role="button" tabindex="0" in:fade out:fade>
+        <div class='modal-content' onclick={e => e.stopPropagation()} onkeydown={() => {}} role="dialog" aria-modal="true" tabindex="-1" in:zoom out:zoom>
+            <i class="close-btn fa-solid fa-xmark" onclick={onExit} onkeydown={() => {}} role="button" tabindex="0"></i>
             {@render children?.()}
-            <button class='button' onclick={onExit}>Ok</button>
+            <button class='button' type="button" onclick={onExit}>Ok</button>
         </div>
     </div>
 {/if}
 
 <style>
-    @import '$lib/css/Button.css';
-    /* --paddingTop=25px --maxWidth=min(50vw,300px) --bgcolor="#e4e0ff" --color="black" */
-
-    .innerModal {
+    .overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.8);
+        z-index: 1000;
         display: flex;
-        flex-direction: column;
         justify-content: center;
         align-items: center;
-        gap: 10px;
-        padding: 25px 30px 10px 30px;
-        background-color: #e4e0ff;
-        color: black;
-        max-width: min(50vw,300px);
-        max-height: min(30vw, 200px);
-        border-radius: 10px;
+        padding: 16px;
     }
-
-    .button {
-        width: 100%;
-        margin-top: 10px;
-        padding: 10px;
-        font-size: 1.2rem;
-        font-weight: bold;
-    }
-
-    .background {
-        position: fixed;
-        z-index: 15;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background-color: rgba(0, 0, 0, 0.6);
-    }
-
-    .modal {
-        max-height: min(30vw, 200px);
-        max-width: min(50vw,300px);
+    .modal-content {
+        background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.08),
+            rgba(255, 255, 255, 0.04),
+            rgba(255, 255, 255, 0.08));
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(20px);
+        color: white;
+        border-radius: 16px;
+        padding: 24px 24px 16px 24px;
+        width: min(92vw, 520px);
+        max-height: 90vh;
+        overflow: auto;
+        position: relative;
         display: flex;
-        justify-content: center;
-        z-index: 20;
-        top: 30%;
-        left: 50%;
-        transform: translate(-50%, 0);
-        filter: drop-shadow(0 0 20px #333);
-        transition: transform 0.3s ease-in, opacity 0.3s ease;
+        flex-direction: column;
+        gap: 12px;
+        will-change: transform, opacity;
+        transform-origin: center center;
     }
 
-    i {
+    .close-btn {
         position: absolute;
-        top:5%;
-        right: 5%;
-    }
-
-    i:hover {
+        top: 12px;
+        right: 12px;
+        font-size: 1.25rem;
         cursor: pointer;
+        color: #eee;
+        transition: transform 0.08s ease, color 0.2s ease;
+    }
+    .close-btn:hover { color: #fff; transform: scale(1.05); }
+    .close-btn:active { transform: scale(0.95); }
+
+    /* Button styling to match site */
+    .button {
+        align-self: center;
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        color: white;
+        border: none;
+        max-width: 50%;
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        font-weight: 600;
+        transition: filter 0.2s ease, transform 0.08s ease, box-shadow 0.2s ease;
     }
 
-    i:active {
-        scale: 90%;
-    }
+    .button:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 8px 22px rgba(0,0,0,0.3); }
+    .button:active { transform: translateY(0); }
+    .button:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(130, 169, 255, 0.6); }
 </style>
