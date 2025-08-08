@@ -88,6 +88,30 @@
       <p class="no-data">No solve time data available for {selectedCipher}.</p>
     {/if}
   </div>
+
+  {#if isOwnProfile}
+    <div class="divider-section animate-divider-expand">
+      <hr class="glass-divider" />
+    </div>
+
+    <section class="account-settings animate-stats-float">
+      <h2>Account settings</h2>
+
+      <form method="POST" action="?/updateEmail" class="email-form">
+        <label for="email">Update email</label>
+        <input id="email" name="email" type="email" placeholder="Enter new email" required />
+        <button type="submit" class="primary">Save email</button>
+        <p class="hint">Updating your email will require verification again.</p>
+      </form>
+
+      <div class="danger-zone">
+        <h3>Danger zone</h3>
+        <form method="POST" action="?/deleteAccount" onsubmit="return confirm('Are you sure you want to permanently delete your account? This cannot be undone.');">
+          <button type="submit" class="danger">Delete account</button>
+        </form>
+      </div>
+    </section>
+  {/if}
 </section>
 
 <svelte:head>
@@ -409,7 +433,7 @@
 }
 
 .solve-time-section {
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
 .cipher-selector {
@@ -438,5 +462,81 @@
   color: #aaa;
   font-style: italic;
   text-align: center;
+}
+
+.account-settings {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+}
+
+.account-settings h2 {
+  margin: 0 0 1rem 0;
+}
+
+.email-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.email-form label {
+  grid-column: 1 / -1;
+  font-weight: 600;
+}
+
+.email-form input {
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0,0,0,0.2);
+  color: white;
+}
+
+.email-form .hint {
+  grid-column: 1 / -1;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin: 0;
+}
+
+.email-form .primary {
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  cursor: pointer;
+}
+
+.email-form .primary:hover {
+  filter: brightness(1.1);
+}
+
+.danger-zone {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.danger-zone h3 {
+  margin: 0 0 0.75rem 0;
+  color: #ff9a9e;
+}
+
+.danger-zone .danger {
+  background: linear-gradient(135deg, #ff416c, #ff4b2b);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  cursor: pointer;
+}
+
+.danger-zone .danger:hover {
+  filter: brightness(1.1);
 }
 </style>
