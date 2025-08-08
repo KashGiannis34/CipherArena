@@ -390,12 +390,14 @@ export default async function injectSocketIO(server) {
                             }
 
                             if (socket.disconnectReason != 'leftGame') {
-                                if (latestGame.state == 'started') {
+                                // Do not auto-forfeit on disconnect for single-player games
+                                if (latestGame.state == 'started' && latestGame.users.length > 1) {
                                     forfeitVotesMap.delete(game._id);
                                     await handleForfeitRequest(latestGame, true, io, forfeitVotesMap, rematchVotesMap, latestUser);
                                 }
 
-                                if (latestGame.state == 'finished') {
+                                // Do not auto-rematch on disconnect for single-player games
+                                if (latestGame.state == 'finished' && latestGame.users.length > 1) {
                                     rematchVotesMap.delete(game._id);
                                     await handleRematchRequest(latestGame, io, rematchVotesMap, forfeitVotesMap, latestUser);
                                 }
@@ -611,6 +613,8 @@ async function handleRematchRequest(game, io, rematchVotesMap, forfeitVotesMap, 
     const connectedUsernames = game.users
         .filter(u => u.currentSocketId)
         .map(u => u.username);
+    // If no one is connected, do not proceed with rematch logic
+    if (connectedUsernames.length === 0) return;
     const allAgreed = connectedUsernames.every(name => rematchSet.has(name));
 
     if (!allAgreed) return;
