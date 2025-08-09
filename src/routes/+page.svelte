@@ -1,6 +1,35 @@
 <script>
 	import { goto } from '$app/navigation';
 	import { generateSeo } from '$lib/util/generateSEO';
+	import Leaderboard from '$lib/Components/General/Leaderboard.svelte';
+	import ProfileStats from '$lib/Components/General/ProfileStats.svelte';
+	import { onMount } from 'svelte';
+  	import LandingPageCipher from '$lib/Components/Game/LandingPageCipher.svelte';
+  	import BadgeDisplay from '$lib/Components/Game/BadgeDisplay.svelte';
+  	import ProgressDisplay from '$lib/Components/Game/ProgressDisplay.svelte';
+
+	let { data } = $props();
+
+	let username = data["username"] || "HelloKitty34";
+	let players = $state([{ username, connected: false }]);
+	let progressMap = $state({ [username]: 0 });
+
+	onMount(() => {
+		let connectTimeoutId;
+		let progressIntervalId;
+
+		connectTimeoutId = setTimeout(() => {
+			players = [{ username, connected: true }];
+		}, 400);
+
+		return () => {
+			clearTimeout(connectTimeoutId);
+		};
+	});
+
+	function onProgressUpdate(percent) {
+		progressMap[username] = percent;
+	}
 
 	const seo = generateSeo({
 		title: 'Cipher Arena: Multiplayer Cryptogram Battles',
@@ -9,6 +38,103 @@
 		url: 'https://cipher-arena.fly.dev/',
 		image: 'https://cipher-arena.fly.dev/landing-page/hero-mock.webp'
 	});
+
+	const unlockedBadges = [
+		'elo_aristocrat_1500',
+		'elo_caesar_1400',
+		'wins_total_50',
+		'wins_aristocrat_50',
+		'elo_total_1300',
+		'games_played_100',
+		'games_played_34',
+		'wins_total_34',
+		'elo_aristocrat_1340',
+		'fast_solver_10s',
+		'under_30s_25x',
+		'under_60s_50x',
+		'under_34s_34x_aristocrat',
+		'close_call_59',
+		'slow_grinder',
+		'prime_times_under_60'
+	];
+
+	const userStats = {
+		All: {
+		elo: 1350,
+		wins: 55,
+		losses: 45,
+		solveTimes: [
+			{ time: 9 }, { time: 59 }, { time: 310 }, { time: 25 }, { time: 28 }
+		]
+		},
+		Aristocrat: {
+		elo: 1510,
+		wins: 52,
+		losses: 20,
+		solveTimes: [ { time: 33 }, { time: 30 } ]
+		},
+		Caesar: {
+		elo: 1405,
+		wins: 10,
+		losses: 5
+		}
+	};
+
+	const userSingleStats = {
+		All: {
+			solveTimes: [
+				{ time: 11 }, { time: 13 }, { time: 17 }, { time: 19 }, { time: 23 },
+				{ time: 29 }, { time: 31 }, { time: 37 }, { time: 41 }, { time: 43 },
+				{ time: 47 }, { time: 53 }
+			]
+		}
+	};
+
+	let mockStats = {
+		'All': {
+			elo: 1405, wins: 485, losses: 120, averageSolveTime: 0.98, bestSolveTime: 12
+		},
+		'Aristocrat': {
+			elo: 1550, wins: 150, losses: 30, averageSolveTime: 0.75, bestSolveTime: 15
+		},
+		'Xenocrypt': {
+			elo: 1450, wins: 50, losses: 15, averageSolveTime: 0.9, bestSolveTime: 25
+		},
+		'Patristocrat': {
+			elo: 1480, wins: 75, losses: 20, averageSolveTime: 0.85, bestSolveTime: 22
+		},
+		'Porta': {
+			elo: 1350, wins: 30, losses: 10, averageSolveTime: 1.2, bestSolveTime: 45
+		},
+		'Atbash': {
+			elo: 1250, wins: 25, losses: 5, averageSolveTime: 0.5, bestSolveTime: 12
+		},
+		'Caesar': {
+			elo: 1300, wins: 40, losses: 10, averageSolveTime: 0.6, bestSolveTime: 14
+		},
+		'Affine': {
+			elo: 1420, wins: 35, losses: 8, averageSolveTime: 1.1, bestSolveTime: 38
+		},
+		'Baconian': {
+			elo: 1380, wins: 20, losses: 5, averageSolveTime: 1.5, bestSolveTime: 60
+		},
+		'Nihilist': {
+			elo: 1450, wins: 25, losses: 7, averageSolveTime: 1.3, bestSolveTime: 55
+		},
+		'Checkerboard': {
+			elo: 1400, wins: 15, losses: 5, averageSolveTime: 1.4, bestSolveTime: 65
+		},
+		'Hill': {
+			elo: 1425, wins: 20, losses: 5, averageSolveTime: 1.6, bestSolveTime: 70
+		}
+	};
+
+	let mockCipher = {
+		quote: "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG".split(''),
+		id: 'mock-id',
+		params: { cipherType: 'Aristocrat', Solve: 'Decode', K: '0' },
+		keys: ['']
+	};
 
 	export function animateOnScroll(node) {
 		const observer = new IntersectionObserver(
@@ -37,6 +163,8 @@
 
 <div class="landing">
 	<div class="container">
+		<ProgressDisplay {username} {players} {progressMap}/>
+
 		<header class="section hero-section animatable" use:animateOnScroll>
 			<div class="hero">Welcome to Cipher Arena</div>
 			<div class="subhero">Crack codes with friends. Train, compete, and climb the ranks.</div>
@@ -44,9 +172,9 @@
 				<button class="play-now-button" onclick={() => goto('/singleplayer/Aristocrat')}>
 					Play now
 				</button>
-				</div>
-			<div class="image-container hero-image-container">
-				<img src="/landing-page/hero-mock.webp" alt="Cipher Arena Dashboard" />
+			</div>
+			<div style="display: flex; justify-content: center;">
+				<LandingPageCipher {onProgressUpdate} />
 			</div>
 		</header>
 
@@ -69,10 +197,10 @@
 						</li>
 					</ul>
 				</div>
-				<div class="visual">
-					<div class="floating-card">
-						<img src="/landing-page/cipher-solved.webp" alt="Cipher solved preview" />
-					</div>
+
+				<div class="badges-wrapper animate-stats-float interactive-container">
+					<BadgeDisplay unlockedBadgeIds={unlockedBadges}
+					isOwnProfile=true stats={userStats} singleStats={userSingleStats}/>
 				</div>
 			</div>
 		</section>
@@ -80,8 +208,8 @@
 		<section class="section showcase alt animatable" use:animateOnScroll>
 			<div class="showcase-inner">
 				<div class="visual">
-					<div class="floating-card">
-						<img src="/landing-page/leaderboard.webp" alt="Leaderboard preview" />
+					<div class="interactive-container">
+						<Leaderboard count=10 simple=true />
 					</div>
 				</div>
 				<div class="copy">
@@ -124,8 +252,8 @@
 					</ul>
 				</div>
 				<div class="visual">
-					<div class="floating-card">
-						<img src="/landing-page/profile-stats.webp" alt="Stats preview" />
+					<div class="interactive-container">
+						<ProfileStats stats={mockStats} singleStats={{}} simple=true />
 					</div>
 				</div>
 			</div>
@@ -150,6 +278,10 @@
 </div>
 
 <style>
+	.animate-stats-float {
+		animation: statsFloat 0.8s cubic-bezier(0.23, 1, 0.32, 1) 1s both;
+	}
+
 	.play-now-button {
 		position: relative;
 		z-index: 1;
@@ -348,29 +480,6 @@
 		display: flex;
 		justify-content: center;
 	}
-	.floating-card {
-		border: 1px solid rgba(255, 255, 255, 0.12);
-		border-radius: 1rem;
-		overflow: hidden;
-		box-shadow:
-			0 24px 56px rgba(0, 0, 0, 0.45),
-			0 0 0 1px rgba(255, 255, 255, 0.06);
-		transform: perspective(1000px) rotateX(1deg);
-		transition:
-			transform 0.35s ease,
-			box-shadow 0.35s ease;
-	}
-	.floating-card:hover {
-		transform: perspective(1000px) rotateX(0deg) translateY(-10px);
-		box-shadow:
-			0 36px 80px rgba(0, 0, 0, 0.55),
-			0 0 0 1px rgba(255, 255, 255, 0.12);
-	}
-	.floating-card img {
-		display: block;
-		width: 100%;
-		height: auto;
-	}
 
 	.register-section {
 		border: 1px solid rgba(255, 255, 255, 0.12);
@@ -382,6 +491,11 @@
 		justify-content: center;
 		margin-top: 2rem;
 		flex-wrap: wrap;
+	}
+
+	.button {
+		transition: all 0.3s ease;
+		transform: perspective(1000px) rotateX(2deg);
 	}
 
 	.cta-buttons .button {
@@ -418,108 +532,6 @@
 		.cta-buttons .button {
 			width: 100%;
 			max-width: 280px;
-		}
-	}
-
-	.image-container {
-		width: 100%;
-		max-width: 1100px;
-		margin: 2rem auto;
-		border-radius: 0.5rem;
-		overflow: hidden;
-		transition: all 0.3s ease;
-		box-shadow:
-			0 20px 40px rgba(0, 0, 0, 0.4),
-			0 0 0 1px rgba(255, 255, 255, 0.1);
-		position: relative;
-		background: linear-gradient(135deg, rgba(120, 119, 198, 0.1), rgba(78, 205, 196, 0.1));
-	}
-
-	.image-container::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: linear-gradient(
-			135deg,
-			rgba(120, 119, 198, 0.05) 0%,
-			transparent 50%,
-			rgba(78, 205, 196, 0.05) 100%
-		);
-		z-index: 1;
-		pointer-events: none;
-	}
-
-	.image-container:hover {
-		transform: translateY(-10px) scale(1.02);
-		box-shadow:
-			0 40px 90px rgba(0, 0, 0, 0.55),
-			0 0 0 1px rgba(255, 255, 255, 0.24),
-			0 0 60px rgba(120, 119, 198, 0.35);
-	}
-
-	.image-container img {
-		width: 100%;
-		height: auto;
-		display: block;
-		border-radius: 0.25rem;
-		object-fit: cover;
-		object-position: center;
-		transition: all 0.3s ease;
-		position: relative;
-		z-index: 0;
-	}
-
-	.hero-image-container {
-		max-width: 1200px;
-		margin: 3rem auto;
-		transform: perspective(1000px) rotateX(2deg);
-		transition: all 0.4s ease;
-	}
-
-	.hero-image-container:hover {
-		transform: perspective(1000px) rotateX(0deg) translateY(-10px);
-	}
-
-	.hero-image-container::after {
-		content: '';
-		position: absolute;
-		bottom: -20px;
-		left: 10%;
-		right: 10%;
-		height: 20px;
-		background: linear-gradient(ellipse, rgba(120, 119, 198, 0.3) 0%, transparent 70%);
-		filter: blur(10px);
-		z-index: -1;
-	}
-
-	@media (max-width: 768px) {
-		.image-container {
-			max-width: 100%;
-			margin: 1.5rem auto;
-			border-radius: 0.25rem;
-		}
-
-		.hero-image-container {
-			transform: none;
-			margin: 2rem auto;
-		}
-
-		.hero-image-container:hover {
-			transform: translateY(-5px) scale(1.01);
-		}
-	}
-
-	@media (max-width: 480px) {
-		.image-container {
-			margin: 1rem auto;
-			border-radius: 0.25rem;
-		}
-
-		.image-container img {
-			border-radius: 0.25rem;
 		}
 	}
 
@@ -593,5 +605,95 @@
 	:global(.animatable.visible) {
 		opacity: 1;
 		transform: translateY(0);
+	}
+	.interactive-container {
+		width: 100%;
+		max-width: 1100px;
+		margin: 2rem auto;
+		overflow: hidden;
+		transition: all 0.3s ease;
+		position: relative;
+		transform: perspective(1000px) rotateX(2deg);
+	}
+
+	.interactive-container:hover {
+		transform: translateY(-10px) scale(1.02);
+	}
+
+	/* New Hero Animation */
+	.hero {
+		animation: text-glow 2s ease-in-out infinite alternate;
+	}
+
+	@keyframes text-glow {
+		from {
+			text-shadow:
+			0 0 4px #fff,
+			0 0 6px #6a5acd,
+			0 0 12px #6a5acd;
+		}
+		to {
+			text-shadow:
+			0 0 6px #fff,
+			0 0 8px #836FFF,
+			0 0 16px #836FFF;
+		}
+	}
+
+	/* Feature Cards Hover Effect */
+	.feature-cards li,
+	.feature-list li {
+		transition:
+			transform 0.25s ease,
+			box-shadow 0.25s ease,
+			border-color 0.25s ease;
+		border-color: rgba(255, 255, 255, 0.12);
+	}
+
+	.feature-cards li:hover,
+	.feature-list li:hover {
+		transform: translateY(-10px) scale(1.03);
+		box-shadow: 0 20px 44px rgba(0, 0, 0, 0.45);
+		border-color: rgba(120, 119, 198, 0.5);
+	}
+
+	.section::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		border-radius: 2rem;
+		border: 2px solid transparent;
+		background: linear-gradient(90deg, #4ecdc4, #7877c6, #ff6b6b, #7877c6, #4ecdc4) border-box;
+		background-size: 200% auto;
+		mask:
+			linear-gradient(#fff 0 0) padding-box,
+			linear-gradient(#fff 0 0);
+		-webkit-mask:
+			linear-gradient(#fff 0 0) padding-box,
+			linear-gradient(#fff 0 0);
+		-webkit-mask-composite: destination-out;
+		mask-composite: exclude;
+		opacity: 0;
+		transition: opacity 0.4s ease-in-out;
+	}
+
+	.section:hover::before {
+		opacity: 1;
+		animation: move-gradient-border 4s ease-in-out infinite;
+	}
+
+	@keyframes move-gradient-border {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
 	}
 </style>

@@ -1,6 +1,6 @@
 <script>
   import { cipherTypes } from '$db/shared-utils/CipherTypes.js';
-  let { stats, singleStats } = $props();
+  let { stats, singleStats, simple = false } = $props();
 
   const orderedStatKeys = ['All', ...Object.keys(cipherTypes)];
 
@@ -32,6 +32,7 @@
   }
 </script>
 
+{#if !simple}
 <div class="note-wrapper">
     {#if statMode === 'singleplayer'}
         <p class="note-inline empty">* Singleplayer stats do not count towards leaderboard.</p>
@@ -48,6 +49,7 @@
     onclick={() => statMode = 'singleplayer'}
   >Singleplayer</button>
 </div>
+{/if}
 
 <div class="table-wrapper">
   <table class="leaderboard-table">

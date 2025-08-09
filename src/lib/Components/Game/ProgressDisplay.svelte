@@ -1,4 +1,5 @@
 <script>
+  import { fade } from "svelte/transition";
   import ProfilePicture from "../General/ProfilePicture.svelte";
   let {username, players = [], progressMap = {}, forfeitVoters = []} = $props();
 
@@ -21,10 +22,10 @@
             {player.username}
           </a>
           {#if player.connected === false}
-            <span class="status-tag">{player.left ? '(left game)' : '(disconnected)'}</span>
+            <span class="status-tag" transition:fade={{ duration: 300 }}>{player.left ? '(left game)' : '(disconnected)'}</span>
           {/if}
           {#if player.connected && forfeitVoters.includes(player.username)}
-            <span class="status-tag forfeit-tag">(forfeited)</span>
+            <span class="status-tag forfeit-tag" transition:fade={{ duration: 300 }}>(forfeited)</span>
           {/if}
         </div>
 
@@ -84,7 +85,7 @@
     box-shadow:
       0 4px 20px rgba(0, 0, 0, 0.3),
       inset 0 1px 1px rgba(255, 255, 255, 0.1);
-    transition: background 0.3s ease;
+    transition: background 0.3s ease, opacity 0.3s ease;
   }
 
   .progress-player-card.disconnected {
@@ -140,6 +141,15 @@
     }
     50% {
       box-shadow: 0 0 8px rgba(255, 0, 0, 0.8);
+    }
+  }
+
+  @keyframes fade-in-text {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
     }
   }
 </style>

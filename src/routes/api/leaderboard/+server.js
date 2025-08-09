@@ -5,6 +5,7 @@ import { json } from '@sveltejs/kit';
 export async function GET({ url }) {
 	const cipherType = url.searchParams.get('cipherType');
 	const metric = url.searchParams.get('metric');
+    const count = url.searchParams.get('count')
 
 	if (!cipherType || !metric || !['elo', 'wins', 'winPercent', 'avg solve time per char', 'best solve time'].includes(metric)) {
 		return json({ error: 'Invalid query parameters.' }, { status: 400 });
@@ -44,7 +45,7 @@ export async function GET({ url }) {
                     };
                 })
                 .sort((a, b) => b.value - a.value)
-                .slice(0, 50);
+                .slice(0, Math.min(count, 50));
 
             return json(leaderboard);
         } else if (metric == 'elo' || metric == 'wins') {
@@ -57,7 +58,7 @@ export async function GET({ url }) {
                 }
             )
                 .sort({ [`stats.${cipherType}.${metric}`]: -1 })
-                .limit(50)
+                .limit(Math.min(count, 50))
                 .lean();
 
             const leaderboard = users.map((user, index) => ({
@@ -81,7 +82,7 @@ export async function GET({ url }) {
                     }
                 },
                 { $sort: { value: 1 } },
-                { $limit: 50 }
+                { $limit: Math.min(count, 50) }
             ]);
 
             return json(leaderboard);
@@ -99,7 +100,7 @@ export async function GET({ url }) {
                     }
                 },
                 { $sort: { value: 1 } },
-                { $limit: 50 }
+                { $limit: Math.min(count, 50) }
             ]);
 
             return json(leaderboard);

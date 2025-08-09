@@ -4,6 +4,7 @@
 
     const defaultStats = () => ({ elo: 1000, wins: 0, losses: 0 });
 
+	let {count = 50, simple = false} = $props();
     let leaderboardData = $state([]);
 
 	const cipherTypeOptions = [...Object.keys(cipherTypes), 'All'];
@@ -14,7 +15,7 @@
 
 	async function fetchLeaderboard(cipherType, metric) {
 		try {
-			const res = await fetch(`/api/leaderboard?cipherType=${cipherType}&metric=${metric === 'win%' ? 'winPercent' : metric}`);
+			const res = await fetch(`/api/leaderboard?cipherType=${cipherType}&metric=${metric === 'win%' ? 'winPercent' : metric}&count=${count}`);
 			const data = await res.json();
             if (!data.error) {
                 leaderboardData = data.map((user, i) => ({
@@ -71,21 +72,23 @@
 	</div>
 
 	<!-- Metric toggle -->
-	<div class="metric-toggle">
-		{#each metricOptions as m}
-			<button
-				class:selected={metric === m}
-				onclick={() => handleMetricSelect(m)}
-			>
-				{m}
-			</button>
-		{/each}
-	</div>
+	{#if !simple}
+		<div class="metric-toggle">
+			{#each metricOptions as m}
+				<button
+					class:selected={metric === m}
+					onclick={() => handleMetricSelect(m)}
+				>
+					{m}
+				</button>
+			{/each}
+		</div>
+	{/if}
 
 	<div class="metric-note-wrapper">
-		{#if metric === 'win%'}
+		{#if metric === 'win%' && !simple}
 			<p class="metric-note-inline">* Only users with 10+ ranked games are shown.</p>
-		{:else if metric === 'avg solve time per char'}
+		{:else if metric === 'avg solve time per char' && !simple}
 			<p class="metric-note-inline">* Only users with 5+ ranked wins are shown.</p>
 		{:else}
 			<!-- Invisible element to preserve height -->

@@ -262,6 +262,8 @@
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: 1.25rem;
   margin-top: 1.5rem;
+  margin-left: 2rem;
+  margin-right: 2rem;
 }
 
 .badge-grid-item {
@@ -301,7 +303,8 @@
 .tooltip {
   visibility: hidden;
   width: 180px;
-  background-color: #333;
+  background-color: #33333373;
+  backdrop-filter: blur(10px);
   color: #fff;
   text-align: center;
   border-radius: 6px;
