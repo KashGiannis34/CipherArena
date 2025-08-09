@@ -3,6 +3,7 @@
   import ProfileStats from '$lib/Components/General/ProfileStats.svelte';
   import BadgeDisplay from '$lib/Components/Game/BadgeDisplay.svelte';
   import { getUnlockedBadges } from '$lib/util/badgeConfig.js';
+  import "$lib/css/Button.css";
   import { cipherTypes } from '$db/shared-utils/CipherTypes.js';
   import SolveTimeHistogram from '$lib/Components/Game/SolveTimeHistogram.svelte';
   import ConfirmDeleteModal from '$lib/Components/General/ConfirmDeleteModal.svelte';
@@ -104,8 +105,12 @@
 
       <div class="settings-cards">
         <form method="POST" action="?/updateEmail" class="settings-card email-card">
+          <div class="card-header">
+            <h3>Email address</h3>
+            <p class="subtle">Update the email used for login and notifications.</p>
+          </div>
           <div class="field">
-            <label for="email">Email</label>
+            <label for="email">New email</label>
             <div class="input-row">
               <input
                 id="email"
@@ -116,21 +121,22 @@
                 autocomplete="email"
                 required
               />
-              <button type="submit" class="primary">Save email</button>
+              <button type="submit" class="button">Save email</button>
             </div>
-            <p class="hint">Updating your email will require verification again.</p>
+            <p class="hint">You'll need to verify this new email.</p>
           </div>
         </form>
 
         <div class="settings-card danger-card">
-          <div class="danger-header">
+          <div class="card-header">
             <h3>Danger Zone</h3>
             <p class="subtle">This action is permanent and cannot be undone.</p>
           </div>
+          <p class="subtle more-info">Deleting your account will remove your profile, stats, badges, game history, and any associated data. This process is irreversible.</p>
 
           <button
             type="button"
-            class="danger"
+            class="button danger-button"
             onclick={() => { showDeleteModal = true; }}
           >
             Delete account
@@ -516,6 +522,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 1rem;
+  align-items: stretch;
 }
 @media (min-width: 860px) {
   .settings-cards {
@@ -524,7 +531,7 @@
 }
 
 .settings-card {
-  padding: 1rem;
+  padding: 1rem 1.1rem;
   background: linear-gradient(135deg,
     rgba(255, 255, 255, 0.06) 0%,
     rgba(255, 255, 255, 0.03) 100%);
@@ -533,6 +540,9 @@
   box-shadow:
     0 10px 30px rgba(0,0,0,0.25),
     inset 0 1px 1px rgba(255,255,255,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
 }
 
 .settings-card h3 {
@@ -543,6 +553,11 @@
   color: #bfc6d1;
   opacity: 0.9;
   font-size: 0.9rem;
+}
+
+.card-header {
+  display: flex;
+  flex-direction: column;
 }
 
 .field {
@@ -581,119 +596,38 @@
   margin: 0;
 }
 
-.primary {
-  background: linear-gradient(135deg, #6a11cb, #2575fc);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 0.65rem 0.9rem;
-  cursor: pointer;
-  transition: filter 0.2s ease, transform 0.08s ease, box-shadow 0.2s ease;
-}
-.primary:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 8px 22px rgba(0,0,0,0.3); }
-.primary:active { transform: translateY(0); }
-.primary:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(130, 169, 255, 0.6); }
-
-.settings-cards {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-}
-@media (min-width: 860px) {
-  .settings-cards {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.settings-card {
-  padding: 1rem;
-  background: linear-gradient(135deg,
-    rgba(255, 255, 255, 0.06) 0%,
-    rgba(255, 255, 255, 0.03) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 14px;
-  box-shadow:
-    0 10px 30px rgba(0,0,0,0.25),
-    inset 0 1px 1px rgba(255,255,255,0.08);
-}
-
-.settings-card h3 {
-  margin: 0 0 0.25rem 0;
-}
-.settings-card .subtle {
-  margin: 0 0 0.75rem 0;
-  color: #bfc6d1;
-  opacity: 0.9;
-  font-size: 0.9rem;
-}
-
-.field {
-  display: grid;
-  gap: 0.5rem;
-}
-.field label {
-  font-weight: 600;
-}
-
-.input-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.6rem;
-  align-items: center;
-}
-
-.input-row input[type="email"] {
+.settings-card .button {
+  display: inline-flex;
+  width: auto;
+  align-self: flex-start;
+  flex: 0 0 auto;
   padding: 0.65rem 0.8rem;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(0, 0, 0, 0.25);
-  color: white;
-  width: 100%;
-  transition: border-color 0.2s ease, background 0.2s ease;
-}
-.input-row input[type="email"]:focus {
-  outline: none;
-  border-color: rgba(148, 131, 255, 0.7);
-  background: rgba(0, 0, 0, 0.35);
+  box-shadow: none;
 }
 
-.hint {
-  font-size: 0.85rem;
-  opacity: 0.85;
-  margin: 0;
-}
-
-.primary {
-  background: linear-gradient(135deg, #6a11cb, #2575fc);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 0.65rem 0.9rem;
-  cursor: pointer;
-  transition: filter 0.2s ease, transform 0.05s ease;
-}
-.primary:hover { filter: brightness(1.08); }
-.primary:active { transform: translateY(1px); }
+/* Removed duplicated styles below to keep a single source of truth */
 
 .danger-card {
   border: 1px solid rgba(255, 77, 109, 0.35);
   background:
     linear-gradient(135deg, rgba(255, 77, 109, 0.06), rgba(255,255,255,0.02));
 }
-.danger-card .danger-header {
-  margin-bottom: 0.5rem;
+.danger-card .card-header { margin-bottom: 0.25rem; }
+.danger-card .more-info { margin: 0 0 0.75rem 0; }
+
+/* Align settings page buttons with global .button style, but avoid full-width layout */
+.settings-card .button {
+  display: inline-flex;
+  width: auto;
+  align-self: flex-start;
 }
 
-.danger {
-  background: linear-gradient(135deg, #ff416c, #ff4b2b);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 0.65rem 0.9rem;
-  cursor: pointer;
-  transition: filter 0.2s ease, transform 0.08s ease, box-shadow 0.2s ease;
+/* Red variant that reuses the global gradient style */
+.danger-button {
+  background-image: linear-gradient(45deg, #ff416c 0%, #ff4b2b 51%, #ff416c 100%);
+  box-shadow: 0px 0px 14px -7px #ff2f2f;
+  margin: 0 auto;
 }
-.danger:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 8px 22px rgba(0,0,0,0.3); }
-.danger:active { transform: translateY(0); }
-.danger:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(255, 109, 109, 0.6); }
+
 </style>
