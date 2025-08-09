@@ -1,5 +1,4 @@
 <script>
-	// import "$lib/css/Button.css"; // Removed the generic button stylesheet
 	import { goto } from '$app/navigation';
 	import { generateSeo } from '$lib/util/generateSEO';
 
@@ -10,7 +9,7 @@
 		url: 'https://cipher-arena.fly.dev/',
 		image: 'https://cipher-arena.fly.dev/landing-page/hero-mock.webp'
 	});
-	// Reusable scroll-triggered animation action
+
 	export function animateOnScroll(node) {
 		const observer = new IntersectionObserver(
 			entries => {
@@ -42,7 +41,7 @@
 			<div class="hero">Welcome to Cipher Arena</div>
 			<div class="subhero">Crack codes with friends. Train, compete, and climb the ranks.</div>
 			<div class="hero-cta">
-				<button class="play-now-button" on:click={() => goto('/singleplayer/Aristocrat')}>
+				<button class="play-now-button" onclick={() => goto('/singleplayer/Aristocrat')}>
 					Play now
 				</button>
 				</div>
@@ -141,8 +140,8 @@
 				Become a Cipher Master. Start solving today.
 			</p>
 			<div class="cta-buttons">
-				<button class="button" on:click={() => goto('/account/register')}>Get started</button>
-				<button class="button secondary" on:click={() => goto('/singleplayer/Aristocrat')}
+				<button class="button" onclick={() => goto('/account/register')}>Get started</button>
+				<button class="button secondary" onclick={() => goto('/singleplayer/Aristocrat')}
 					>Try it out</button
 				>
 			</div>
@@ -151,20 +150,19 @@
 </div>
 
 <style>
-	/* ▼▼▼ NEW BUTTON STYLES ▼▼▼ */
 	.play-now-button {
 		position: relative;
 		z-index: 1;
 		padding: 1rem 2.5rem;
 		border: none;
 		border-radius: 50px;
-		background-color: #1a1c24; /* A dark, slightly blue base */
+		background-color: #1a1c24;
 		color: #ffffff;
 		font-size: 1.25rem;
 		font-weight: 600;
 		letter-spacing: 0.05em;
 		cursor: pointer;
-		overflow: hidden; /* Hides the parts of the pseudo-element that go outside the border-radius */
+		overflow: hidden;
 		transition: all 0.3s ease;
 		transform: scale(1);
 		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
