@@ -398,7 +398,6 @@
     }
 
     function handleGlobalFocusOut(e) {
-        // Check if we're losing focus from a cipher input
         if (e.target && e.target.closest && e.target.closest('.cipher')) {
             // Use a small delay to check if focus moved to another cipher input
             setTimeout(() => {

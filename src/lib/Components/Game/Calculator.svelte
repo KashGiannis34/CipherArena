@@ -169,7 +169,11 @@
   }
 
   function handleCalculatorBlur() {
-    calculatorFocused = false;
+    setTimeout(() => {
+      if (!calculatorElement.contains(document.activeElement)) {
+        calculatorFocused = false;
+      }
+    }, 0);
   }
 
   // Keyboard shortcuts - Fixed to work properly and prevent ghost characters
@@ -235,10 +239,9 @@
         inputOperation(e.key);
       } else if (e.key === 'Enter' || e.key === '=') {
         calculate();
-      } else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') {
+      } else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C' || e.key === 'Delete') {
         clear();
       }
-      // Don't handle other keys - let them pass through to other components
     }
   }
 
