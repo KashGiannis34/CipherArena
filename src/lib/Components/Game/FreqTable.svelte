@@ -141,6 +141,7 @@
         font-size: 1.8vw;
         transition-duration: 0ms !important;
     }
+
     @media screen and (min-width: 1200px) {
         table {
             font-size: 1.2rem;

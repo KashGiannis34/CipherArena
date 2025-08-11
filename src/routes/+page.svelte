@@ -4,9 +4,9 @@
 	import Leaderboard from '$lib/Components/General/Leaderboard.svelte';
 	import ProfileStats from '$lib/Components/General/ProfileStats.svelte';
 	import { onMount } from 'svelte';
-  	import LandingPageCipher from '$lib/Components/Game/LandingPageCipher.svelte';
-  	import BadgeDisplay from '$lib/Components/Game/BadgeDisplay.svelte';
-  	import ProgressDisplay from '$lib/Components/Game/ProgressDisplay.svelte';
+	import LandingPageCipher from '$lib/Components/Game/LandingPageCipher.svelte';
+	import BadgeDisplay from '$lib/Components/Game/BadgeDisplay.svelte';
+	import ProgressDisplay from '$lib/Components/Game/ProgressDisplay.svelte';
 
 	let { data } = $props();
 
@@ -16,11 +16,17 @@
 
 	onMount(() => {
 		let connectTimeoutId;
-		let progressIntervalId;
 
 		connectTimeoutId = setTimeout(() => {
 			players = [{ username, connected: true }];
 		}, 400);
+
+		if (window.innerWidth <= 768) {
+			// After 750ms, set the progress to 100%
+			setTimeout(() => {
+				onProgressUpdate(100);
+			}, 750);
+		}
 
 		return () => {
 			clearTimeout(connectTimeoutId);
@@ -40,114 +46,25 @@
 	});
 
 	const unlockedBadges = [
-		'elo_aristocrat_1500',
-		'elo_caesar_1400',
-		'wins_total_50',
-		'wins_aristocrat_50',
-		'elo_total_1300',
-		'games_played_100',
-		'games_played_34',
-		'wins_total_34',
-		'elo_aristocrat_1340',
-		'fast_solver_10s',
-		'under_30s_25x',
-		'under_60s_50x',
-		'under_34s_34x_aristocrat',
-		'close_call_59',
-		'slow_grinder',
-		'prime_times_under_60'
+		'elo_aristocrat_1500', 'elo_caesar_1400', 'wins_total_50', 'wins_aristocrat_50',
+		'elo_total_1300', 'games_played_100', 'games_played_34', 'wins_total_34',
+		'elo_aristocrat_1340', 'fast_solver_10s', 'under_30s_25x', 'under_60s_50x',
+		'under_34s_34x_aristocrat', 'close_call_59', 'slow_grinder', 'prime_times_under_60'
 	];
 
-	const userStats = {
-		All: {
-		elo: 1350,
-		wins: 55,
-		losses: 45,
-		solveTimes: [
-			{ time: 9 }, { time: 59 }, { time: 310 }, { time: 25 }, { time: 28 }
-		]
-		},
-		Aristocrat: {
-		elo: 1510,
-		wins: 52,
-		losses: 20,
-		solveTimes: [ { time: 33 }, { time: 30 } ]
-		},
-		Caesar: {
-		elo: 1405,
-		wins: 10,
-		losses: 5
-		}
-	};
-
-	const userSingleStats = {
-		All: {
-			solveTimes: [
-				{ time: 11 }, { time: 13 }, { time: 17 }, { time: 19 }, { time: 23 },
-				{ time: 29 }, { time: 31 }, { time: 37 }, { time: 41 }, { time: 43 },
-				{ time: 47 }, { time: 53 }
-			]
-		}
-	};
-
-	let mockStats = {
-		'All': {
-			elo: 1405, wins: 485, losses: 120, averageSolveTime: 0.98, bestSolveTime: 12
-		},
-		'Aristocrat': {
-			elo: 1550, wins: 150, losses: 30, averageSolveTime: 0.75, bestSolveTime: 15
-		},
-		'Xenocrypt': {
-			elo: 1450, wins: 50, losses: 15, averageSolveTime: 0.9, bestSolveTime: 25
-		},
-		'Patristocrat': {
-			elo: 1480, wins: 75, losses: 20, averageSolveTime: 0.85, bestSolveTime: 22
-		},
-		'Porta': {
-			elo: 1350, wins: 30, losses: 10, averageSolveTime: 1.2, bestSolveTime: 45
-		},
-		'Atbash': {
-			elo: 1250, wins: 25, losses: 5, averageSolveTime: 0.5, bestSolveTime: 12
-		},
-		'Caesar': {
-			elo: 1300, wins: 40, losses: 10, averageSolveTime: 0.6, bestSolveTime: 14
-		},
-		'Affine': {
-			elo: 1420, wins: 35, losses: 8, averageSolveTime: 1.1, bestSolveTime: 38
-		},
-		'Baconian': {
-			elo: 1380, wins: 20, losses: 5, averageSolveTime: 1.5, bestSolveTime: 60
-		},
-		'Nihilist': {
-			elo: 1450, wins: 25, losses: 7, averageSolveTime: 1.3, bestSolveTime: 55
-		},
-		'Checkerboard': {
-			elo: 1400, wins: 15, losses: 5, averageSolveTime: 1.4, bestSolveTime: 65
-		},
-		'Hill': {
-			elo: 1425, wins: 20, losses: 5, averageSolveTime: 1.6, bestSolveTime: 70
-		}
-	};
-
-	let mockCipher = {
-		quote: "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG".split(''),
-		id: 'mock-id',
-		params: { cipherType: 'Aristocrat', Solve: 'Decode', K: '0' },
-		keys: ['']
-	};
+	const userStats = { All: { elo: 1350, wins: 55, losses: 45, solveTimes: [{ time: 9 }, { time: 59 }, { time: 310 }, { time: 25 }, { time: 28 }] }, Aristocrat: { elo: 1510, wins: 52, losses: 20, solveTimes: [{ time: 33 }, { time: 30 }] }, Caesar: { elo: 1405, wins: 10, losses: 5 } };
+	const userSingleStats = { All: { solveTimes: [{ time: 11 }, { time: 13 }, { time: 17 }, { time: 19 }, { time: 23 }, { time: 29 }, { time: 31 }, { time: 37 }, { time: 41 }, { time: 43 }, { time: 47 }, { time: 53 }] } };
+	let mockStats = { 'All': { elo: 1405, wins: 485, losses: 120, averageSolveTime: 0.98, bestSolveTime: 12 }, 'Aristocrat': { elo: 1550, wins: 150, losses: 30, averageSolveTime: 0.75, bestSolveTime: 15 }, 'Xenocrypt': { elo: 1450, wins: 50, losses: 15, averageSolveTime: 0.9, bestSolveTime: 25 }, 'Patristocrat': { elo: 1480, wins: 75, losses: 20, averageSolveTime: 0.85, bestSolveTime: 22 }, 'Porta': { elo: 1350, wins: 30, losses: 10, averageSolveTime: 1.2, bestSolveTime: 45 }, 'Atbash': { elo: 1250, wins: 25, losses: 5, averageSolveTime: 0.5, bestSolveTime: 12 }, 'Caesar': { elo: 1300, wins: 40, losses: 10, averageSolveTime: 0.6, bestSolveTime: 14 }, 'Affine': { elo: 1420, wins: 35, losses: 8, averageSolveTime: 1.1, bestSolveTime: 38 }, 'Baconian': { elo: 1380, wins: 20, losses: 5, averageSolveTime: 1.5, bestSolveTime: 60 }, 'Nihilist': { elo: 1450, wins: 25, losses: 7, averageSolveTime: 1.3, bestSolveTime: 55 }, 'Checkerboard': { elo: 1400, wins: 15, losses: 5, averageSolveTime: 1.4, bestSolveTime: 65 }, 'Hill': { elo: 1425, wins: 20, losses: 5, averageSolveTime: 1.6, bestSolveTime: 70 } };
 
 	export function animateOnScroll(node) {
-		const observer = new IntersectionObserver(
-			entries => {
-				entries.forEach(entry => {
-					if (entry.isIntersecting) {
-						node.classList.add('visible');
-						observer.unobserve(node);
-					}
-				});
-			},
-			{ threshold: 0.15 }
-		);
+		const observer = new IntersectionObserver(entries => {
+			entries.forEach(entry => {
+				if (entry.isIntersecting) {
+					node.classList.add('visible');
+					observer.unobserve(node);
+				}
+			});
+		}, { threshold: 0.15 });
 		observer.observe(node);
 		return {
 			destroy() {
@@ -158,6 +75,7 @@
 </script>
 
 <svelte:head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	{@html seo}
 </svelte:head>
 
@@ -173,8 +91,13 @@
 					Play now
 				</button>
 			</div>
-			<div style="display: flex; justify-content: center;">
-				<LandingPageCipher {onProgressUpdate} />
+			<div class="cipher-container">
+				<div class="desktop-only">
+					<LandingPageCipher {onProgressUpdate} />
+				</div>
+				<div class="mobile-only">
+					<img src="/landing-page/hero-mock.webp" alt="Cipher example" class="static-image"/>
+				</div>
 			</div>
 		</header>
 
@@ -199,8 +122,12 @@
 				</div>
 
 				<div class="badges-wrapper animate-stats-float interactive-container">
-					<BadgeDisplay unlockedBadgeIds={unlockedBadges}
-					isOwnProfile=true stats={userStats} singleStats={userSingleStats}/>
+					<div class="desktop-only">
+						<BadgeDisplay unlockedBadgeIds={unlockedBadges} isOwnProfile={true} stats={userStats} singleStats={userSingleStats}/>
+					</div>
+					<div class="mobile-only">
+						<img src="/landing-page/pfp-badges.webp" alt="User badges" class="static-image"/>
+					</div>
 				</div>
 			</div>
 		</section>
@@ -209,7 +136,12 @@
 			<div class="showcase-inner">
 				<div class="visual">
 					<div class="interactive-container">
-						<Leaderboard count=10 simple=true />
+						<div class="desktop-only">
+							<Leaderboard count={10} simple={true} />
+						</div>
+						<div class="mobile-only">
+							<img src="/landing-page/leaderboard.webp" alt="Leaderboard" class="static-image"/>
+						</div>
 					</div>
 				</div>
 				<div class="copy">
@@ -253,7 +185,12 @@
 				</div>
 				<div class="visual">
 					<div class="interactive-container">
-						<ProfileStats stats={mockStats} singleStats={{}} simple=true />
+						<div class="desktop-only">
+							<ProfileStats stats={mockStats} singleStats={{}} simple={true} />
+						</div>
+						<div class="mobile-only">
+							<img src="/landing-page/profile-stats.webp" alt="Profile statistics" class="static-image"/>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -269,15 +206,22 @@
 			</p>
 			<div class="cta-buttons">
 				<button class="button" onclick={() => goto('/account/register')}>Get started</button>
-				<button class="button secondary" onclick={() => goto('/singleplayer/Aristocrat')}
-					>Try it out</button
-				>
+				<button class="button secondary" onclick={() => goto('/singleplayer/Aristocrat')}>Try it out</button>
 			</div>
 		</section>
 	</div>
 </div>
 
 <style>
+	/* --- (Paste all your existing styles here) --- */
+	.cipher-container {
+		display: flex;
+		justify-content: center;
+		margin-top: 1.5rem;
+		max-width: 100%;
+		padding-bottom: 1rem;
+	}
+
 	.animate-stats-float {
 		animation: statsFloat 0.8s cubic-bezier(0.23, 1, 0.32, 1) 1s both;
 	}
@@ -300,48 +244,40 @@
 		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 	}
 
-	/* This pseudo-element creates the rotating gradient background */
 	.play-now-button::before {
 		content: '';
 		position: absolute;
 		top: 50%;
 		left: 50%;
-		width: 250%; /* Large size to ensure the gradient covers the area when rotating */
+		width: 250%;
 		height: 250%;
-		z-index: -2; /* Sit behind the button's main background */
-		background: conic-gradient(
-			from 0deg,
-			#4ecdc4, /* Teal */
-			#7877c6, /* Purple */
-			#ff6b6b, /* Reddish-pink */
-			#4ecdc4 /* Loop back to Teal */
-		);
+		z-index: -2;
+		background: conic-gradient(from 0deg, #4ecdc4, #7877c6, #ff6b6b, #4ecdc4);
 		transform: translate(-50%, -50%);
 		animation: rotate-gradient 6s linear infinite;
 	}
 
-	/* This pseudo-element creates the inner dark background, revealing the ::before as a border */
 	.play-now-button::after {
 		content: '';
 		position: absolute;
-		z-index: -1; /* Sit on top of the gradient but behind the text */
+		z-index: -1;
 		left: 2px;
 		top: 2px;
 		width: calc(100% - 4px);
 		height: calc(100% - 4px);
-		background: #1a1c24; /* Same dark base to create the border effect */
-		border-radius: 48px; /* Slightly smaller radius than the parent */
+		background: #1a1c24;
+		border-radius: 48px;
 	}
 
 	.play-now-button:hover {
 		transform: scale(1.05) translateY(-3px);
-		box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3); /* Glow with the teal color on hover */
+		box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
 		color: #fff;
 	}
 
 	.play-now-button:active {
-		transform: scale(1.02) translateY(0); /* Simulates pressing the button down */
-		box-shadow: 0 5px 15px rgba(120, 119, 198, 0.25); /* Less glow on press */
+		transform: scale(1.02) translateY(0);
+		box-shadow: 0 5px 15px rgba(120, 119, 198, 0.25);
 	}
 
 	@keyframes rotate-gradient {
@@ -352,7 +288,6 @@
 			transform: translate(-50%, -50%) rotate(360deg);
 		}
 	}
-	/* ▲▲▲ END NEW BUTTON STYLES ▲▲▲ */
 
 	.landing {
 		position: relative;
@@ -365,6 +300,7 @@
 		max-width: 1440px;
 		margin: 0 auto;
 		padding: 1.25rem;
+		overflow-x: hidden;
 	}
 
 	.section {
@@ -395,6 +331,7 @@
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
+		animation: text-glow 2s ease-in-out infinite alternate;
 	}
 
 	.subhero {
@@ -404,7 +341,7 @@
 		color: rgba(255, 255, 255, 0.86);
 	}
 	.hero-cta {
-		margin-top: 2rem; /* Added more space for the bigger button */
+		margin-top: 2rem;
 		display: flex;
 		justify-content: center;
 	}
@@ -418,7 +355,6 @@
 		z-index: 1;
 	}
 
-	/* Narrative showcases */
 	.showcase .showcase-inner {
 		display: grid;
 		grid-template-columns: 1.1fr 0.9fr;
@@ -426,20 +362,15 @@
 		align-items: center;
 		text-align: left;
 	}
+
 	.showcase.alt .showcase-inner {
 		grid-template-columns: 0.9fr 1.1fr;
-	}
-	@media (max-width: 900px) {
-		.showcase .showcase-inner,
-		.showcase.alt .showcase-inner {
-			grid-template-columns: 1fr;
-			text-align: left;
-		}
 	}
 
 	.copy p {
 		color: rgba(255, 255, 255, 0.86);
 	}
+
 	.feature-cards,
 	.feature-list {
 		list-style: none;
@@ -448,6 +379,7 @@
 		display: grid;
 		gap: 0.9rem;
 	}
+
 	.feature-cards li,
 	.feature-list li {
 		padding: 1rem;
@@ -456,20 +388,22 @@
 		background: rgba(20, 22, 30, 0.45);
 		backdrop-filter: blur(10px);
 		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
-		transition:
-			transform 0.25s ease,
-			box-shadow 0.25s ease;
+		transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 	}
+
 	.feature-cards li:hover,
 	.feature-list li:hover {
-		transform: translateY(-8px);
+		transform: translateY(-10px) scale(1.03);
 		box-shadow: 0 20px 44px rgba(0, 0, 0, 0.45);
+		border-color: rgba(120, 119, 198, 0.5);
 	}
+
 	.feature-cards h3,
 	.feature-list h3 {
 		margin: 0 0 0.25rem 0;
 		font-size: 1.1rem;
 	}
+
 	.feature-cards p,
 	.feature-list p {
 		margin: 0;
@@ -514,27 +448,6 @@
 		background: rgba(255, 255, 255, 0.06);
 	}
 
-	@media (max-width: 768px) {
-		.hero {
-			font-size: 2.5rem;
-		}
-
-		.section {
-			margin: 0.5rem auto;
-			padding: 2rem 1.5rem;
-		}
-
-		.cta-buttons {
-			flex-direction: column;
-			align-items: center;
-		}
-
-		.cta-buttons .button {
-			width: 100%;
-			max-width: 280px;
-		}
-	}
-
 	.logo-container {
 		display: flex;
 		justify-content: center;
@@ -548,9 +461,7 @@
 		height: auto;
 		filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.2));
 		animation: glide 10s ease-in-out infinite;
-		transition:
-			transform 0.4s ease,
-			filter 0.4s ease;
+		transition: transform 0.4s ease, filter 0.4s ease;
 		position: relative;
 	}
 
@@ -578,34 +489,24 @@
 	}
 
 	@keyframes glide {
-		0% {
-			transform: translate(0, 0) rotate(0deg);
-		}
-		25% {
-			transform: translate(2px, -3px) rotate(0.3deg);
-		}
-		50% {
-			transform: translate(-2px, 2px) rotate(-0.3deg);
-		}
-		75% {
-			transform: translate(3px, -1px) rotate(0.2deg);
-		}
-		100% {
-			transform: translate(0, 0) rotate(0deg);
-		}
+		0% { transform: translate(0, 0) rotate(0deg); }
+		25% { transform: translate(2px, -3px) rotate(0.3deg); }
+		50% { transform: translate(-2px, 2px) rotate(-0.3deg); }
+		75% { transform: translate(3px, -1px) rotate(0.2deg); }
+		100% { transform: translate(0, 0) rotate(0deg); }
 	}
 
 	.animatable {
 		opacity: 0;
 		transform: translateY(30px);
-		transition:
-			opacity 600ms ease,
-			transform 600ms ease;
+		transition: opacity 600ms ease, transform 600ms ease;
 	}
+
 	:global(.animatable.visible) {
 		opacity: 1;
 		transform: translateY(0);
 	}
+
 	.interactive-container {
 		width: 100%;
 		max-width: 1100px;
@@ -620,41 +521,9 @@
 		transform: translateY(-10px) scale(1.02);
 	}
 
-	/* New Hero Animation */
-	.hero {
-		animation: text-glow 2s ease-in-out infinite alternate;
-	}
-
 	@keyframes text-glow {
-		from {
-			text-shadow:
-			0 0 4px #fff,
-			0 0 6px #6a5acd,
-			0 0 12px #6a5acd;
-		}
-		to {
-			text-shadow:
-			0 0 6px #fff,
-			0 0 8px #836FFF,
-			0 0 16px #836FFF;
-		}
-	}
-
-	/* Feature Cards Hover Effect */
-	.feature-cards li,
-	.feature-list li {
-		transition:
-			transform 0.25s ease,
-			box-shadow 0.25s ease,
-			border-color 0.25s ease;
-		border-color: rgba(255, 255, 255, 0.12);
-	}
-
-	.feature-cards li:hover,
-	.feature-list li:hover {
-		transform: translateY(-10px) scale(1.03);
-		box-shadow: 0 20px 44px rgba(0, 0, 0, 0.45);
-		border-color: rgba(120, 119, 198, 0.5);
+		from { text-shadow: 0 0 4px #fff, 0 0 6px #6a5acd, 0 0 12px #6a5acd; }
+		to { text-shadow: 0 0 6px #fff, 0 0 8px #836fff, 0 0 16px #836fff; }
 	}
 
 	.section::before {
@@ -668,12 +537,8 @@
 		border: 2px solid transparent;
 		background: linear-gradient(90deg, #4ecdc4, #7877c6, #ff6b6b, #7877c6, #4ecdc4) border-box;
 		background-size: 200% auto;
-		mask:
-			linear-gradient(#fff 0 0) padding-box,
-			linear-gradient(#fff 0 0);
-		-webkit-mask:
-			linear-gradient(#fff 0 0) padding-box,
-			linear-gradient(#fff 0 0);
+		mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+		-webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
 		-webkit-mask-composite: destination-out;
 		mask-composite: exclude;
 		opacity: 0;
@@ -686,14 +551,98 @@
 	}
 
 	@keyframes move-gradient-border {
-	0% {
-		background-position: 0% 50%;
+		0% { background-position: 0% 50%; }
+		50% { background-position: 100% 50%; }
+		100% { background-position: 0% 50%; }
 	}
-	50% {
-		background-position: 100% 50%;
+
+	/* --- RESPONSIVE STYLES --- */
+
+	/* By default, show interactive components and hide static images */
+	.mobile-only {
+		display: none;
 	}
-	100% {
-		background-position: 0% 50%;
+
+	.desktop-only {
+		display: block; /* Or flex, grid, etc., as needed */
 	}
+
+	.static-image {
+		width: 100%;
+		height: auto;
+		border-radius: 1rem;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	/* For tablets and smaller devices */
+	@media (max-width: 900px) {
+		.showcase .showcase-inner,
+		.showcase.alt .showcase-inner {
+			grid-template-columns: 1fr; /* Stack elements vertically */
+			gap: 2.5rem;
+			text-align: center;
+		}
+
+		/* For the 'alt' layout, this ensures the text (.copy) appears *before* the image (.visual) */
+		.showcase.alt .copy {
+			grid-row: 1;
+		}
+		.showcase.alt .visual {
+			grid-row: 2;
+		}
+	}
+
+	/* For mobile phones */
+	@media (max-width: 768px) {
+		/* Hide interactive components on mobile */
+		.desktop-only {
+			display: none;
+		}
+
+		/* Show static images on mobile */
+		.mobile-only {
+			display: block;
+		}
+
+		.container {
+			padding: 1rem;
+		}
+
+		.section {
+			padding: 2.5rem 1.5rem;
+		}
+
+		.hero-section {
+			padding: 3rem 1.5rem;
+		}
+
+		.hero {
+			font-size: clamp(2.2rem, 10vw, 2.8rem);
+		}
+
+		.subhero {
+			font-size: 1.1rem;
+			line-height: 1.5;
+		}
+
+		.section h2 {
+			font-size: 2rem;
+		}
+
+		.play-now-button {
+			padding: 0.9rem 2rem;
+			font-size: 1.1rem;
+		}
+
+		.cta-buttons {
+			flex-direction: column;
+			align-items: center;
+			gap: 1rem;
+		}
+
+		.cta-buttons .button {
+			width: 100%;
+			max-width: 300px;
+		}
 	}
 </style>
