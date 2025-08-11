@@ -52,8 +52,6 @@
 		'under_34s_34x_aristocrat', 'close_call_59', 'slow_grinder', 'prime_times_under_60'
 	];
 
-	const userStats = { All: { elo: 1350, wins: 55, losses: 45, solveTimes: [{ time: 9 }, { time: 59 }, { time: 310 }, { time: 25 }, { time: 28 }] }, Aristocrat: { elo: 1510, wins: 52, losses: 20, solveTimes: [{ time: 33 }, { time: 30 }] }, Caesar: { elo: 1405, wins: 10, losses: 5 } };
-	const userSingleStats = { All: { solveTimes: [{ time: 11 }, { time: 13 }, { time: 17 }, { time: 19 }, { time: 23 }, { time: 29 }, { time: 31 }, { time: 37 }, { time: 41 }, { time: 43 }, { time: 47 }, { time: 53 }] } };
 	let mockStats = { 'All': { elo: 1405, wins: 485, losses: 120, averageSolveTime: 0.98, bestSolveTime: 12 }, 'Aristocrat': { elo: 1550, wins: 150, losses: 30, averageSolveTime: 0.75, bestSolveTime: 15 }, 'Xenocrypt': { elo: 1450, wins: 50, losses: 15, averageSolveTime: 0.9, bestSolveTime: 25 }, 'Patristocrat': { elo: 1480, wins: 75, losses: 20, averageSolveTime: 0.85, bestSolveTime: 22 }, 'Porta': { elo: 1350, wins: 30, losses: 10, averageSolveTime: 1.2, bestSolveTime: 45 }, 'Atbash': { elo: 1250, wins: 25, losses: 5, averageSolveTime: 0.5, bestSolveTime: 12 }, 'Caesar': { elo: 1300, wins: 40, losses: 10, averageSolveTime: 0.6, bestSolveTime: 14 }, 'Affine': { elo: 1420, wins: 35, losses: 8, averageSolveTime: 1.1, bestSolveTime: 38 }, 'Baconian': { elo: 1380, wins: 20, losses: 5, averageSolveTime: 1.5, bestSolveTime: 60 }, 'Nihilist': { elo: 1450, wins: 25, losses: 7, averageSolveTime: 1.3, bestSolveTime: 55 }, 'Checkerboard': { elo: 1400, wins: 15, losses: 5, averageSolveTime: 1.4, bestSolveTime: 65 }, 'Hill': { elo: 1425, wins: 20, losses: 5, averageSolveTime: 1.6, bestSolveTime: 70 } };
 
 	export function animateOnScroll(node) {
@@ -123,7 +121,7 @@
 
 				<div class="badges-wrapper animate-stats-float interactive-container">
 					<div class="desktop-only">
-						<BadgeDisplay unlockedBadgeIds={unlockedBadges} isOwnProfile={true} stats={userStats} singleStats={userSingleStats}/>
+						<BadgeDisplay unlockedBadgeIds={unlockedBadges} isOwnProfile={true} stats={{}} singleStats={{}}/>
 					</div>
 					<div class="mobile-only">
 						<img src="/landing-page/pfp-badges.webp" alt="User badges" class="static-image"/>
