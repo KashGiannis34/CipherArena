@@ -48,6 +48,8 @@
                     <button class="nav-link"
                         onclick={() => navigate('/profile')}>Home</button>
                     <button class="nav-link"
+                        onclick={() => navigate('/tutorials')}>Tutorials</button>
+                    <button class="nav-link"
                     onclick={() => navigate('/leaderboard')}>Leaderboard</button>
                     <button class="nav-link"
                         onclick={() => navigate('/singleplayer/Aristocrat')}>Play Solo</button>
@@ -68,6 +70,8 @@
         <div class="nav-right {isMenuOpen ? 'open' : ''} {isMenuClosing ? 'closing' : ''}">
             {#if !authenticated}
                 <button class="nav-link"
+                onclick={() => navigate('/tutorials')}>Tutorials</button>
+                <button class="nav-link"
                 onclick={() => navigate('/singleplayer/Aristocrat')}>Try it out</button>
                 <button class="nav-link"
                 onclick={() => navigate('/leaderboard')}>Leaderboard</button>
@@ -79,6 +83,8 @@
                 <div class="mobile-nav-links">
                     <button class="nav-link"
                         onclick={() => navigate('/profile')}>Home</button>
+                    <button class="nav-link"
+                        onclick={() => navigate('/singleplayer/Tutorials')}>Tutorials</button>
                     <button class="nav-link"
                     onclick={() => navigate('/leaderboard')}>Leaderboard</button>
                     <button class="nav-link"
