@@ -1,112 +1,45 @@
-import { UserGame } from '$dbutils/UserGame';
+import redis from '$db/redis.js';
 import { json } from '@sveltejs/kit';
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET({ url }) {
-	const cipherType = url.searchParams.get('cipherType');
-	const metric = url.searchParams.get('metric');
-    const count = url.searchParams.get('count')
+    const cipherType = url.searchParams.get('cipherType');
+    let metric = url.searchParams.get('metric');
+    const count = parseInt(url.searchParams.get('count') ?? '50', 10);
 
-	if (!cipherType || !metric || !['elo', 'wins', 'winPercent', 'avg solve time per char', 'best solve time'].includes(metric)) {
-		return json({ error: 'Invalid query parameters.' }, { status: 400 });
-	}
+    if (metric === 'avg solve time per char') metric = 'avgSolveTime';
+    if (metric === 'best solve time') metric = 'bestSolveTime';
 
-	try {
-		if (metric === 'winPercent') {
-            const users = await UserGame.find(
-                {
-                    $expr: {
-                        $gte: [
-                            {
-                                $add: [
-                                    { $getField: { field: 'wins', input: { $getField: { field: cipherType, input: '$stats' } } } },
-                                    { $getField: { field: 'losses', input: { $getField: { field: cipherType, input: '$stats' } } } }
-                                ]
-                            },
-                            10
-                        ]
-                    }
-                },
-                {
-                    username: 1,
-                    [`stats.${cipherType}.wins`]: 1,
-                    [`stats.${cipherType}.losses`]: 1
-                }
-            ).lean();
+    const validMetrics = ['elo', 'wins', 'winPercent', 'avgSolveTime', 'bestSolveTime'];
+    if (!cipherType || !metric || !validMetrics.includes(metric)) {
+        return json({ error: 'Invalid query parameters.' }, { status: 400 });
+    }
 
-            const leaderboard = users
-                .map(user => {
-                    const stats = user.stats?.[cipherType] ?? { wins: 0, losses: 0 };
-                    const total = stats.wins + stats.losses;
-                    const winPct = total === 0 ? 0 : stats.wins / total;
-                    return {
-                        username: user.username,
-                        value: parseFloat((winPct * 100).toFixed(2))
-                    };
-                })
-                .sort((a, b) => b.value - a.value)
-                .slice(0, Math.min(count, 50));
+    const leaderboardKey = `leaderboard:${cipherType}:${metric}`;
+    const limit = Math.min(count, 50) - 1;
 
-            return json(leaderboard);
-        } else if (metric == 'elo' || metric == 'wins') {
-            // For "elo" and "wins"
-            const users = await UserGame.find(
-                { [`stats.${cipherType}.${metric}`]: { $exists: true } },
-                {
-                    username: 1,
-                    [`stats.${cipherType}.${metric}`]: 1
-                }
-            )
-                .sort({ [`stats.${cipherType}.${metric}`]: -1 })
-                .limit(Math.min(count, 50))
-                .lean();
-
-            const leaderboard = users.map((user, index) => ({
-                username: user.username,
-                value: user.stats?.[cipherType]?.[metric] ?? 0
-            }));
-
-            return json(leaderboard);
-        } else if (metric === 'avg solve time per char') {
-            const leaderboard = await UserGame.aggregate([
-                {
-                    $match: {
-                        [`stats.${cipherType}.wins`]: { $gte: 5 },
-                        [`stats.${cipherType}.averageSolveTime`]: { $gt: 0 }
-                    }
-                },
-                {
-                    $project: {
-                        username: 1,
-                        value: `$stats.${cipherType}.averageSolveTime`
-                    }
-                },
-                { $sort: { value: 1 } },
-                { $limit: Math.min(count, 50) }
-            ]);
-
-            return json(leaderboard);
+    try {
+        let results;
+        // (ascending)
+        if (metric === 'avgSolveTime' || metric === 'bestSolveTime') {
+            results = await redis.zrange(leaderboardKey, 0, limit, 'WITHSCORES');
         } else {
-            const leaderboard = await UserGame.aggregate([
-                {
-                    $match: {
-                        [`stats.${cipherType}.bestSolveTime`]: { $gt: 0, $lt: Number.MAX_SAFE_INTEGER }
-                    }
-                },
-                {
-                    $project: {
-                        username: 1,
-                        value: `$stats.${cipherType}.bestSolveTime`
-                    }
-                },
-                { $sort: { value: 1 } },
-                { $limit: Math.min(count, 50) }
-            ]);
-
-            return json(leaderboard);
+            // (descending)
+            results = await redis.zrevrange(leaderboardKey, 0, limit, 'WITHSCORES');
         }
-	} catch (err) {
-		console.error('Leaderboard fetch error:', err);
-		return json({ error: 'Internal server error.' }, { status: 500 });
-	}
+
+        const leaderboard = [];
+        for (let i = 0; i < results.length; i += 2) {
+            leaderboard.push({
+                username: results[i],
+                value: parseFloat(results[i + 1])
+            });
+        }
+
+        return json(leaderboard);
+
+    } catch (err) {
+        console.error('Leaderboard fetch error:', err);
+        return json({ error: 'Internal server error.' }, { status: 500 });
+    }
 }

@@ -329,7 +329,7 @@ io.on('connection', async (socket) => {
                 };
 
                 game.state = 'finished';
-                game.lastMatchResult = matchResult; // ✅ Save to DB
+                game.lastMatchResult = matchResult;
                 await game.save();
 
                 io.to(game._id).emit('cipher-solved', matchResult);
