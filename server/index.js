@@ -1,7 +1,7 @@
 import http from 'http';
 import express from 'express';
-import { handler } from '../build/handler.js';
 import 'dotenv/config';
+import { handler } from '../build/handler.js';
 
 // socket.io
 import { Server } from 'socket.io';

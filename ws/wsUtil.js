@@ -4,6 +4,9 @@ import { encodeQuote, stripQuote } from '../db/shared-utils/CipherUtil.js';
 import { UserGame } from '../db/backend-utils/UserGame.js';
 import { cipherTypes } from '../db/shared-utils/CipherTypes.js';
 import { updateUserInLeaderboards } from '../db/backend-utils/leaderboard.js';
+import Redis from 'ioredis';
+
+const redis = new Redis(process.env.REDIS_URL);
 
 export function calculateElo(players, winnerUsername, cipherType, K = 32, eloFloor = 100) {
   const eloChanges = {};
@@ -139,7 +142,7 @@ export async function updateStatsAfterWin(gameUsers, winner, cipherType, solveTi
     await player.save();
 
     try {
-      await updateUserInLeaderboards(player.username, cipherType, player.stats[cipherType]);
+      await updateUserInLeaderboards(redis, player.username, cipherType, player.stats[cipherType]);
 
       if (player.stats.All) {
           await updateUserInLeaderboards(player.username, 'All', player.stats.All);

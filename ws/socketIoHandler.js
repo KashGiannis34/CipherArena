@@ -9,6 +9,7 @@ import socketIORateLimiter from '@d3vision/socket.io-rate-limiter';
 import * as wsUtil from './wsUtil.js';
 import { generateQuote } from '../db/backend-utils/GenerateQuote.js';
 import { incrementTotal, incrementWin } from '../db/backend-utils/statsUtil.js';
+import 'dotenv/config';
 
 
 export default async function injectSocketIO(server) {

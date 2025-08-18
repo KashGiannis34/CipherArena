@@ -11,6 +11,7 @@
 	let { data } = $props();
 
 	let username = data["username"] || "HelloKitty34";
+	let userCount = data["userCount"] || 0;
 	let players = $state([{ username, connected: false }]);
 	let progressMap = $state({ [username]: 0 });
 
@@ -202,6 +203,12 @@
 			<p style="font-size: 1.2rem; margin-bottom: 1rem;">
 				Become a Cipher Master. Start solving today.
 			</p>
+			{#if userCount > 0}
+			<div class="user-count-container">
+				<div class="online-indicator"></div>
+				<span>{userCount.toLocaleString()} registered solvers</span>
+			</div>
+			{/if}
 			<div class="cta-buttons">
 				<button class="button" onclick={() => goto('/account/register')}>Get started</button>
 				<button class="button secondary" onclick={() => goto('/singleplayer/Aristocrat')}>Try it out</button>
@@ -211,7 +218,42 @@
 </div>
 
 <style>
-	/* --- (Paste all your existing styles here) --- */
+	.user-count-container {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.75rem;
+		font-size: 1rem;
+		color: rgba(255, 255, 255, 0.7);
+		animation: fadeIn 1s ease 0.5s both;
+	}
+
+	.online-indicator {
+		width: 12px;
+		height: 12px;
+		background-color: #39d353;
+		border-radius: 50%;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		box-shadow: 0 0 10px #39d353, 0 0 20px #39d353;
+		animation: pulse 2s infinite ease-in-out;
+	}
+
+	@keyframes fadeIn {
+		from { opacity: 0; transform: translateY(10px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	@keyframes pulse {
+		0%, 100% {
+			transform: scale(1);
+			opacity: 1;
+		}
+		50% {
+			transform: scale(1.1);
+			opacity: 0.8;
+		}
+	}
+
 	.cipher-container {
 		display: flex;
 		justify-content: center;
