@@ -1,7 +1,7 @@
+import * as dotenv from 'dotenv';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 import {webSocketServer} from './ws/webSocketPluginVite.js';
-import * as dotenv from 'dotenv';
 
 dotenv.config();
 

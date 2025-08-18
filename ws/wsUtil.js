@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb';
 import { encodeQuote, stripQuote } from '../db/shared-utils/CipherUtil.js';
 import { UserGame } from '../db/backend-utils/UserGame.js';
 import { cipherTypes } from '../db/shared-utils/CipherTypes.js';
+import { updateUserInLeaderboards } from '../db/backend-utils/leaderboard.js';
 
 export function calculateElo(players, winnerUsername, cipherType, K = 32, eloFloor = 100) {
   const eloChanges = {};
@@ -103,7 +104,7 @@ export async function getQuote(quoteId, cipherType, keys, solve) {
   return displayText;
 }
 
-export async function updateStatsAfterWin(gameUsers, winner, cipherType, solveTime, length) {
+export async function updateStatsAfterWin(redis, gameUsers, winner, cipherType, solveTime, length) {
   const eloChanges = calculateElo(gameUsers, winner.username, cipherType);
 
   for (const player of gameUsers) {
@@ -136,6 +137,16 @@ export async function updateStatsAfterWin(gameUsers, winner, cipherType, solveTi
     player.markModified('stats');
     player.markModified('stats.All');
     await player.save();
+
+    try {
+      await updateUserInLeaderboards(redis, player.username, cipherType, player.stats[cipherType]);
+
+      if (player.stats.All) {
+          await updateUserInLeaderboards(player.username, 'All', player.stats.All);
+      }
+    } catch (redisError) {
+      console.error('CRITICAL: Failed to update leaderboards in Redis for user:', player.username, redisError);
+    }
   }
 
   return eloChanges;

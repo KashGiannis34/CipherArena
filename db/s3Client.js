@@ -1,4 +1,3 @@
-// src/lib/server/s3Client.js
 import { S3Client } from '@aws-sdk/client-s3';
 
 let client;
