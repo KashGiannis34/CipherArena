@@ -1,6 +1,4 @@
-import { Redis } from 'ioredis';
-
-const redis = new Redis(process.env.REDIS_URL);
+import redis from '$db/redis.js';
 import { UserGame } from '$db/backend-utils/UserGame.js';
 
 const USER_COUNT_KEY = 'total_user_count';

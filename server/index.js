@@ -18,6 +18,9 @@ import { incrementTotal, incrementWin } from '../db/backend-utils/statsUtil.js';
 // cron scheduler
 import '../db/cron/handleInactiveGames.js';
 
+// redis caching
+import Redis from 'ioredis';
+
 const app = express();
 const server = http.createServer(app);
 
@@ -31,6 +34,7 @@ const io = new Server(server, {
     }
 });
 globalThis.io = io;
+const redis = new Redis(process.env.REDIS_URL);
 const activeSockets = new Map(); // userId → socketId
 const lobbySockets = new Map(); // userId → socketId
 const rematchVotesMap = new Map(); // gameId → Set of usernames who requested rematch
@@ -306,7 +310,7 @@ io.on('connection', async (socket) => {
                 let eloChanges = null;
                 if (game.mode === 'ranked' && game.metadata?.initialUserIds?.length > 1) {
                     const initialPlayers = await UserGame.find({ _id: { $in: game.metadata.initialUserIds } });
-                    eloChanges = await wsUtil.updateStatsAfterWin(initialPlayers, user, cipherType, solveTime, length);
+                    eloChanges = await wsUtil.updateStatsAfterWin(redis, initialPlayers, user, cipherType, solveTime, length);
                 }
 
                 const initialPlayers = await UserGame.find({ _id: { $in: game.metadata.initialUserIds } });

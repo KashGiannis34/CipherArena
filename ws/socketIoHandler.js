@@ -9,6 +9,7 @@ import socketIORateLimiter from '@d3vision/socket.io-rate-limiter';
 import * as wsUtil from './wsUtil.js';
 import { generateQuote } from '../db/backend-utils/GenerateQuote.js';
 import { incrementTotal, incrementWin } from '../db/backend-utils/statsUtil.js';
+import Redis from 'ioredis';
 import 'dotenv/config';
 
 
@@ -25,6 +26,7 @@ export default async function injectSocketIO(server) {
     const lobbySockets = new Map(); // userId → socketId
     const rematchVotesMap = new Map(); // gameId → Set of usernames who requested rematch
     const forfeitVotesMap = new Map(); // gameId → Set of usernames who gave up
+    const redis = new Redis(process.env.REDIS_URL);
 
     io.use(async (socket, next) => {
         // Authenticate socket before allowing connection
@@ -296,7 +298,7 @@ export default async function injectSocketIO(server) {
                     let eloChanges = null;
                     if (game.mode === 'ranked' && game.metadata?.initialUserIds?.length > 1) {
                         const initialPlayers = await UserGame.find({ _id: { $in: game.metadata.initialUserIds } });
-                        eloChanges = await wsUtil.updateStatsAfterWin(initialPlayers, user, cipherType, solveTime, length);
+                        eloChanges = await wsUtil.updateStatsAfterWin(redis, initialPlayers, user, cipherType, solveTime, length);
                     }
 
                     const initialPlayers = await UserGame.find({ _id: { $in: game.metadata.initialUserIds } });
