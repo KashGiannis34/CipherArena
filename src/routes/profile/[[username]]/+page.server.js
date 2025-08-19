@@ -7,6 +7,9 @@ import { createVerificationToken } from '$db/auth/verify';
 import { sendVerificationEmail } from '$db/auth/mailer';
 import { cookie_options } from '$dbutils/dbUtil';
 import { VerificationToken } from '$db/models/VerificationToken';
+import { decrementUserCount } from '$db/backend-utils/userCount.js';
+import { removeUserFromLeaderboards } from '$db/backend-utils/leaderboard.js';
+import redis from '$db/redis.js';
 
 export async function load({ params, cookies }) {
   const auth = authenticate(cookies.get('auth-token'));
@@ -86,6 +89,14 @@ export const actions = {
     if (!auth) throw error(401, 'Unauthorized');
 
     const userId = auth.id;
+    const user = await UserAuth.findById(userId).select('username');
+    if (user && user.username) {
+      try {
+        await removeUserFromLeaderboards(redis, user.username);
+      } catch (redisError) {
+        console.error('CRITICAL: Failed to remove user from leaderboards in Redis for user:', user.username, redisError);
+      }
+    }
 
     // Remove auth and game profiles and any tokens
     await Promise.all([
@@ -93,6 +104,8 @@ export const actions = {
       UserGame.deleteOne({ _id: userId }),
       VerificationToken.deleteMany({ userId })
     ]);
+
+    await decrementUserCount();
 
     // Clear cookies
     try { cookies.delete('auth-token', { path: '/' }); } catch {}

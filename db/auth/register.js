@@ -1,5 +1,6 @@
 import { UserAuth } from "$db/models/UserAuth";
 import { UserGame } from "$dbutils/UserGame";
+import { incrementUserCount } from "$dbutils/userCount.js";
 import pkg from 'argon2';
 const argon2 = pkg;
 
@@ -116,6 +117,7 @@ export async function register_user(name, email, password, confirmPass) {
 	try {
 		await user.save();
         await userGame.save();
+        await incrementUserCount();
 		return { error: "" };
 	} catch (err) {
 		return {error: err.toString()};
