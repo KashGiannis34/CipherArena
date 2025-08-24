@@ -41,7 +41,31 @@
         {
             title: 'Solve Checkerboard Cipher',
             description: 'An introduction to the only new cipher added in the 2025-26 Scioly Codebusters Season.',
-            url: null,
+            url: 'https://youtu.be/vTFrUYghq-k',
+            status: 'available',
+            links: [{ text: 'Practice Checkerboard', url: '/singleplayer/Checkerboard' }]
+        },
+        {
+            title: 'How to Solve a Hill Cipher',
+            description: 'Dive into the world of matrix multiplication and modular arithmetic to conquer the Hill cipher.',
+            status: 'coming-soon',
+            links: []
+        },
+        {
+            title: 'How to Solve a Nihilist Cipher',
+            description: 'Learn to use a Polybius square and to tackle the nihilist cipher.',
+            status: 'coming-soon',
+            links: []
+        },
+        {
+            title: 'How to Solve a Baconian',
+            description: 'Learn some tips and tricks to help you solve the Baconian cipher quicker.',
+            status: 'coming-soon',
+            links: []
+        },
+        {
+            title: 'How to Solve an Affine Cipher',
+            description: 'A guide to solving this monoalphabetic substitution cipher quickly using modular arithmetic.',
             status: 'coming-soon',
             links: []
         }
@@ -118,9 +142,6 @@
 </div>
 
 <style>
-    /* --- (Paste all your existing styles from the landing page here) --- */
-
-    /* --- NEW AND UPDATED STYLES --- */
     .tutorial-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
