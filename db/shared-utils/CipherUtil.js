@@ -384,8 +384,8 @@ function encodeCheckerboard(plaintext, rowKey, colKey, polybiusKey) {
 
     const coords = [];
     for (let char of stripped) {
-        if (square[char]) {
-            coords.push(square[char]);
+        if (isLetter(char)) {
+            coords.push(square[char == 'J' ? 'I' : char]);
         }
     }
 
@@ -483,8 +483,8 @@ function encodeNihilist(plaintext, keyword, polybiusKey) {
 
     const coords = [];
     for (let char of stripped) {
-        if (square[char]) {
-            coords.push(square[char]);
+        if (isLetter(char)) {
+            coords.push(square[char == 'J' ? 'I' : char]);
         }
     }
 
@@ -541,8 +541,8 @@ function getCoordsFromKeyword(keyword, square) {
     const coords = [];
 
     for (let char of stripped) {
-        if (square[char]) {
-            coords.push(square[char]);
+        if (isLetter(char)) {
+            coords.push(square[char == 'J' ? 'I' : char]);
         }
     }
 
