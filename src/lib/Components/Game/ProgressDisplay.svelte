@@ -79,7 +79,6 @@
     gap: 1rem;
     padding: 0.75rem 1rem;
     background: rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(14px);
     border-radius: 0.75rem;
     border-left: 5px solid #7555ff;
     box-shadow:

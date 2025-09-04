@@ -37,11 +37,6 @@
 </script>
 
 <section class="profile-page animate-glass-emerge">
-  <div class="gradient-mesh"></div>
-  <div class="noise-overlay"></div>
-
-  <div class="shimmer-overlay"></div>
-
   <div class="profile-header animate-content-rise">
     <EditableProfilePicture {profilePicture} size={120} {isOwnProfile} sendError={onUploadError} />
     <h1 class="username animate-text-glow">@{username}</h1>
@@ -163,66 +158,16 @@
   padding: 2.5rem;
   max-width: 80vw;
   width: 100%;
-  margin: 0 auto;
-  color: white;
-  background: linear-gradient(135deg,
-    rgba(255, 255, 255, 0.08) 0%,
-    rgba(255, 255, 255, 0.04) 50%,
-    rgba(255, 255, 255, 0.08) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 1.5rem;
+  margin: 0.75rem auto;
+  padding: 3rem 2.5rem;
+  background: rgba(255, 255, 255, 0.06);
   box-shadow:
-    0 25px 45px rgba(0, 0, 0, 0.3),
-    0 10px 25px rgba(0, 0, 0, 0.2),
-    inset 0 1px 1px rgba(255, 255, 255, 0.15),
-    inset 0 -1px 1px rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
+  0 4px 20px rgba(0, 0, 0, 0.3),
+  inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(18px);
+  border-radius: 2rem;
+  color: white;
   overflow: hidden;
-}
-
-.gradient-mesh {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background:
-    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.02) 0%, transparent 40%),
-    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 40% 90%, rgba(255, 255, 255, 0.015) 0%, transparent 45%),
-    radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.025) 0%, transparent 35%);
-  animation: meshShift 20s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.noise-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image:
-    repeating-conic-gradient(from 0deg at 50% 50%,
-      transparent 0deg,
-      rgba(255, 255, 255, 0.005) 1deg,
-      transparent 2deg);
-  animation: noiseMove 8s linear infinite;
-  pointer-events: none;
-  opacity: 0.3;
-}
-
-.shimmer-overlay {
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(45deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.03) 50%,
-    transparent 70%);
-  animation: shimmerMove 6s ease-in-out infinite;
-  pointer-events: none;
 }
 
 .profile-header {
@@ -280,7 +225,6 @@
   z-index: 2;
 }
 
-/* Mount Animations */
 .animate-glass-emerge {
   animation: glassEmerge 1.2s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
@@ -305,7 +249,6 @@
   animation: errorSlide 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-/* Keyframe Animations */
 @keyframes glassEmerge {
   0% {
     opacity: 0;
@@ -381,39 +324,6 @@
   }
 }
 
-@keyframes meshShift {
-  0%, 100% {
-    transform: rotate(0deg) scale(1);
-  }
-  25% {
-    transform: rotate(0.5deg) scale(1.02);
-  }
-  50% {
-    transform: rotate(-0.3deg) scale(0.98);
-  }
-  75% {
-    transform: rotate(0.8deg) scale(1.01);
-  }
-}
-
-@keyframes noiseMove {
-  0% {
-    transform: translate(0, 0);
-  }
-  25% {
-    transform: translate(-2px, 1px);
-  }
-  50% {
-    transform: translate(1px, -1px);
-  }
-  75% {
-    transform: translate(-1px, 2px);
-  }
-  100% {
-    transform: translate(0, 0);
-  }
-}
-
 @keyframes profileBorderGlow {
   0%, 100% {
     opacity: 0.3;
@@ -444,15 +354,6 @@
   }
 }
 
-@keyframes shimmerMove {
-  0% {
-    transform: translateX(-100%) translateY(-100%) rotate(45deg);
-  }
-  100% {
-    transform: translateX(100%) translateY(100%) rotate(45deg);
-  }
-}
-
 @media (max-width: 768px) {
   .profile-page {
     padding: 2rem 1.5rem;
@@ -460,14 +361,6 @@
 
   .username {
     font-size: 1.75rem;
-  }
-
-  .gradient-mesh {
-    opacity: 0.8;
-  }
-
-  .noise-overlay {
-    opacity: 0.2;
   }
 }
 

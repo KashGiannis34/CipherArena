@@ -340,15 +340,16 @@
 		max-width: 1440px;
 		margin: 0 auto;
 		padding: 1.25rem;
-		overflow-x: hidden;
+		overflow: hidden;
 	}
 
 	.section {
 		margin: 0.75rem auto;
 		padding: 3rem 2.5rem;
-		background: rgba(20, 22, 30, 0.4);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		backdrop-filter: blur(18px);
+		background: rgba(255, 255, 255, 0.06);
+		box-shadow:
+		0 4px 20px rgba(0, 0, 0, 0.3),
+		inset 0 1px 1px rgba(255, 255, 255, 0.1);
 		border-radius: 2rem;
 		color: white;
 		text-align: center;
@@ -359,7 +360,6 @@
 
 	.hero-section {
 		padding: 5rem 2.5rem;
-		border: 1px solid rgba(255, 255, 255, 0.12);
 	}
 
 	.hero {
@@ -453,10 +453,6 @@
 	.visual {
 		display: flex;
 		justify-content: center;
-	}
-
-	.register-section {
-		border: 1px solid rgba(255, 255, 255, 0.12);
 	}
 
 	.cta-buttons {
@@ -595,8 +591,6 @@
 		50% { background-position: 100% 50%; }
 		100% { background-position: 0% 50%; }
 	}
-
-	/* --- RESPONSIVE STYLES --- */
 
 	/* By default, show interactive components and hide static images */
 	.mobile-only {

@@ -119,7 +119,7 @@
 
                         <div class="card-footer">
                             {#if tutorial.status === 'available'}
-                                <a href={tutorial.url} target="_blank" rel="noopener noreferrer" class="watch-button">
+                                <a href={tutorial.url} target="_blank" rel="noopener noreferrer" class="button">
                                     Watch on YouTube
                                 </a>
                             {/if}
@@ -142,6 +142,10 @@
 </div>
 
 <style>
+    .button {
+        text-decoration: none;
+    }
+
     .tutorial-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -168,10 +172,9 @@
         border-color: rgba(120, 119, 198, 0.5);
     }
 
-    /* Style for 'Coming Soon' cards */
     .tutorial-card.coming-soon {
         opacity: 0.6;
-        background: rgba(10, 12, 20, 0.4); /* Darker background */
+        background: rgba(10, 12, 20, 0.4);
     }
 
     .status-badge {
@@ -203,28 +206,6 @@
         margin-top: 1.5rem;
     }
 
-    .watch-button {
-        display: block; /* Make it a block to fill width */
-        width: 100%;
-        padding: 0.75rem 1.5rem;
-        border-radius: 50px;
-        background-color: #4ecdc4;
-        color: #1a1c24;
-        font-weight: 600;
-        text-align: center;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
-    }
-
-    .watch-button:hover {
-        background-color: transparent;
-        color: #4ecdc4;
-        border-color: #4ecdc4;
-        transform: scale(1.02);
-        box-shadow: 0 5px 15px rgba(78, 205, 196, 0.2);
-    }
-
     .practice-buttons-container {
         display: flex;
         gap: 0.75rem;
@@ -243,6 +224,7 @@
         text-align: center;
         text-decoration: none;
         transition: all 0.3s ease;
+        text-transform: uppercase;
     }
 
     .practice-button:hover {
@@ -250,11 +232,10 @@
         border-color: #fff;
     }
 
-    /* --- COPIED STYLES (Ensure all original styles are here) --- */
     .landing { position: relative; min-height: 100vh; overflow: hidden; background: transparent; }
     .container { max-width: 1440px; margin: 0 auto; padding: 1.25rem; overflow-x: hidden; }
-    .section { margin: 0.75rem auto; padding: 3rem 2.5rem; background: rgba(20, 22, 30, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(18px); border-radius: 2rem; color: white; text-align: center; position: relative; overflow: hidden; transition: all 0.3s ease; }
-    .hero-section { padding: 5rem 2.5rem; border: 1px solid rgba(255, 255, 255, 0.12); }
+    .section { margin: 0.75rem auto; padding: 3rem 2.5rem; background: rgba(255, 255, 255, 0.06); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1); border-radius: 2rem; color: white; text-align: center; position: relative; overflow: hidden; transition: all 0.3s ease; }
+    .hero-section { padding: 5rem 2.5rem; }
     .hero { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 900; margin-bottom: 1rem; letter-spacing: -0.02em; background: linear-gradient(135deg, #ffffff, #cfd8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: text-glow 2s ease-in-out infinite alternate; }
     .subhero { font-size: 1.28rem; line-height: 1.65; margin-bottom: 1.4rem; color: rgba(255, 255, 255, 0.86); }
     .section h2 { font-size: 2.5rem; font-weight: 700; margin-bottom: 1.5rem; color: #fff; position: relative; z-index: 1; }

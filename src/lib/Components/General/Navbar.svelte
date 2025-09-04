@@ -94,8 +94,8 @@
                     <button class="nav-link"
                         onclick={() => navigate('/public-lobby')}>Public</button>
                 </div>
-                {#if verified=="false"}
-                    <button onclick={() => navigate('/resend-verification')} class="verify-btn">Verify Account</button>
+                {#if verified=="false" || !verified}
+                    <button onclick={() => navigate('/resend-verification')} class="special-link verify-btn">Verify Account</button>
                 {/if}
                 <form method="POST" action="/logout">
                     <button class="nav-link logout">Logout</button>
@@ -112,7 +112,9 @@
         left: 0;
         right: 0;
         z-index: 1000;
-        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        background: linear-gradient(135deg, #1152cb3f, #1f5cc63f);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         padding: 0.5rem 0;
         transform: translateZ(0);
@@ -203,6 +205,42 @@
         background: rgba(255, 255, 255, 0.1);
     }
 
+    .special-link {
+        background-color: transparent;
+        text-decoration: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        contain: content;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    .signup,
+    .verify-btn {
+        background: #3924865e !important;
+        color: #eaeeff !important;
+        border: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s ease-out, color 0.2s;
+    }
+
+    .signup:hover,
+    .verify-btn:hover {
+        background: #b3a0ff48 !important;
+    }
+
     .nav-right {
         display: flex;
         align-items: center;
@@ -217,24 +255,6 @@
 
     .login {
         border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-
-    .signup {
-        background: white;
-        color: #6a11cb !important;
-        font-weight: 600;
-    }
-
-    .verify-btn {
-        background: white;
-        color: #6a11cb !important;
-        border: none;
-        padding: 0.4rem 0.8rem;
-        border-radius: 6px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background-color 0.2s ease-out;
     }
 
     .logout {
@@ -280,7 +300,7 @@
             position: fixed;
             top: 60px;
             right: 1rem;
-            background: linear-gradient(135deg, #2575fc77, #6b11cb77);
+            background: linear-gradient(135deg, #082459da, #0c2248da);
             padding: 1rem;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
@@ -350,7 +370,6 @@
 
         .mobile-nav-links .nav-link:hover {
             background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-1px);
         }
 
         .auth-buttons {
@@ -381,19 +400,6 @@
 
         .nav-link.login:hover {
             background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-1px);
-        }
-
-        .nav-link.signup,
-        .verify-btn {
-            background: white;
-            color: #6a11cb !important;
-        }
-
-        .nav-link.signup:hover,
-        .verify-btn:hover {
-            background: #f0f0f0;
-            transform: translateY(-1px);
         }
 
         .logout {
@@ -403,7 +409,6 @@
 
         .logout:hover {
             background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-1px);
         }
 
         form {

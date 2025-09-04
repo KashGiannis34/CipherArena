@@ -303,7 +303,7 @@
 .tooltip {
   visibility: hidden;
   width: 180px;
-  background-color: #33333373;
+  background-color: #333333d6;
   backdrop-filter: blur(10px);
   color: #fff;
   text-align: center;
