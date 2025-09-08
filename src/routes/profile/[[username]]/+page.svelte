@@ -15,6 +15,7 @@
   let profileStats = stats ? JSON.parse(stats) : {};
   let singleStats = singleplayerStats ? JSON.parse(singleplayerStats) : {};
   let uploadError = $state("");
+  let updatingEmail = $state(false);
   let unlockedBadgeIds = $derived(getUnlockedBadges(profileStats, singleStats).map(b => b.id));
 
   let selectedCipher = $state('All');
@@ -108,15 +109,24 @@
             <label for="email">New email</label>
             <div class="input-row">
               <input
+                class={updatingEmail ? "" : "disabled"}
                 id="email"
                 name="email"
                 type="email"
                 placeholder="Enter new email"
+                disabled={!updatingEmail}
                 value={email}
                 autocomplete="email"
                 required
               />
-              <button type="submit" class="button">Save email</button>
+              <div class="button-group">
+                {#if updatingEmail}
+                  <button type="submit" class="button">Save</button>
+                  <button type="button" onclick={() => { updatingEmail = false; }} class="button secondary">Cancel</button>
+                {:else}
+                  <button type="button" onclick={() => { updatingEmail = true; }} class="button">Update</button>
+                {/if}
+              </div>
             </div>
             <p class="hint">You'll need to verify this new email.</p>
           </div>
@@ -483,6 +493,20 @@
   background: rgba(0, 0, 0, 0.35);
 }
 
+.button-group {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.button.secondary {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.button.secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 .hint {
   font-size: 0.85rem;
   opacity: 0.85;
@@ -491,6 +515,8 @@
 
 .settings-card .button {
   display: inline-flex;
+  justify-content: center;
+  align-items: center;
   width: auto;
   align-self: flex-start;
   flex: 0 0 auto;
@@ -498,8 +524,6 @@
   border-radius: 10px;
   box-shadow: none;
 }
-
-/* Removed duplicated styles below to keep a single source of truth */
 
 .danger-card {
   border: 1px solid rgba(255, 77, 109, 0.35);
@@ -509,18 +533,19 @@
 .danger-card .card-header { margin-bottom: 0.25rem; }
 .danger-card .more-info { margin: 0 0 0.75rem 0; }
 
-/* Align settings page buttons with global .button style, but avoid full-width layout */
-.settings-card .button {
-  display: inline-flex;
-  width: auto;
-  align-self: flex-start;
-}
-
-/* Red variant that reuses the global gradient style */
 .danger-button {
   background-image: linear-gradient(45deg, #ff416c 0%, #ff4b2b 51%, #ff416c 100%);
   box-shadow: 0px 0px 14px -7px #ff2f2f;
   margin: 0 auto;
 }
 
+.disabled {
+  background: #222 !important;
+  color: #aaa !important;
+  border-color: #444 !important;
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+  transition: none;
+}
 </style>
