@@ -2,7 +2,6 @@
     import {isLetter, numberToLetter} from "$db/shared-utils/CipherUtil";
 
     let {inputs=$bindable(), letterInputs=$bindable(), cipherLetter, index, inputValue, autoFocus, onArrow, onFocus, onChange, onDelete, solved, spanish} = $props();
-    let error = $state(false);
     let focus = $state(false);
 
     function handleKeyDown(event) {
@@ -13,12 +12,6 @@
             "Backspace",
             "Delete",
         ];
-
-        if (event.key == ',' && spanish) {
-            onChange(cipherLetter, 'Ñ', index);
-            event.preventDefault();
-            return;
-        }
 
         if (event.key == "ArrowLeft" || event.key == "ArrowRight" || event.key == " " || event.key == "Tab") {
             onArrow(event.key, index);
@@ -32,12 +25,19 @@
             return;
         }
 
-        if (!isLetter(event.key) || (event.key.toUpperCase() == cipherLetter)) {
+        if ((!isLetter(event.key) && (event.key != "," || !spanish)) || (event.key.toUpperCase() == cipherLetter)) {
             event.preventDefault();
             return;
         }
 
-        if (event.key !== undefined && (isLetter(event.key) || (spanish && event.key == ',')) && inputValue !== '' && event.key.length == 1) {
+        if (event.key === ',' && spanish) {
+            onChange(inputValue, '', index);
+            onChange('Ñ', cipherLetter, index);
+            event.preventDefault();
+            return;
+        }
+
+        if (event.key !== undefined && isLetter(event.key) && inputValue !== '' && event.key.length == 1) {
             onChange(inputValue, '', index);
             onChange(event.key.toUpperCase(), cipherLetter, index);
             event.preventDefault();
@@ -93,22 +93,12 @@
         }
         focus = true;
     }
-
-    if (isLetter(cipherLetter, spanish)) {
-        $effect(() => {
-            if (inputValue !== undefined && isLetter(inputValue, spanish)) {
-                let vals = Object.values(letterInputs);
-                error = vals.indexOf(inputValue) != vals.lastIndexOf(inputValue);
-            }
-        });
-    }
 </script>
 
 <td class:last={spanish ? index==26 : index==25}
 class:focus={focus && !solved} onclick={handleClick}>
     <input
         bind:this={inputs[index]}
-        class:error={error}
         type="text"
         placeholder="="
         maxlength="1"
@@ -123,6 +113,7 @@ class:focus={focus && !solved} onclick={handleClick}>
 
 <style>
     input {
+        color: rgb(235, 254, 255);
         text-align: center;
         width: 100%;
         height: 100%;
@@ -193,15 +184,6 @@ class:focus={focus && !solved} onclick={handleClick}>
 
     .last {
         border-top-right-radius: var(--bRadius);
-    }
-
-    :not(.error) {
-        color: rgb(235, 254, 255);
-        transition-duration: 0ms;
-    }
-
-    .error {
-        color: rgb(219, 44, 44);
     }
 
     input:hover {

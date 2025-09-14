@@ -151,11 +151,10 @@
     table tr {
 	    display: table-cell;
         border: 0;
-
     }
 
     .selected {
-        background-color: #001b42b8 !important;
+        background-color: #ffffff28 !important;
     }
 
     th, td {
