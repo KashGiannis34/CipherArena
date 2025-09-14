@@ -78,9 +78,9 @@
         focus = true;
     }
 
-    if (isLetter(cipherLetter)) {
+    if (isLetter(cipherLetter, spanish)) {
         $effect(() => {
-            if (inputValue !== undefined && isLetter(inputValue)) {
+            if (inputValue !== undefined && isLetter(inputValue, spanish)) {
                 let vals = Object.values(letterInputs);
                 error = vals.indexOf(inputValue) != vals.lastIndexOf(inputValue);
             }

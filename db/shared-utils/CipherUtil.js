@@ -12,7 +12,7 @@ export const SPANISH_ALPHABET = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
 
 export function isLetter(character, isSpanish = false) {
     const alphabet = isSpanish ? SPANISH_ALPHABET : ENGLISH_ALPHABET;
-    return alphabet.includes(character ? character.toUpperCase() : character);
+    return alphabet.includes(character ? character.toUpperCase() : character) && character !== '' && character !== ' ';
 }
 
 export function letterToNumber(char, isSpanish = false) {
