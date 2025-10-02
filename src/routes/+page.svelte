@@ -426,9 +426,9 @@
 		border: 1px solid rgba(255, 255, 255, 0.12);
 		border-radius: 1rem;
 		background: rgba(20, 22, 30, 0.45);
-		backdrop-filter: blur(10px);
 		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
 		transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+		transform: translateY(0px) scale(1.0);
 	}
 
 	.feature-cards li:hover,
