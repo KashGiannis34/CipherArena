@@ -36,7 +36,9 @@
                 }
 		    });
             const answer = await response.json();
-            const strTime = Math.floor(time/60).toString().padStart(2,'0')+':'+Math.round(time%60, 0).toString().padStart(2,'0');
+            const minutes = Math.floor(time / 60);
+            const seconds = Math.floor(time % 60);
+            const strTime = minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
             if (answer) {
                 feedbackMessage = "Congratulations! The cipher was solved in " + strTime + "!";
                 solved = true;
