@@ -4,6 +4,23 @@ import time
 import json
 import sys
 
+# Common keywords for Nihilist/Polybius squares (~100 words), all lowercase
+NIHILIST_KEYWORDS = [
+    "cipher", "decode", "encode", "secret", "keyword", "matrix", "alpha", "bravo",
+    "charlie", "delta", "echo", "foxtrot", "golf", "hotel", "india", "juliet",
+    "kilo", "lima", "mike", "november", "oscar", "papa", "quebec", "romeo",
+    "sierra", "tango", "uniform", "victor", "whiskey", "xray", "yankee", "zulu",
+    "puzzle", "logic", "number", "letter", "random", "pattern", "signal", "vector",
+    "crypto", "shadow", "agent", "bond", "riddle", "secretive", "covert", "stealth",
+    "answer", "question", "reason", "method", "search", "finder", "solver", "detect",
+    "matrixkey", "permute", "square", "cipherkey", "classic", "simple", "garden",
+    "ocean", "forest", "mountain", "river", "valley", "desert", "island", "harbor",
+    "castle", "bridge", "anchor", "beacon", "compass", "orbit", "stellar", "nebula",
+    "comet", "meteor", "planet", "saturn", "mercury", "venus", "earth", "mars",
+    "jupiter", "uranus", "neptune", "pluto", "silver", "golden", "cobalt", "carbon",
+    "oxygen", "nitrogen", "helium", "argon"
+]
+
 def generate_two_digit_multiplication():
     """Generate a 2-digit multiplication problem"""
     a = int(random.random() * 16) + 10
@@ -11,7 +28,7 @@ def generate_two_digit_multiplication():
     return {
         "type": "two_digit_multiplication",
         "problem": f"{a} * {b}",
-        "question": f"What is {a} * {b}?",
+        "question": f"What is ({a} * {b}) mod 26?",
         "answer": a * b,
         "answer_mod_26": (a * b) % 26,
         "a": a,
@@ -22,12 +39,14 @@ def check_two_digit_multiplication(a, b, user_answer):
     """Check answer for 2-digit multiplication"""
     try:
         user_answer_int = int(user_answer)
-        correct_answer = (a * b) % 26
+        correct_answer_1 = str(a * b)+" mod 26"
+        correct_answer_2 = (a * b) % 26
+
         return {
-            "correct": user_answer_int % 26 == correct_answer,
+            "correct": user_answer_int == correct_answer_2,
             "user_answer": user_answer,
-            "correct_answer": a * b,
-            "correct_answer_mod_26": correct_answer
+            "correct_answer": correct_answer_1,
+            "correct_answer_mod_26": correct_answer_2
         }
     except (ValueError, TypeError):
         return {
@@ -311,11 +330,12 @@ def generate_affine_letter():
     return {
         "type": "affine_letter",
         "problem": f"Affine: a={a}, b={b}, letter={letter}",
-        "question": f"Find encoded letter in affine for {letter}",
+        "question": f"Encode the letter using the affine cipher",
         "answer": answer,
         "a": a,
         "b": b,
-        "letter": letter
+        "letter": letter,
+        "hint": "Formula: (a × letter + b) mod 26"
     }
 
 def check_affine_letter(a, b, letter, user_answer):
@@ -360,12 +380,13 @@ def generate_affine_word():
     return {
         "type": "affine_word",
         "problem": f"Affine: a={a}, b={b}, word={word}",
-        "question": f"Find encoded word in affine for {word}",
+        "question": f"Encode the word using the affine cipher",
         "answer": answer,
         "a": a,
         "b": b,
         "word": word,
-        "length": length
+        "length": length,
+        "hint": "Formula: (a × letter + b) mod 26"
     }
 
 def check_affine_word(a, b, word, user_answer):
@@ -693,6 +714,231 @@ def check_memorize_decimals(decimal_str, user_answer):
             "user_answer": user_answer
         }
 
+def generate_atbash_letter():
+    """Generate an Atbash cipher letter problem"""
+    number = int(random.random() * 26) + 65
+    letter = chr(number)
+    # Atbash: A->Z, B->Y, C->X, etc. Formula: 25 - (letter - 65)
+    answer = chr(90 - (number - 65))
+    return {
+        "type": "atbash_letter",
+        "problem": f"Atbash: {letter}",
+        "question": f"What is the Atbash cipher of the letter {letter}?",
+        "answer": answer,
+        "letter": letter,
+        "hint": "Atbash reverses the alphabet: A↔Z, B↔Y, C↔X..."
+    }
+
+def check_atbash_letter(letter, user_answer):
+    """Check answer for Atbash letter cipher"""
+    try:
+        if not isinstance(user_answer, str) or len(user_answer) == 0:
+            return {"error": "Invalid input: answer must be a letter", "correct": False, "user_answer": user_answer}
+        number = ord(letter.upper())
+        correct_answer = chr(90 - (number - 65))
+        return {
+            "correct": user_answer.upper() == correct_answer,
+            "user_answer": user_answer.upper(),
+            "correct_answer": correct_answer
+        }
+    except (ValueError, TypeError, AttributeError) as e:
+        return {
+            "error": f"Invalid input: {str(e)}",
+            "correct": False,
+            "user_answer": user_answer
+        }
+
+def generate_atbash_word():
+    """Generate an Atbash cipher word problem"""
+    length = int(random.random() * 4) + 4
+    word = ""
+    for n in range(length):
+        number = int(random.random() * 26) + 65
+        word += chr(number)
+
+    answer = ""
+    for char in word:
+        number = ord(char)
+        answer += chr(90 - (number - 65))
+
+    return {
+        "type": "atbash_word",
+        "problem": f"Atbash: {word}",
+        "question": f"What is the Atbash cipher of the word {word}?",
+        "answer": answer,
+        "word": word,
+        "length": length,
+        "hint": "Atbash reverses the alphabet: A↔Z, B↔Y, C↔X..."
+    }
+
+def check_atbash_word(word, user_answer):
+    """Check answer for Atbash word cipher"""
+    try:
+        if not isinstance(user_answer, str):
+            return {"error": "Invalid input: answer must be a word", "correct": False, "user_answer": user_answer}
+        correct_answer = ""
+        for char in word:
+            number = ord(char.upper())
+            correct_answer += chr(90 - (number - 65))
+        return {
+            "correct": user_answer.upper() == correct_answer,
+            "user_answer": user_answer.upper(),
+            "correct_answer": correct_answer
+        }
+    except (ValueError, TypeError, AttributeError) as e:
+        return {
+            "error": f"Invalid input: {str(e)}",
+            "correct": False,
+            "user_answer": user_answer
+        }
+
+def _normalize_keyword(keyword: str) -> str:
+    # Uppercase, remove non A-Z, map J->I, and de-duplicate preserving order
+    seen = set()
+    cleaned = []
+    for ch in keyword.upper():
+        if 'A' <= ch <= 'Z':
+            if ch == 'J':
+                ch = 'I'
+            if ch not in seen:
+                seen.add(ch)
+                cleaned.append(ch)
+    return "".join(cleaned)
+
+def generate_nihilist_table(keyword=None):
+    """Generate a Nihilist substitution table (5x5 Polybius square) using a keyword.
+    Keyword letters (deduped, J→I) fill the square first, followed by remaining alphabet in order.
+    Returns the 5x5 table (list of 5 lists, each of length 5).
+    """
+    # Alphabet without J (J merged with I)
+    alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
+
+    if not keyword:
+        keyword = random.choice(NIHILIST_KEYWORDS)
+    norm_key = _normalize_keyword(keyword)
+
+    # Build sequence: keyword then remaining alphabet in order
+    used = set(norm_key)
+    remainder = [ch for ch in alphabet if ch not in used]
+    sequence = list(norm_key) + remainder
+
+    # Create 5x5 table from sequence
+    table = [sequence[i*5:(i+1)*5] for i in range(5)]
+    return table
+
+def nihilist_table_to_display(table):
+    """Convert nihilist table to display string"""
+    display = "   1  2  3  4  5\n"
+    for idx, row in enumerate(table):
+        display += f"{idx+1}  " + "  ".join(row) + "\n"
+    return display.rstrip()
+
+def nihilist_encode_letter(table, letter):
+    """Encode a letter using nihilist table, returns row+col as two-digit number"""
+    letter = letter.upper()
+    if letter == 'J':
+        letter = 'I'  # J is combined with I
+
+    for row_idx, row in enumerate(table):
+        if letter in row:
+            col_idx = row.index(letter)
+            return (row_idx + 1) * 10 + (col_idx + 1)
+    return None
+
+def nihilist_decode_number(table, number):
+    """Decode a two-digit number using nihilist table"""
+    row = (number // 10) - 1
+    col = (number % 10) - 1
+    if 0 <= row < 5 and 0 <= col < 5:
+        return table[row][col]
+    return None
+
+def generate_nihilist_encode():
+    """Generate a nihilist encoding problem (letter to number)"""
+    # Choose a random keyword and build the table
+    keyword = random.choice(NIHILIST_KEYWORDS)
+    table = generate_nihilist_table(keyword)
+
+    # Pick a random letter
+    alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
+    letter = alphabet[int(random.random() * len(alphabet))]
+
+    answer = nihilist_encode_letter(table, letter)
+
+    return {
+        "type": "nihilist_encode",
+        "problem": f"Nihilist encode: {letter}",
+        "question": f"Using the Nihilist table below, what number does the letter {letter} encode to?",
+        "answer": answer,
+        "letter": letter,
+        "table": table,
+        "table_display": nihilist_table_to_display(table),
+        "hint": "Find the letter in the table. The answer is: (row number)(column number)",
+        "keyword": keyword.upper(),
+        "legend": f"Keyword: {keyword.upper()} (I/J combined)"
+    }
+
+def check_nihilist_encode(table, letter, user_answer):
+    """Check answer for nihilist encoding"""
+    try:
+        user_answer_int = int(user_answer)
+        correct_answer = nihilist_encode_letter(table, letter)
+        return {
+            "correct": user_answer_int == correct_answer,
+            "user_answer": user_answer,
+            "correct_answer": correct_answer
+        }
+    except (ValueError, TypeError):
+        return {
+            "error": "Invalid input: answer must be a two-digit number",
+            "correct": False,
+            "user_answer": user_answer
+        }
+
+def generate_nihilist_decode():
+    """Generate a nihilist decoding problem (number to letter)"""
+    # Choose a random keyword and build the table
+    keyword = random.choice(NIHILIST_KEYWORDS)
+    table = generate_nihilist_table(keyword)
+
+    # Generate valid row and column (1-5)
+    row = int(random.random() * 5) + 1
+    col = int(random.random() * 5) + 1
+    number = row * 10 + col
+
+    answer = nihilist_decode_number(table, number)
+
+    return {
+        "type": "nihilist_decode",
+        "problem": f"Nihilist decode: {number}",
+        "question": f"Using the Nihilist table below, what letter does the number {number} decode to?",
+        "answer": answer,
+        "number": number,
+        "table": table,
+        "table_display": nihilist_table_to_display(table),
+        "hint": "First digit is row, second digit is column",
+        "keyword": keyword.upper(),
+        "legend": f"Keyword: {keyword.upper()} (I/J combined)"
+    }
+
+def check_nihilist_decode(table, number, user_answer):
+    """Check answer for nihilist decoding"""
+    try:
+        if not isinstance(user_answer, str) or len(user_answer) == 0:
+            return {"error": "Invalid input: answer must be a letter", "correct": False, "user_answer": user_answer}
+        correct_answer = nihilist_decode_number(table, number)
+        return {
+            "correct": user_answer.upper() == correct_answer.upper(),
+            "user_answer": user_answer.upper(),
+            "correct_answer": correct_answer
+        }
+    except (ValueError, TypeError, AttributeError) as e:
+        return {
+            "error": f"Invalid input: {str(e)}",
+            "correct": False,
+            "user_answer": user_answer
+        }
+
 # Main function to handle command line arguments
 def main():
     if len(sys.argv) < 2:
@@ -741,6 +987,14 @@ def main():
             elif problem_type == 15:
                 decimals = int(sys.argv[3]) if len(sys.argv) > 3 else -1
                 result = generate_memorize_decimals(decimals)
+            elif problem_type == 16:
+                result = generate_atbash_letter()
+            elif problem_type == 17:
+                result = generate_atbash_word()
+            elif problem_type == 18:
+                result = generate_nihilist_encode()
+            elif problem_type == 19:
+                result = generate_nihilist_decode()
             else:
                 result = {"error": "Invalid problem type"}
 
@@ -792,6 +1046,14 @@ def main():
                 result = check_remainder_cheese(problem_data['number'], user_answer)
             elif problem_type == 15:
                 result = check_memorize_decimals(problem_data['decimal'], user_answer)
+            elif problem_type == 16:
+                result = check_atbash_letter(problem_data['letter'], user_answer)
+            elif problem_type == 17:
+                result = check_atbash_word(problem_data['word'], user_answer)
+            elif problem_type == 18:
+                result = check_nihilist_encode(problem_data['table'], problem_data['letter'], user_answer)
+            elif problem_type == 19:
+                result = check_nihilist_decode(problem_data['table'], problem_data['number'], user_answer)
             else:
                 result = {"error": "Invalid problem type"}
 

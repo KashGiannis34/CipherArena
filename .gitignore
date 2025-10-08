@@ -31,4 +31,5 @@ vite.config.ts.timestamp-*
 Dockerfile
 fly.toml
 src/app.html
+__pycache__/
 

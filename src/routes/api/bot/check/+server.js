@@ -1,6 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { PythonShell } from 'python-shell';
-import path from 'path';
+import { checkAnswer } from '$db/botService';
 import { decrypt } from '$db/backend-utils/cryptoUtil';
 import { SECRET_JWT_KEY } from '$env/static/private';
 
@@ -35,32 +34,22 @@ export async function POST({ request }) {
 			return json({ error: 'Invalid problem data' }, { status: 400 });
 		}
 
-		// For problem type 6 (inverse matrix), userAnswer should be a JSON string of the array
-		let answerArg = userAnswer;
-		if (problemType === 6 && Array.isArray(userAnswer)) {
-			answerArg = JSON.stringify(userAnswer);
+		// For problem type 6 (inverse matrix), userAnswer should be parsed if it's a string
+		let processedAnswer = userAnswer;
+		if (problemType === 6) {
+			// If it's already an array, keep it; if it's a string, try to parse it
+			if (typeof userAnswer === 'string') {
+				try {
+					processedAnswer = JSON.parse(userAnswer);
+				} catch {
+					// If parsing fails, keep as string and let Python handle the error
+					processedAnswer = userAnswer;
+				}
+			}
 		}
 
-		// Prepare arguments for Python script
-		const args = [
-			'check',
-			problemType.toString(),
-			JSON.stringify(problemData),
-			answerArg.toString()
-		];
-
-		const options = {
-			mode: 'text',
-			pythonPath: 'python',
-			pythonOptions: ['-u'],
-			scriptPath: path.join(process.cwd(), 'db'),
-			args: args
-		};
-
-		// Run the Python script
-		const results = await PythonShell.run('codebusters_bot.py', options);
-		const output = results.join('');
-		const result = JSON.parse(output);
+		// Use the persistent bot service
+		const result = await checkAnswer(problemType, problemData, processedAnswer);
 
 		// Handle validation errors from Python (incorrect input types)
 		if (result.error) {

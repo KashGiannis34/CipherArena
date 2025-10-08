@@ -1,6 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { PythonShell } from 'python-shell';
-import path from 'path';
+import { generateProblem } from '$db/botService';
 import { encrypt } from '$db/backend-utils/cryptoUtil';
 import { SECRET_JWT_KEY } from '$env/static/private';
 
@@ -9,30 +8,12 @@ export async function POST({ request }) {
 	try {
 		const { problemType, decimals } = await request.json();
 
-		if (!problemType || problemType < 1 || problemType > 15) {
-			return json({ error: 'Invalid problem type. Must be between 1 and 15.' }, { status: 400 });
+		if (!problemType || problemType < 1 || problemType > 19) {
+			return json({ error: 'Invalid problem type. Must be between 1 and 19.' }, { status: 400 });
 		}
 
-		// Prepare arguments for Python script
-		const args = ['generate', problemType.toString()];
-
-		// Add decimals parameter for problem type 15
-		if (problemType === 15 && decimals !== undefined) {
-			args.push(decimals.toString());
-		}
-
-		const options = {
-			mode: 'text',
-			pythonPath: 'python',
-			pythonOptions: ['-u'],
-			scriptPath: path.join(process.cwd(), 'db'),
-			args: args
-		};
-
-		// Run the Python script
-		const results = await PythonShell.run('codebusters_bot.py', options);
-		const output = results.join('');
-		const problem = JSON.parse(output);
+		// Use the persistent bot service
+		const problem = await generateProblem(problemType, decimals);
 
 		if (problem.error) {
 			return json({ error: problem.error }, { status: 500 });

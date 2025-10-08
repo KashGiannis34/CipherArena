@@ -3,55 +3,60 @@
 	import { onDestroy } from 'svelte';
 
 	const problemTypes = [
-		{ value: 1, label: '1. Two-digit Multiplication' },
-		{ value: 2, label: '2. Letter to Value' },
-		{ value: 3, label: '3. Three-digit Subtraction' },
-		{ value: 4, label: '4. Shift Letter' },
-		{ value: 5, label: '5. Shift Word' },
-		{ value: 6, label: '6. Inverse Matrix' },
-		{ value: 7, label: '7. Mod 26' },
-		{ value: 8, label: '8. Modular Inverse' },
-		{ value: 9, label: '9. Affine Letter' },
-		{ value: 10, label: '10. Affine Word' },
-		{ value: 11, label: '11. Hill Word' },
-		{ value: 12, label: '12. Baconian' },
-		{ value: 13, label: '13. Binary to Decimal' },
-		{ value: 14, label: '14. Remainder Cheese' },
-		{ value: 15, label: '15. Memorize Decimals' }
+		{ value: 1, label: '1. Two-digit Multiplication', ciphers: ['hill', 'affine'] },
+		{ value: 2, label: '2. Letter to Value', ciphers: ['caesar', 'atbash', 'affine', 'hill'] },
+		{ value: 3, label: '3. Three-digit Subtraction', ciphers: ['nihilist'] },
+		{ value: 4, label: '4. Shift Letter', ciphers: ['caesar', 'porta', 'atbash'] },
+		{ value: 5, label: '5. Shift Word', ciphers: ['caesar', 'porta', 'atbash'] },
+		{ value: 6, label: '6. Inverse Matrix', ciphers: ['hill'] },
+		{ value: 7, label: '7. Mod 26', ciphers: ['caesar', 'affine', 'hill'] },
+		{ value: 8, label: '8. Modular Inverse', ciphers: ['affine'] },
+		{ value: 9, label: '9. Affine Letter', ciphers: ['affine'] },
+		{ value: 10, label: '10. Affine Word', ciphers: ['affine'] },
+		{ value: 11, label: '11. Hill Word', ciphers: ['hill'] },
+		{ value: 12, label: '12. Baconian', ciphers: ['baconian'] },
+		{ value: 13, label: '13. Binary to Decimal', ciphers: ['baconian'] },
+		{ value: 14, label: '14. Remainder Cheese', ciphers: ['affine', 'hill'] },
+		{ value: 15, label: '15. Memorize Decimals', ciphers: ['affine', 'hill'] },
+		{ value: 16, label: '16. Atbash Letter', ciphers: ['atbash'] },
+		{ value: 17, label: '17. Atbash Word', ciphers: ['atbash'] },
+		{ value: 18, label: '18. Nihilist Encode', ciphers: ['nihilist'] },
+		{ value: 19, label: '19. Nihilist Decode', ciphers: ['nihilist'] }
 	];
 
-	const displayTypes = problemTypes.map(({ value, label }) => {
+	const displayTypes = problemTypes.map(({ value, label, ciphers }) => {
 		const [, ...rest] = label.split('. ');
 		return {
 			value,
 			label,
 			number: value.toString().padStart(2, '0'),
-			name: rest.join('. ') || label
+			name: rest.join('. ') || label,
+			ciphers: ciphers || []
 		};
 	});
 
-	let currentProblem = null;
-	let userAnswer = '';
-	let result = null;
-	let loading = false;
-	let selectedType = displayTypes[0]?.value ?? 1;
-	let searchTerm = '';
-	let loopEnabled = false;
-	let shuffleEnabled = false;
-	let answerLocked = false;
+	let currentProblem = $state(null);
+	let userAnswer = $state('');
+	let result = $state(null);
+	let loading = $state(false);
+	let selectedType = $state(displayTypes[0]?.value ?? 1);
+	let searchTerm = $state('');
+	let loopEnabled = $state(false);
+	let shuffleEnabled = $state(false);
+	let answerLocked = $state(false);
 	let autoAdvanceTimeout;
-	let errorMessage = null;
+	let errorMessage = $state(null);
 
-	$: normalizedSearch = searchTerm.trim().toLowerCase();
-	$: filteredTypes =
-		normalizedSearch.length === 0
+	let normalizedSearch = $derived(searchTerm.trim().toLowerCase());
+	let filteredTypes =
+		$derived(normalizedSearch.length === 0
 			? displayTypes
 			: displayTypes.filter((type) =>
 					`${type.number} ${type.name}`.toLowerCase().includes(normalizedSearch)
-			  );
-	$: selectedDescriptor = displayTypes.find((type) => type.value === selectedType);
-	$: selectedSummaryNumber = selectedDescriptor?.number ?? selectedType.toString().padStart(2, '0');
-	$: selectedSummaryName = selectedDescriptor?.name ?? 'Unknown mode';
+			  ));
+	let selectedDescriptor = $derived(displayTypes.find((type) => type.value === selectedType));
+	let selectedSummaryNumber = $derived(selectedDescriptor?.number ?? selectedType.toString().padStart(2, '0'));
+	let selectedSummaryName = $derived(selectedDescriptor?.name ?? 'Unknown mode');
 
 	onDestroy(() => {
 		if (autoAdvanceTimeout) {
@@ -146,7 +151,7 @@
 					result = { ...result, correct: false };
 				}
 			}
-			if (loopEnabled && !result.error && result.correct) {
+			if (loopEnabled && !result.error) {
 				answerLocked = true;
 				const delay = result.correct ? 1000 : 2000;
 				scheduleAutoAdvance(delay);
@@ -216,10 +221,10 @@
 </svelte:head>
 
 <div class="page">
-	<Container style="--minWidth: clamp(320px, 90vw, 960px); --maxWidth: min(960px, 90vw); --flexDir: column; --paddingTop: 32px;">
+	<Container style="--minWidth: clamp(320px, 90vw, 960px); --maxWidth: min(960px, 90vw); --flexDir: column; padding-top: 30px; padding-left: 40px; padding-right: 40px;">
 		<div class="bot-practice">
 			<h1>Codebusters Practice Bot</h1>
-			<p class="subtitle">Secure cipher and cryptography practice problems</p>
+			<p class="subtitle">Master the basics for math based and repetition based ciphers.</p>
 
 			<div class="controls">
 				<div class="mode-picker">
@@ -244,7 +249,7 @@
 								type="button"
 								class="mode-card"
 								class:selected={selectedType === type.value}
-								on:click={() => handleTypeSelect(type.value)}
+								onclick={() => handleTypeSelect(type.value)}
 								role="radio"
 								aria-checked={selectedType === type.value}
 								title={type.label}
@@ -271,7 +276,7 @@
 							type="button"
 							class="playback-btn"
 							class:active={shuffleEnabled}
-							on:click={toggleShuffle}
+							onclick={toggleShuffle}
 							aria-pressed={shuffleEnabled}
 							aria-label={shuffleEnabled ? 'Disable shuffle' : 'Enable shuffle'}
 							title={shuffleEnabled ? 'Shuffle on' : 'Shuffle off'}
@@ -285,7 +290,7 @@
 						<button
 							type="button"
 							class="playback-btn primary"
-							on:click={() => goToNextProblem()}
+							onclick={() => goToNextProblem()}
 							disabled={loading || !selectedDescriptor || (loopEnabled && answerLocked)}
 							aria-label="Next problem"
 							title="Next problem"
@@ -302,7 +307,7 @@
 							type="button"
 							class="playback-btn"
 							class:active={loopEnabled}
-							on:click={toggleLoop}
+							onclick={toggleLoop}
 							aria-pressed={loopEnabled}
 							aria-label={loopEnabled ? 'Disable loop' : 'Enable loop'}
 							title={loopEnabled ? 'Loop on' : 'Loop off'}
@@ -319,15 +324,54 @@
 				<div class="problem">
 					<div class="problem-header">
 						<span class="problem-type">Type {currentProblem.problemType}</span>
-						<span class="encrypted-badge" title="Answer is encrypted on the server">🔒 Secure</span>
+						<div class="cipher-tags">
+							{#each displayTypes.find(t => t.value === currentProblem.problemType)?.ciphers || [] as cipher}
+								<span class="cipher-tag">{cipher}</span>
+							{/each}
+						</div>
 					</div>
 
 					<h3>{currentProblem.question}</h3>
+
+					{#if currentProblem.a !== undefined && currentProblem.b !== undefined}
+						<div class="affine-params">
+							<div class="param">
+								<span class="param-label">a =</span>
+								<span class="param-value">{currentProblem.a}</span>
+							</div>
+							<div class="param">
+								<span class="param-label">b =</span>
+								<span class="param-value">{currentProblem.b}</span>
+							</div>
+							{#if currentProblem.letter}
+								<div class="param">
+									<span class="param-label">letter =</span>
+									<span class="param-value">{currentProblem.letter}</span>
+								</div>
+							{/if}
+							{#if currentProblem.word}
+								<div class="param">
+									<span class="param-label">word =</span>
+									<span class="param-value">{currentProblem.word}</span>
+								</div>
+							{/if}
+						</div>
+					{/if}
 
 					{#if currentProblem.matrix_display}
 						<div class="matrix-container">
 							<pre class="matrix">{currentProblem.matrix_display}</pre>
 						</div>
+					{/if}
+
+					{#if currentProblem.table_display}
+						<div class="matrix-container">
+							<pre class="matrix">{currentProblem.table_display}</pre>
+						</div>
+					{/if}
+
+					{#if currentProblem.hint}
+						<p class="hint">💡 {currentProblem.hint}</p>
 					{/if}
 
 					{#if currentProblem.legend}
@@ -353,11 +397,11 @@
 							type="text"
 							placeholder="Your answer"
 							disabled={loading || (loopEnabled && answerLocked)}
-							on:keypress={handleKeyPress}
-							on:input={() => errorMessage = null}
+							onkeypress={handleKeyPress}
+							oninput={() => errorMessage = null}
 						/>
 						<button
-							on:click={checkAnswer}
+							onclick={checkAnswer}
 							disabled={loading || !userAnswer.trim() || (loopEnabled && answerLocked)}
 						>
 							Check Answer
@@ -409,9 +453,6 @@
 		margin: 0;
 		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
 			sans-serif;
-		background: radial-gradient(circle at top left, rgba(118, 75, 162, 0.45), transparent 45%),
-			radial-gradient(circle at bottom right, rgba(102, 126, 234, 0.5), transparent 40%),
-			linear-gradient(135deg, #1d2340 0%, #161b31 100%);
 		color: #f4f7ff;
 		min-height: 100vh;
 	}
@@ -545,7 +586,7 @@
 
 	.mode-card.selected {
 		border-color: rgba(160, 200, 255, 0.8);
-		background: linear-gradient(140deg, rgba(102, 126, 234, 0.38), rgba(118, 75, 162, 0.5));
+		background: linear-gradient(135deg, #1152cb3f, #1f5cc63f);
 		box-shadow: 0 20px 32px rgba(12, 24, 60, 0.55);
 	}
 
@@ -641,10 +682,10 @@
 	}
 
 	.playback-btn.active {
-		background: linear-gradient(145deg, rgba(0, 230, 118, 0.4), rgba(0, 166, 255, 0.35));
-		border-color: rgba(122, 255, 200, 0.75);
+		background: linear-gradient(135deg, #1152cb3f, #1f5cc63f);
+		border-color: rgba(146, 167, 255, 0.6);
 		color: #ffffff;
-		box-shadow: 0 20px 32px rgba(12, 60, 42, 0.55);
+		box-shadow: 0 16px 28px rgba(8, 16, 40, 0.45);
 	}
 
 	.playback-btn.primary {
@@ -653,7 +694,7 @@
 		width: auto;
 		height: 56px;
 		border-radius: 999px;
-		background: linear-gradient(135deg, rgba(118, 75, 162, 0.95), rgba(102, 126, 234, 0.95));
+		background: linear-gradient(135deg, #1152cb3f, #1f5cc63f);
 		border-color: rgba(180, 200, 255, 0.75);
 		box-shadow: 0 22px 38px rgba(28, 42, 86, 0.45);
 		gap: 0.75rem;
@@ -709,6 +750,7 @@
 		align-items: center;
 		margin-bottom: 1.25rem;
 		gap: 0.75rem;
+		flex-wrap: wrap;
 	}
 
 	.problem-type {
@@ -722,14 +764,30 @@
 		text-transform: uppercase;
 	}
 
-	.encrypted-badge {
-		background: rgba(46, 204, 113, 0.35);
-		color: #c1fdd7;
-		padding: 0.35rem 0.85rem;
+	.cipher-tags {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+		align-items: center;
+	}
+
+	.cipher-tag {
+		background: linear-gradient(135deg, rgba(17, 82, 203, 0.35), rgba(31, 92, 198, 0.35));
+		color: #d4e3ff;
+		padding: 0.25rem 0.75rem;
 		border-radius: 999px;
-		font-size: 0.85rem;
-		cursor: help;
-		border: 1px solid rgba(46, 204, 113, 0.35);
+		font-size: 0.8rem;
+		font-weight: 600;
+		letter-spacing: 0.02em;
+		text-transform: capitalize;
+		border: 1px solid rgba(146, 167, 255, 0.3);
+		box-shadow: 0 2px 8px rgba(17, 82, 203, 0.2);
+		transition: transform 0.2s ease, box-shadow 0.2s ease;
+	}
+
+	.cipher-tag:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 4px 12px rgba(17, 82, 203, 0.3);
 	}
 
 	.problem h3 {
@@ -746,6 +804,14 @@
 		margin: 1.1rem 0;
 		border: 1px solid rgba(255, 255, 255, 0.08);
 		box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.05);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: fit-content;
+		max-width: 100%;
+		margin-left: auto;
+		margin-right: auto;
+		overflow-x: auto;
 	}
 
 	.matrix {
@@ -754,6 +820,54 @@
 		font-size: 1.2rem;
 		line-height: 1.8;
 		color: #f8fbff;
+		display: inline-block;
+		white-space: pre;
+		max-width: 100%;
+	}
+
+	.affine-params {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1rem;
+		background: rgba(3, 10, 28, 0.7);
+		padding: 1rem 1.25rem;
+		border-radius: 12px;
+		margin: 1.1rem 0;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.05);
+	}
+
+	.param {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.param-label {
+		font-size: 0.95rem;
+		color: rgba(204, 215, 255, 0.7);
+		font-weight: 600;
+	}
+
+	.param-value {
+		font-family: 'Courier New', monospace;
+		font-size: 1.1rem;
+		color: #f8fbff;
+		font-weight: 600;
+		background: rgba(102, 126, 234, 0.25);
+		padding: 0.3rem 0.7rem;
+		border-radius: 6px;
+	}
+
+	.hint {
+		background: rgba(139, 92, 246, 0.15);
+		padding: 0.9rem 1rem;
+		border-radius: 12px;
+		border: 1px solid rgba(167, 139, 250, 0.4);
+		margin: 1rem 0;
+		font-size: 0.95rem;
+		color: #e9d5ff;
+		font-family: 'Courier New', monospace;
 	}
 
 	.legend {
@@ -819,7 +933,6 @@
 		transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 		background: rgba(2, 6, 23, 0.75);
 		color: #f7f9ff;
-		backdrop-filter: blur(8px);
 	}
 
 	.answer-section input::placeholder {
@@ -833,9 +946,15 @@
 		background: rgba(10, 16, 36, 0.9);
 	}
 
+    .answer-section input:disabled {
+		background: rgba(36, 36, 36, 0.836);
+		color: #b7b8bd;
+        border: 1px solid rgba(153, 153, 153, 0.2);
+	}
+
 	.answer-section button {
 		padding: 0.85rem 1.6rem;
-		background: linear-gradient(135deg, rgba(40, 167, 69, 0.92), rgba(51, 217, 96, 0.92));
+		background: linear-gradient(45deg, #8d2fff 0%, #5619f0  51%, #2f2fff  100%);
 		color: white;
 		border: none;
 		border-radius: 12px;
