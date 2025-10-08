@@ -8,8 +8,8 @@ export async function POST({ request }) {
 	try {
 		const { problemType, decimals } = await request.json();
 
-		if (!problemType || problemType < 1 || problemType > 19) {
-			return json({ error: 'Invalid problem type. Must be between 1 and 19.' }, { status: 400 });
+		if (!problemType || problemType < 1 || problemType > 20) {
+			return json({ error: 'Invalid problem type. Must be between 1 and 20.' }, { status: 400 });
 		}
 
 		// Use the persistent bot service

@@ -939,6 +939,73 @@ def check_nihilist_decode(table, number, user_answer):
             "user_answer": user_answer
         }
 
+def generate_nihilist_keyword_decode():
+    """Generate Nihilist decode given a ciphertext NUMBER and a keyword letter (decode = ciphertext - keyword).
+    We generate by choosing a plaintext letter P and a keyword letter K, then set C = num(P) + num(K).
+    """
+    # Choose a random keyword and build the table
+    keyword = random.choice(NIHILIST_KEYWORDS)
+    table = generate_nihilist_table(keyword)
+
+    # Pick a plaintext letter and a keyword letter from table
+    p_r = int(random.random() * 5) + 1
+    p_c = int(random.random() * 5) + 1
+    plaintext_letter = table[p_r - 1][p_c - 1]
+
+    k_r = int(random.random() * 5) + 1
+    k_c = int(random.random() * 5) + 1
+    keyword_letter = table[k_r - 1][k_c - 1]
+
+    # Encode both to numbers (rowcol) and make ciphertext number via addition
+    p_num = p_r * 10 + p_c
+    k_num = k_r * 10 + k_c
+    ciphertext_number = p_num + k_num  # range 22..110
+
+    return {
+        "type": "nihilist_keyword_decode",
+        "problem": f"Nihilist decode with key: cipher {ciphertext_number}, key {keyword_letter}",
+        "question": f"Using the Nihilist table below and keyword letter {keyword_letter}, decode the ciphertext number {ciphertext_number}.",
+        "answer": plaintext_letter,
+        "ciphertext_number": ciphertext_number,
+        "keyword_letter": keyword_letter,
+        "table": table,
+        "table_display": nihilist_table_to_display(table),
+        "hint": "Find the number for the keyword letter using the table. Subtract that from the ciphertext number. The answer is the letter at the row and column of the result.",
+        "keyword": keyword.upper(),
+        "legend": f"Keyword: {keyword.upper()} (I/J combined)"
+    }
+
+def check_nihilist_keyword_decode(table, ciphertext_number, keyword_letter, user_answer):
+    """Check Nihilist decode with keyword letter where plaintext = ciphertext_number - num(keyword_letter)."""
+    try:
+        if not isinstance(user_answer, str) or len(user_answer) == 0:
+            return {"error": "Invalid input: answer must be a letter", "correct": False, "user_answer": user_answer}
+
+        # keyword number from table
+        k_num = nihilist_encode_letter(table, keyword_letter)
+        if k_num is None:
+            return {"error": "Invalid keyword letter for table", "correct": False, "user_answer": user_answer}
+
+        # subtract as ordinary numbers
+        p_num = int(ciphertext_number) - k_num
+        if p_num < 11 or p_num > 55:
+            return {"error": "Resulting pair is out of range", "correct": False, "user_answer": user_answer}
+        p_r, p_c = p_num // 10, p_num % 10
+        if not (1 <= p_r <= 5 and 1 <= p_c <= 5):
+            return {"error": "Invalid row/col after subtraction", "correct": False, "user_answer": user_answer}
+        correct_answer = table[p_r - 1][p_c - 1]
+        return {
+            "correct": user_answer.upper() == correct_answer,
+            "user_answer": user_answer.upper(),
+            "correct_answer": correct_answer
+        }
+    except Exception as e:
+        return {
+            "error": f"Invalid input: {str(e)}",
+            "correct": False,
+            "user_answer": user_answer
+        }
+
 # Main function to handle command line arguments
 def main():
     if len(sys.argv) < 2:
@@ -995,6 +1062,8 @@ def main():
                 result = generate_nihilist_encode()
             elif problem_type == 19:
                 result = generate_nihilist_decode()
+            elif problem_type == 20:
+                result = generate_nihilist_keyword_decode()
             else:
                 result = {"error": "Invalid problem type"}
 
@@ -1054,6 +1123,8 @@ def main():
                 result = check_nihilist_encode(problem_data['table'], problem_data['letter'], user_answer)
             elif problem_type == 19:
                 result = check_nihilist_decode(problem_data['table'], problem_data['number'], user_answer)
+            elif problem_type == 20:
+                result = check_nihilist_keyword_decode(problem_data['table'], problem_data['ciphertext_letter'], problem_data['keyword_letter'], user_answer)
             else:
                 result = {"error": "Invalid problem type"}
 

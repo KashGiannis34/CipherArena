@@ -26,6 +26,7 @@ from codebusters_bot import (
     generate_atbash_word,
     generate_nihilist_encode,
     generate_nihilist_decode,
+    generate_nihilist_keyword_decode,
     check_two_digit_multiplication,
     check_letter_to_value,
     check_three_digit_subtraction,
@@ -44,7 +45,8 @@ from codebusters_bot import (
     check_atbash_letter,
     check_atbash_word,
     check_nihilist_encode,
-    check_nihilist_decode
+    check_nihilist_decode,
+    check_nihilist_keyword_decode
 )
 
 def handle_generate(problem_type, decimals=None):
@@ -70,7 +72,8 @@ def handle_generate(problem_type, decimals=None):
         16: generate_atbash_letter,
         17: generate_atbash_word,
         18: generate_nihilist_encode,
-        19: generate_nihilist_decode
+        19: generate_nihilist_decode,
+        20: generate_nihilist_keyword_decode
     }
 
     generator = generators.get(problem_type)
@@ -100,7 +103,8 @@ def handle_check(problem_type, problem_data, user_answer):
         16: lambda: check_atbash_letter(problem_data['letter'], user_answer),
         17: lambda: check_atbash_word(problem_data['word'], user_answer),
         18: lambda: check_nihilist_encode(problem_data['table'], problem_data['letter'], user_answer),
-        19: lambda: check_nihilist_decode(problem_data['table'], problem_data['number'], user_answer)
+        19: lambda: check_nihilist_decode(problem_data['table'], problem_data['number'], user_answer),
+        20: lambda: check_nihilist_keyword_decode(problem_data['table'], problem_data['ciphertext_number'], problem_data['keyword_letter'], user_answer)
     }
 
     checker = checkers.get(problem_type)

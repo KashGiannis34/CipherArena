@@ -21,7 +21,8 @@
 		{ value: 16, label: '16. Atbash Letter', ciphers: ['atbash'] },
 		{ value: 17, label: '17. Atbash Word', ciphers: ['atbash'] },
 		{ value: 18, label: '18. Nihilist Encode', ciphers: ['nihilist'] },
-		{ value: 19, label: '19. Nihilist Decode', ciphers: ['nihilist'] }
+		{ value: 19, label: '19. Nihilist Decode', ciphers: ['nihilist'] },
+		{ value: 20, label: '20. Nihilist Decode (with key letter)', ciphers: ['nihilist'] }
 	];
 
 	const displayTypes = problemTypes.map(({ value, label, ciphers }) => {
