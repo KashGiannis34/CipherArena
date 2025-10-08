@@ -1,7 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { checkAnswer } from '$db/botService';
 import { decrypt } from '$db/backend-utils/cryptoUtil';
-import { SECRET_JWT_KEY } from '$env/static/private';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
@@ -19,7 +18,7 @@ export async function POST({ request }) {
 		// Decrypt the answer
 		let decryptedData;
 		try {
-			decryptedData = decrypt(encryptedAnswer, SECRET_JWT_KEY);
+			decryptedData = decrypt(encryptedAnswer);
 		} catch (error) {
 			console.error('Decryption failed:', error);
 			return json({

@@ -1,7 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { generateProblem } from '$db/botService';
 import { encrypt } from '$db/backend-utils/cryptoUtil';
-import { SECRET_JWT_KEY } from '$env/static/private';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
@@ -40,7 +39,7 @@ export async function POST({ request }) {
 		}
 
 		// Encrypt the sensitive data
-		const encryptedAnswer = encrypt(sensitiveData, SECRET_JWT_KEY);
+		const encryptedAnswer = encrypt(sensitiveData);
 
 		// Remove answer from problem object
 		const safeProblem = { ...problem };

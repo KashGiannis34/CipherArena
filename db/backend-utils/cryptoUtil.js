@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+const SECRET_JWT_KEY = process.env.SECRET_JWT_KEY;
 
 // Encryption configuration
 const ALGORITHM = 'aes-256-gcm';
@@ -21,7 +22,7 @@ function deriveKey(secret, salt) {
  * @param {string} secret - Secret key for encryption
  * @returns {string} Base64 encoded encrypted data with IV, salt, and auth tag
  */
-export function encrypt(data, secret) {
+export function encrypt(data, secret=SECRET_JWT_KEY) {
 	try {
 		// Generate random salt and IV
 		const salt = crypto.randomBytes(SALT_LENGTH);
@@ -63,7 +64,7 @@ export function encrypt(data, secret) {
  * @param {string} secret - Secret key for decryption
  * @returns {any} Decrypted and parsed data
  */
-export function decrypt(encryptedData, secret) {
+export function decrypt(encryptedData, secret=SECRET_JWT_KEY) {
 	try {
 		// Decode from base64
 		const buffer = Buffer.from(encryptedData, 'base64');
