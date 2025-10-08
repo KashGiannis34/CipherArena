@@ -54,6 +54,8 @@
                     <button class="nav-link"
                         onclick={() => navigate('/singleplayer/Aristocrat')}>Play Solo</button>
                     <button class="nav-link"
+                        onclick={() => navigate('/bot-practice')}>Practice Bot</button>
+                    <button class="nav-link"
                         onclick={() => navigate('/private-lobby')}>Private</button>
                     <button class="nav-link"
                         onclick={() => navigate('/public-lobby')}>Public</button>
@@ -74,6 +76,8 @@
                 <button class="nav-link"
                 onclick={() => navigate('/singleplayer/Aristocrat')}>Try it out</button>
                 <button class="nav-link"
+                onclick={() => navigate('/bot-practice')}>Practice Bot</button>
+                <button class="nav-link"
                 onclick={() => navigate('/leaderboard')}>Leaderboard</button>
                 <div class="auth-buttons">
                     <button class="nav-link login" onclick={() => navigate('/account/login')}>Login</button>
@@ -84,11 +88,13 @@
                     <button class="nav-link"
                         onclick={() => navigate('/profile')}>Home</button>
                     <button class="nav-link"
-                        onclick={() => navigate('/singleplayer/Tutorials')}>Tutorials</button>
+                        onclick={() => navigate('/tutorials')}>Tutorials</button>
                     <button class="nav-link"
                     onclick={() => navigate('/leaderboard')}>Leaderboard</button>
                     <button class="nav-link"
                         onclick={() => navigate('/singleplayer')}>Play Solo</button>
+                    <button class="nav-link"
+                        onclick={() => navigate('/bot-practice')}>Practice Bot</button>
                     <button class="nav-link"
                         onclick={() => navigate('/private-lobby')}>Private</button>
                     <button class="nav-link"
