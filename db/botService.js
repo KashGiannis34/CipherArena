@@ -1,10 +1,15 @@
 // Persistent Python Bot Service
 import { PythonShell } from 'python-shell';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+// In production, SvelteKit bundles this file under build/server; __dirname won't be /app/db.
+// Use the project root (CWD) to point Python at the real db directory which we copy into the image.
+const ROOT_DIR = process.cwd();
+const SCRIPT_DIR = path.resolve(ROOT_DIR, 'db');
 
 let pythonShell = null;
 let isInitializing = false;
@@ -53,16 +58,25 @@ async function initPythonShell() {
 
 	isInitializing = true;
 	console.log('[Bot Service] Initializing Python shell...');
+	console.log(`[Bot Service] JS __dirname=${__dirname}, CWD=${ROOT_DIR}, scriptDir=${SCRIPT_DIR}`);
 
 	initPromise = new Promise((resolve, reject) => {
+		const scriptFile = path.join(SCRIPT_DIR, 'codebusters_bot_server.py');
+		if (!fs.existsSync(scriptFile)) {
+			const msg = `[Bot Service] Python server script not found at ${scriptFile}. Check that the 'db' folder is included in the image and scriptPath is correct.`;
+			console.error(msg);
+			isInitializing = false;
+			return reject(new Error(msg));
+		}
 		const options = {
 			mode: 'text',
-			pythonPath: 'python',
+			pythonPath: process.env.PYTHON_PATH || (process.env.NODE_ENV === 'production' ? 'python3' : 'python'),
 			pythonOptions: ['-u'], // Unbuffered output
-			scriptPath: __dirname
+			scriptPath: SCRIPT_DIR
 		};
 
 		try {
+			console.log(`[Bot Service] Spawning Python: ${options.pythonPath} scriptPath=${options.scriptPath}`);
 			pythonShell = new PythonShell('codebusters_bot_server.py', options);
 
 			// Handle incoming messages
@@ -85,8 +99,13 @@ async function initPythonShell() {
 						resolveRequest(response.data);
 					}
 				} catch (error) {
-					console.error('[Bot Service] Error parsing message:', error, message);
+					console.error('[Bot Service] Error parsing message from Python:', error?.message || error, '\nRaw:', message);
 				}
+			});
+
+			// Show Python stderr for debugging (e.g., missing files, import errors)
+			pythonShell.on('stderr', (data) => {
+				console.error('[Bot Service][stderr]', data);
 			});
 
 			// Handle errors
@@ -109,12 +128,12 @@ async function initPythonShell() {
 			});
 
 			// Handle process exit
-			pythonShell.on('close', () => {
-				console.log('[Bot Service] Python process closed');
+			pythonShell.on('close', (code, signal) => {
+				console.log(`[Bot Service] Python process closed (code=${code}, signal=${signal})`);
 				shutdownPythonShell();
 			});
 
-			// Timeout initialization after 10 seconds
+			// Timeout initialization after 15 seconds
 			setTimeout(() => {
 				if (isInitializing) {
 					isInitializing = false;
@@ -122,7 +141,7 @@ async function initPythonShell() {
 					shutdownPythonShell();
 					reject(error);
 				}
-			}, 10000);
+			}, 15000);
 
 		} catch (error) {
 			isInitializing = false;
@@ -151,7 +170,7 @@ async function sendRequest(action, data) {
 				pendingRequests.delete(id);
 				reject(new Error('Request timeout'));
 			}
-		}, 5000);
+		}, 8000);
 
 		// Clear timeout when resolved
 		const originalResolve = resolve;
