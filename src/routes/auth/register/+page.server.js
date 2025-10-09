@@ -15,7 +15,7 @@ export function load({ cookies }) {
 
 /** @satisfies {import('./$types').Actions} */
 export const actions = {
-    register: async ({request, url}) => {
+    default: async ({request, url}) => {
         const data = await request.formData();
         const username = data.get('username');
 		const email = data.get('email');
@@ -25,6 +25,7 @@ export const actions = {
 		const { error } = await register_user(username, email, password, confirmPass);
 
 		if (error) {
+            console.log("Error: ", error);
 			return fail(400, { error, roomId: data.get("roomId"), email, username });
 		}
 
