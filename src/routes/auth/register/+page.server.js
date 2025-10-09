@@ -25,7 +25,6 @@ export const actions = {
 		const { error } = await register_user(username, email, password, confirmPass);
 
 		if (error) {
-            console.log("Error: ", error);
 			return fail(400, { error, roomId: data.get("roomId"), email, username });
 		}
 
