@@ -162,7 +162,7 @@ def generate_shift_word():
     return {
         "type": "shift_word",
         "problem": f"Shift {word} by {shift}",
-        "question": f"What is the word when {word} is shifted {shift} times?",
+        "question": f"What is the \"word\" when {word} is shifted {shift} times?",
         "answer": answer,
         "word": word,
         "shift": shift,
@@ -380,7 +380,7 @@ def generate_affine_word():
     return {
         "type": "affine_word",
         "problem": f"Affine: a={a}, b={b}, word={word}",
-        "question": f"Encode the word using the affine cipher",
+        "question": f"Encode the \"word\" using the affine cipher",
         "answer": answer,
         "a": a,
         "b": b,
@@ -439,7 +439,7 @@ def generate_hill_word():
     return {
         "type": "hill_word",
         "problem": f"Matrix: [[{key[0]}, {key[1]}], [{key[2]}, {key[3]}]], word={word}",
-        "question": f"Encode the word {word} using the matrix key",
+        "question": f"Encode the \"word\" {word} using the matrix key",
         "answer": answer,
         "matrix": key,
         "matrix_display": f"{key[0]}\t{key[1]}\n{key[2]}\t{key[3]}",
@@ -723,7 +723,7 @@ def generate_atbash_letter():
     return {
         "type": "atbash_letter",
         "problem": f"Atbash: {letter}",
-        "question": f"What is the Atbash cipher of the letter {letter}?",
+        "question": f"What is the Atbash cipher decoding of the letter {letter}?",
         "answer": answer,
         "letter": letter,
         "hint": "Atbash reverses the alphabet: A↔Z, B↔Y, C↔X..."
@@ -764,7 +764,7 @@ def generate_atbash_word():
     return {
         "type": "atbash_word",
         "problem": f"Atbash: {word}",
-        "question": f"What is the Atbash cipher of the word {word}?",
+        "question": f"What is the Atbash cipher decoding of the \"word\" {word}?",
         "answer": answer,
         "word": word,
         "length": length,
@@ -874,8 +874,7 @@ def generate_nihilist_encode():
         "table": table,
         "table_display": nihilist_table_to_display(table),
         "hint": "Find the letter in the table. The answer is: (row number)(column number)",
-        "keyword": keyword.upper(),
-        "legend": f"Keyword: {keyword.upper()} (I/J combined)"
+        "keyword": keyword.upper()
     }
 
 def check_nihilist_encode(table, letter, user_answer):
@@ -917,8 +916,7 @@ def generate_nihilist_decode():
         "table": table,
         "table_display": nihilist_table_to_display(table),
         "hint": "First digit is row, second digit is column",
-        "keyword": keyword.upper(),
-        "legend": f"Keyword: {keyword.upper()} (I/J combined)"
+        "keyword": keyword.upper()
     }
 
 def check_nihilist_decode(table, number, user_answer):
@@ -971,8 +969,7 @@ def generate_nihilist_keyword_decode():
         "table": table,
         "table_display": nihilist_table_to_display(table),
         "hint": "Find the number for the keyword letter using the table. Subtract that from the ciphertext number. The answer is the letter at the row and column of the result.",
-        "keyword": keyword.upper(),
-        "legend": f"Keyword: {keyword.upper()} (I/J combined)"
+        "keyword": keyword.upper()
     }
 
 def check_nihilist_keyword_decode(table, ciphertext_number, keyword_letter, user_answer):
