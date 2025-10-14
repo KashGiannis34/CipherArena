@@ -4,12 +4,96 @@
 
   let { login, roomId, toggleAvailable, form } = $props();
   let authenticating = $state(false);
+  let captchaToken = $state(null);
+
+  // Preserve form values to prevent them from being wiped
+  let email = $state(form?.email || "");
+  let username = $state(form?.username || "");
+  let password = $state(form?.password || "");
+  let confirmPassword = $state(form?.confirmPassword || "");
+
+  // Action to load and render reCAPTCHA
+  function captchaAction(node) {
+    let widgetId = null;
+
+    const loadScript = () => {
+      if (window.grecaptcha) {
+        renderCaptcha();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://www.google.com/recaptcha/api.js?render=explicit';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        renderCaptcha();
+      };
+      script.onerror = () => {
+        node.innerHTML = `<p
+        style="text-align: center;
+        padding: 8px 12px;
+        border-radius: 8px;
+        width: fit-content;
+        margin: 0 auto;
+        font-size: 0.95rem;
+        background-color: rgba(255, 100, 100, 0.15);
+        color: #ff7f7f;">
+        Failed to load captcha. Please refresh the page.</p>`;
+      };
+      document.head.appendChild(script);
+    };
+
+    const renderCaptcha = () => {
+      if (!window.grecaptcha || !window.grecaptcha.render) {
+        setTimeout(renderCaptcha, 100);
+        return;
+      }
+
+      try {
+        widgetId = window.grecaptcha.render(node, {
+          sitekey: '6Le2c-orAAAAAHq_sikutvgX-LdsCMybbgLgGv3q',
+          callback: (token) => {
+            captchaToken = token;
+          },
+          'expired-callback': () => {
+            captchaToken = null;
+          }
+        });
+      } catch (err) {
+        console.error('reCAPTCHA render error:', err);
+      }
+    };
+
+    loadScript();
+
+    return {
+      destroy() {
+        if (widgetId !== null && window.grecaptcha) {
+          try {
+            window.grecaptcha.reset(widgetId);
+          } catch (err) {
+            console.error('Failed to reset captcha:', err);
+          }
+        }
+      }
+    };
+  }
+
+  function handleSubmit(event) {
+    if (!login && !captchaToken) {
+      event.preventDefault();
+      alert('Please complete the captcha verification');
+      return false;
+    }
+    authenticating = true;
+  }
 </script>
 
 {#key login}
   <div in:fade out:fade style="all: inherit;">
     <Container --minWidth=none --maxWidth=min(80vw,600px)>
-      <form method="POST" onsubmit={() => authenticating = true}>
+      <form method="POST" onsubmit={handleSubmit}>
         <h1>{login ? "Login" : "Sign Up"}</h1>
 
         <label>
@@ -18,7 +102,7 @@
             name="email"
             type="email"
             placeholder="Email"
-            value={form?.email || ""}
+            bind:value={email}
             required
           />
         </label>
@@ -30,7 +114,7 @@
               name="username"
               type="text"
               placeholder="Username"
-              value={form?.username || ""}
+              bind:value={username}
               required
             />
           </label>
@@ -46,7 +130,7 @@
             name="password"
             type="password"
             placeholder="Password"
-            value={form?.password || ""}
+            bind:value={password}
             required
           />
         </label>
@@ -58,10 +142,16 @@
               name="confirmPassword"
               type="password"
               placeholder="Confirm Password"
-              value={form?.confirmPassword || ""}
+              bind:value={confirmPassword}
               required
             />
           </label>
+
+          <!-- Captcha for registration only -->
+          <div class="captcha-wrapper">
+            <div use:captchaAction></div>
+            <input type="hidden" name="captchaToken" value={captchaToken || ""} />
+          </div>
         {/if}
 
         {#if form?.error}
@@ -318,5 +408,14 @@ input:-webkit-autofill:active{
   .message {
     background-color: rgba(0, 255, 200, 0.1);
     color: aquamarine;
+  }
+
+  .captcha-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 78px;
   }
 </style>

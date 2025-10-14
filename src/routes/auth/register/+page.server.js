@@ -4,6 +4,7 @@ import { fail } from '@sveltejs/kit';
 import { redirect } from '@sveltejs/kit';
 import { createVerificationToken } from '$db/auth/verify';
 import { sendVerificationEmail } from '$db/auth/mailer';
+import { verifyCaptchaFromFormData } from '$dbutils/captchaUtil';
 import { authenticate } from '$dbutils/authenticate.js';
 
 export function load({ cookies }) {
@@ -15,12 +16,23 @@ export function load({ cookies }) {
 
 /** @satisfies {import('./$types').Actions} */
 export const actions = {
-    default: async ({request, url}) => {
+    default: async ({request, url, getClientAddress}) => {
         const data = await request.formData();
         const username = data.get('username');
 		const email = data.get('email');
 		const password = data.get('password');
         const confirmPass = data.get('confirmPassword');
+
+        // Verify captcha
+        const captchaResult = await verifyCaptchaFromFormData(data, getClientAddress());
+        if (!captchaResult.success) {
+            return fail(400, {
+                error: captchaResult.error || 'Captcha verification failed. Please try again.',
+                roomId: data.get("roomId"),
+                email,
+                username
+            });
+        }
 
 		const { error } = await register_user(username, email, password, confirmPass);
 
