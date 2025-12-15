@@ -8,7 +8,6 @@ export async function POST({ request, cookies }) {
         const params = await request.json();
         const quoteData = await generateQuote(params);
 
-        // --- Authenticate user and increment total ---
         const auth = authenticate(cookies.get('auth-token'));
 
         if (auth?.id) {

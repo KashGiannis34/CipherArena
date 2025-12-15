@@ -91,18 +91,15 @@
 	}
 
 	onMount(async () => {
-		// Get options
 		options = sessionStorage.getItem('options')
 			? JSON.parse(sessionStorage.getItem('options'))
 			: { 'AutoFocus': true, 'AutoSwitch': false };
 
-		// Read URLSearchParams
 		const searchParams = new URLSearchParams(window.location.search);
 		params.K = searchParams.get('K') || "-1";
 		params.Solve = searchParams.get('Solve') || "Decode";
 		params.cipherType = data.props.cipherType;
 
-		// Generate quote
 		await fetchQuote();
 		mounted = true;
 	});

@@ -52,7 +52,6 @@ export const actions = {
 
         const hashed_password = await argon2.hash(password);
 
-        // Hash and save new password
         user.password = hashed_password;
         await user.save();
         await tokenDoc.deleteOne();

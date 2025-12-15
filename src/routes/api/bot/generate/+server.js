@@ -11,20 +11,17 @@ export async function POST({ request }) {
 			return json({ error: 'Invalid problem type. Must be between 1 and 20.' }, { status: 400 });
 		}
 
-		// Use the persistent bot service
 		const problem = await generateProblem(problemType, decimals);
 
 		if (problem.error) {
 			return json({ error: problem.error }, { status: 500 });
 		}
 
-		// Extract the answer and other sensitive data
 		const sensitiveData = {
 			answer: problem.answer,
 			problemType: problemType
 		};
 
-		// Add additional answer fields based on problem type
 		if (problem.answer_mod_26 !== undefined) {
 			sensitiveData.answer_mod_26 = problem.answer_mod_26;
 		}
@@ -38,10 +35,8 @@ export async function POST({ request }) {
 			sensitiveData.correct_answer_letter = problem.correct_answer_letter;
 		}
 
-		// Encrypt the sensitive data
 		const encryptedAnswer = encrypt(sensitiveData);
 
-		// Remove answer from problem object
 		const safeProblem = { ...problem };
 		delete safeProblem.answer;
 		delete safeProblem.answer_mod_26;
@@ -49,7 +44,6 @@ export async function POST({ request }) {
 		delete safeProblem.answer_letter;
 		delete safeProblem.correct_answer_letter;
 
-		// Return problem with encrypted answer
 		return json({
 			...safeProblem,
 			encryptedAnswer: encryptedAnswer,

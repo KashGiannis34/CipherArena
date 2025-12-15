@@ -6,7 +6,6 @@
 
 	const columnHeaders = "ABCDEFGHIJKLM".split('');
 
-	// Function to generate each row
 	function getRow(rowIndex) {
 		const right = "NOPQRSTUVWXYZ".split('');
 		const left = "ABCDEFGHIJKLM".split('');

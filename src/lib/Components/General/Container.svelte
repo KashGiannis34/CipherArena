@@ -18,8 +18,6 @@
         max-width: var(--maxWidth, 90vw);
         padding: 20px;
 
-		/* background: rgba(20, 22, 30, 0.4);
-		border: 1px solid rgba(255, 255, 255, 0.1); */
 		border-radius: 2rem;
         background: rgba(255, 255, 255, 0.06);
         box-shadow:

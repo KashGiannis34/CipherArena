@@ -144,7 +144,7 @@
 
 <style>
 	.metric-note-wrapper {
-		height: 1.25rem; /* consistent vertical space */
+		height: 1.25rem;
 		display: flex;
 		justify-content: center;
 		align-items: center;
@@ -215,15 +215,12 @@
         color: white;
         box-shadow: 0 0 0 rgba(0, 0, 0, 0);
 
-        /* Fade in glow first, then loop rainbow */
         animation:
             fadeGlowIn 0.5s ease-out forwards,
             rainbowGlow 3s linear infinite;
-        animation-delay: 0s, 0.5s; /* fadeGlowIn starts immediately, rainbowGlow after 0.5s */
-    }
+        animation-delay: 0s, 0.5s;
+	}
 
-
-    /* Step 1: Fade in glow smoothly */
     @keyframes fadeGlowIn {
         from {
             box-shadow: 0 0 0 rgba(0, 0, 0, 0);
@@ -233,7 +230,6 @@
         }
     }
 
-    /* Step 2: Start rainbow cycle after fade-in */
     @keyframes rainbowGlow {
         0% {
             box-shadow: 0 0 8px #ff4ec4, inset 0 0 2px #ff4ec4;

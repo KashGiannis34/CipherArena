@@ -1,50 +1,43 @@
 <script>
   let { keyword = "ABCD", encode = true } = $props();
 
-  // 1) Letter matrix from keyword
   let letterMatrix = [
     [keyword[0], keyword[1]],
     [keyword[2], keyword[3]],
   ];
 
-  // 2) Numeric matrix inputs (encode & decode)
   let numMatrix = $state([
     ["",""],
     ["",""],
   ]);
 
-  // 3) det⁻¹ input
   let detInv = $state("");
-  let detInv2 = $state(""); // for reuse in adjugate calculation
+  let detInv2 = $state("");
 
-  // 4) Adjugate inputs (shared two places)
   let adj = $state([
     ["",""],
     ["",""],
   ]);
 
-  // 5) Final inverse matrix inputs
   let inverse = $state([
     ["",""],
     ["",""],
   ]);
 
-  // allowed keys and sanitization
   const keyWhitelist = new Set([
     "0","1","2","3","4","5","6","7","8","9","-",
     "Backspace","Delete","ArrowLeft","ArrowRight","Tab"
   ]);
 
   function handleKeydown(e) {
-    // only allow digits, minus, navigation, backspace, delete
     if (!keyWhitelist.has(e.key)) {
       e.preventDefault();
     }
-    // only one "-" at pos 0
+
     if (e.key === "-" && e.target.selectionStart !== 0) {
       e.preventDefault();
     }
-    // max length 3 including "-" (e.g. "-12") or 2 digits
+
     const val = e.target.value;
     const sel = val.slice(e.target.selectionStart, e.target.selectionEnd);
     const nextLen = val.length - sel.length + 1;
@@ -56,7 +49,6 @@
   function sanitize(e, i, j, arr) {
     let v = e.target.value;
     if (v === "-" || /^-?\d{1,2}$/.test(v)) {
-      // strip leading zeros
       if (/^-?0\d/.test(v)) {
         v = v.startsWith("-")
           ? "-" + String(parseInt(v.slice(1),10))
@@ -64,7 +56,6 @@
       }
       arr[i][j] = v;
     } else {
-      // revert
       e.target.value = arr[i][j];
     }
   }
@@ -85,7 +76,6 @@
 
   function moveCaretToEnd(e) {
     const input = e.target;
-    // wait for the browser’s internal focus logic to finish
     requestAnimationFrame(() => {
       const len = input.value.length;
       input.setSelectionRange(len, len);
@@ -129,7 +119,7 @@
     </div>
     <span>)</span>
   {:else}
-    <!-- DECODE chain: = numeric inputs = det⁻¹ × adj = detInv × adj = inverse -->
+    <!-- DECODE chain: = numeric inputs = det^-1 × adj = detInv × adj = inverse -->
     <span>=</span>
 
     <!-- numeric inputs -->
@@ -152,7 +142,7 @@
     </div>
     <span>)</span><sup>⁻¹</sup>
 
-    <!-- det⁻¹ -->
+    <!-- det^-1 -->
     <span>=</span>
     <input
       class="scalar"
@@ -164,7 +154,7 @@
 
     /><sup>⁻¹</sup>
 
-    <!-- × adjugate -->
+    <!-- x adjugate -->
     <span>×</span>
     <span>(</span>
     <div class="matrix">
@@ -185,7 +175,7 @@
     </div>
     <span>)</span>
 
-    <!-- = detInv × adjugate (reuse same adj) -->
+    <!-- = detInv x adjugate (reuse same adj) -->
     <span>=</span>
     <input
       class="scalar"
@@ -249,7 +239,7 @@
   line-height: clamp(1.8rem, 2.52rem, 3.15rem);
   white-space: nowrap;
 }
-/* ——— Make all spans & superscripts big ——— */
+
 .equation span{
   font-size: clamp(1.5rem, 3rem, 4.5rem);
   line-height: inherit;
@@ -259,7 +249,7 @@
 .equation sup {
   font-size: clamp(0.9rem, 1.8rem, 2.7rem);
 }
-/* ——— Keep your inputs at their original size ——— */
+
 .equation input {
   font-size: clamp(0.72rem, 0.99rem, 1.26rem);
   line-height: clamp(1.62rem, 2.25rem, 2.88rem);
@@ -303,7 +293,7 @@ input:hover {
   background-color: #ffffff0a;
   cursor: pointer;
 }
-/* Media queries for additional responsiveness */
+
 @media (max-width: 768px) {
   .equation {
     gap: 0.27rem;

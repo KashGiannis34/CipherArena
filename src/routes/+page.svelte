@@ -592,13 +592,12 @@
 		100% { background-position: 0% 50%; }
 	}
 
-	/* By default, show interactive components and hide static images */
 	.mobile-only {
 		display: none;
 	}
 
 	.desktop-only {
-		display: block; /* Or flex, grid, etc., as needed */
+		display: block;
 	}
 
 	.static-image {
@@ -608,16 +607,14 @@
 		border: 1px solid rgba(255, 255, 255, 0.1);
 	}
 
-	/* For tablets and smaller devices */
 	@media (max-width: 900px) {
 		.showcase .showcase-inner,
 		.showcase.alt .showcase-inner {
-			grid-template-columns: 1fr; /* Stack elements vertically */
+			grid-template-columns: 1fr;
 			gap: 2.5rem;
 			text-align: center;
 		}
 
-		/* For the 'alt' layout, this ensures the text (.copy) appears *before* the image (.visual) */
 		.showcase.alt .copy {
 			grid-row: 1;
 		}
@@ -626,14 +623,11 @@
 		}
 	}
 
-	/* For mobile phones */
 	@media (max-width: 768px) {
-		/* Hide interactive components on mobile */
 		.desktop-only {
 			display: none;
 		}
 
-		/* Show static images on mobile */
 		.mobile-only {
 			display: block;
 		}

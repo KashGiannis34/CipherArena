@@ -186,7 +186,7 @@
         gap: 12px;
         align-items: center;
         justify-content: center;
-        flex-wrap: wrap; /* optional: allows stacking on small screens */
+        flex-wrap: wrap;
     }
 
     .join {

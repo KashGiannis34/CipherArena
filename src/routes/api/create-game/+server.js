@@ -30,7 +30,6 @@ export async function POST({ request, cookies }) {
             cipherType: req.cipherType
         };
 
-        // Validate playerLimit
         const playerLimit = Number(req.options.playerLimit);
         if (isNaN(playerLimit) || playerLimit < 2 || playerLimit > 6) {
             return json({success: false, message: "Invalid player limit. Must be between 2 and 6."});
@@ -41,7 +40,6 @@ export async function POST({ request, cookies }) {
         let shortCode;
         let isTaken = true;
 
-        // Retry until a unique shortCode is found
         while (isTaken) {
             shortCode = generateShortCode();
             isTaken = await Game.exists({ shortCode });

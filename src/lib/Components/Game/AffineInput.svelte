@@ -1,33 +1,29 @@
 <script>
   let { keys, encode = true } = $props();
 
-  // keys[0] is 'a', keys[1] is 'b'
   let a = keys[0];
   let b = keys[1];
 
-  // For decode inputs
   let aInverse = $state("");
   let bValue = $state("");
   let aInverse2 = $state("");
   let finalA = $state("");
   let finalB = $state("");
 
-  // allowed keys and sanitization
   const keyWhitelist = new Set([
     "0","1","2","3","4","5","6","7","8","9","-",
     "Backspace","Delete","ArrowLeft","ArrowRight","Tab"
   ]);
 
   function handleKeydown(e) {
-    // only allow digits, minus, navigation, backspace, delete
     if (!keyWhitelist.has(e.key)) {
       e.preventDefault();
     }
-    // only one "-" at pos 0
+
     if (e.key === "-" && e.target.selectionStart !== 0) {
       e.preventDefault();
     }
-    // max length 3 including "-" (e.g. "-12") or 2 digits
+
     const val = e.target.value;
     const sel = val.slice(e.target.selectionStart, e.target.selectionEnd);
     const nextLen = val.length - sel.length + 1;
@@ -44,14 +40,13 @@
           ? "-" + String(parseInt(v.slice(1),10))
           : String(parseInt(v,10));
       }
-      // Update the appropriate state variable
+
       if (stateVar === 'aInverse') aInverse = v;
       else if (stateVar === 'bValue') bValue = v;
       else if (stateVar === 'aInverse2') aInverse2 = v;
       else if (stateVar === 'finalA') finalA = v;
       else if (stateVar === 'finalB') finalB = v;
     } else {
-      // revert
       if (stateVar === 'aInverse') e.target.value = aInverse;
       else if (stateVar === 'bValue') e.target.value = bValue;
       else if (stateVar === 'aInverse2') e.target.value = aInverse2;

@@ -26,7 +26,6 @@
     let selectedOptionIndex = $state(0);
 
     $effect(() => {
-        // Update tokens whenever value changes
         tokens = parseSearchTokens(value);
     });
 
@@ -36,16 +35,13 @@
     }
 
     function parseSearchTokens(text) {
-        // If there's no text, return empty array
         if (!text.trim()) return [];
 
         const tokens = [];
         const words = text.split(' ');
 
-        // Find the index of the active key in the words array
         const activeKeyIndex = activeKey ? words.indexOf(activeKey) : -1;
 
-        // Process words up to the active key
         let i = 0;
         while (i < words.length) {
             const word = words[i];
@@ -54,14 +50,12 @@
                 continue;
             }
 
-            // Stop processing if we hit the active key
             if (i === activeKeyIndex) {
                 break;
             }
 
             if (isCompleteToken(word)) {
                 tokens.push({ text: word, isToken: true, isError: false, type: 'key' });
-                // Get the next word as value if it exists
                 if (i + 1 < words.length && !isCompleteToken(words[i + 1])) {
                     const value = words[i + 1];
                     const isRanked = word === 'ranked:';
@@ -73,7 +67,7 @@
                         type: 'value',
                         parentKey: word
                     });
-                    i += 2; // Skip the value
+                    i += 2;
                 } else {
                     i++;
                 }
@@ -99,7 +93,7 @@
                 { key: 'false', label: 'false (casual games)', example: 'casual games only' }
             ];
         } else if (key === 'playerLimit:' || key === 'playerCount:') {
-            return []; // No autocomplete for these keys
+            return [];
         }
         return [];
     }
@@ -109,14 +103,10 @@
         const options = [];
         const lowerInput = input.toLowerCase();
 
-        // Don't show full key-value pairs if:
-        // 1. Input matches any key directly
-        // 2. We're in the middle of completing a value for an active key
         if (searchOptions.some(opt => opt.key.toLowerCase().startsWith(lowerInput)) || activeKey) {
             return [];
         }
 
-        // Check cipher types
         if (Object.keys(cipherTypes).some(type => type.toLowerCase().includes(lowerInput))) {
             const matchingTypes = Object.keys(cipherTypes).filter(type =>
                 type.toLowerCase().includes(lowerInput)
@@ -132,7 +122,6 @@
             });
         }
 
-        // Check boolean options for true/false
         if ('true'.includes(lowerInput) || 'false'.includes(lowerInput)) {
             const boolValue = lowerInput.startsWith('t') ? 'true' : 'false';
             options.push({
@@ -144,8 +133,7 @@
             });
         }
 
-        // Check if input could be a username
-        if (input.length >= 2) { // Only suggest username if input is at least 2 chars
+        if (input.length >= 2) {
             options.push({
                 key: 'username:',
                 value: input,
@@ -155,10 +143,9 @@
             });
         }
 
-        // Check if input could be a number for player limits/counts
         const numValue = parseInt(input);
         if (!isNaN(numValue) && numValue > 0) {
-            if (numValue <= 10) { // Reasonable limit for player counts
+            if (numValue <= 10) {
                 options.push({
                     key: 'playerLimit:',
                     value: input,
@@ -181,12 +168,9 @@
 
     function updateAutocomplete() {
         if (!currentInput) {
-            // Show all search options when input is empty, but filter out 'all' if other keys exist
             if (activeKey) {
-                // Show value options for active key
                 autocompleteOptions = getValueAutocompleteOptions(activeKey);
             } else {
-                // Only show 'all' if no other keys are present in the search
                 const hasOtherKeys = value.split(' ').some(word => isCompleteToken(word) && word !== 'all');
                 autocompleteOptions = hasOtherKeys ?
                     searchOptions.filter(opt => opt.key !== 'all') :
@@ -195,7 +179,6 @@
             showAutocomplete = true;
             currentSearchOption = null;
         } else if (activeKey) {
-            // Filter value options based on input
             const options = getValueAutocompleteOptions(activeKey);
             autocompleteOptions = options.filter(opt =>
                 opt.key.toLowerCase().includes(currentInput.toLowerCase())
@@ -203,16 +186,13 @@
             showAutocomplete = autocompleteOptions.length > 0;
             currentSearchOption = null;
         } else if (!currentInput.includes(' ')) {
-            // First try normal key autocomplete
             const keyMatches = searchOptions.filter(opt =>
                 opt.key.toLowerCase().startsWith(currentInput.toLowerCase())
             );
 
-            // If no key matches, try full key-value pair matches
             if (keyMatches.length === 0) {
                 autocompleteOptions = getFullKeyValueAutocompleteOptions(currentInput);
             } else {
-                // Only show 'all' in key matches if no other keys exist
                 const hasOtherKeys = value.split(' ').some(word => isCompleteToken(word) && word !== 'all');
                 autocompleteOptions = hasOtherKeys ?
                     keyMatches.filter(opt => opt.key !== 'all') :
@@ -232,27 +212,23 @@
     function handleInput(e) {
         currentInput = e.target.value;
 
-        // Check if the current input exactly matches a search option
         if (currentInput.endsWith(' ')) {
             const words = currentInput.trim().split(' ');
             const lastWord = words[words.length - 1];
 
             if (isCompleteToken(lastWord)) {
                 if (lastWord === 'all') {
-                    // If 'all' is added and other keys exist, ignore it
                     const otherKeys = value.split(' ').some(word => isCompleteToken(word) && word !== 'all');
                     if (!otherKeys) {
                         value = lastWord;
                     }
                 } else {
-                    // If a non-'all' key is added, remove 'all' if it exists
                     const words = value.split(' ').filter(word => word !== 'all');
                     value = (words.length > 0 ? words.join(' ') + ' ' : '') + lastWord;
                 }
                 currentInput = '';
                 activeKey = lastWord === 'all' ? null : lastWord;
                 keyInValue = lastWord !== 'all';
-                // Show value options immediately for non-'all' keys
                 if (lastWord !== 'all') {
                     autocompleteOptions = getValueAutocompleteOptions(lastWord);
                     showAutocomplete = true;
@@ -264,7 +240,6 @@
     }
 
     function handleFocus() {
-        // Show all options when focused
         if (!currentInput) {
             autocompleteOptions = searchOptions;
             showAutocomplete = true;
@@ -274,7 +249,6 @@
     }
 
     function handleBlur(e) {
-        // Only hide if we didn't click on an option
         setTimeout(() => {
             if (!e.relatedTarget?.closest('.autocomplete')) {
                 showAutocomplete = false;
@@ -311,40 +285,34 @@
         }
 
         if (e.key === 'Backspace' && !currentInput) {
-            // Remove last token when backspace is pressed with empty input
             const words = value.split(' ');
             if (words.length > 0) {
                 const lastWord = words[words.length - 1];
                 words.pop();
                 value = words.join(' ');
 
-                // If we just removed a value, make its key active
                 if (!isCompleteToken(lastWord) && words.length > 0) {
                     const lastKey = words[words.length - 1];
                     if (isCompleteToken(lastKey)) {
                         activeKey = lastKey;
-                        words.pop(); // Remove the key from the value string since it's now active
+                        words.pop();
                         value = words.join(' ');
                         keyInValue = false;
-                        // Show value options immediately
                         autocompleteOptions = getValueAutocompleteOptions(lastKey);
                         showAutocomplete = true;
                     } else {
                         activeKey = null;
                         keyInValue = false;
-                        // Show search options
                         autocompleteOptions = searchOptions;
                         showAutocomplete = true;
                     }
                 } else {
                     activeKey = null;
                     keyInValue = false;
-                    // Show search options
                     autocompleteOptions = searchOptions;
                     showAutocomplete = true;
                 }
             } else {
-                // If we've removed everything, show all search options
                 activeKey = null;
                 keyInValue = false;
                 autocompleteOptions = searchOptions;
@@ -357,37 +325,31 @@
             e.preventDefault();
             if (activeKey && currentInput.trim()) {
                 if (!keyInValue) {
-                    // If key isn't in value string yet, add both key and value
                     value = (value ? value + ' ' : '') + activeKey + ' ' + currentInput.trim();
                 } else {
-                    // If key is already there, just add the value
                     value = (value ? value + ' ' : '') + currentInput.trim();
                 }
                 currentInput = '';
                 activeKey = null;
                 keyInValue = false;
             } else if (currentInput.trim()) {
-                // Just append the current input if no active key
                 value = (value ? value + ' ' : '') + currentInput.trim();
                 currentInput = '';
             }
             commitSearch();
         } else if (e.key === ':') {
-            // Check if the current input (without the colon) matches a search option
             const potentialToken = currentInput + ':';
             if (isCompleteToken(potentialToken)) {
-                e.preventDefault(); // Prevent the : from being added
+                e.preventDefault();
                 value = (value ? value + ' ' : '') + potentialToken;
                 currentInput = '';
                 activeKey = potentialToken;
                 keyInValue = true;
-                // Show value options immediately
                 autocompleteOptions = getValueAutocompleteOptions(potentialToken);
                 showAutocomplete = true;
             }
         } else if (e.key === ' ' && activeKey && currentInput.trim()) {
             e.preventDefault();
-            // Commit the value to the active key
             if (!keyInValue) {
                 value = (value ? value + ' ' : '') + activeKey + ' ' + currentInput.trim();
             } else {
@@ -401,7 +363,6 @@
 
     function selectAutocomplete(option) {
         if (option.type === 'full-pair') {
-            // For full key-value pairs, add both parts
             const words = value.split(' ').filter(word => word !== 'all');
             value = (words.length > 0 ? words.join(' ') + ' ' : '') + option.fullText;
             currentInput = '';
@@ -409,7 +370,6 @@
             keyInValue = false;
             showAutocomplete = false;
         } else if (activeKey) {
-            // If we're selecting a value for an active key
             if (!keyInValue) {
                 value = (value ? value + ' ' : '') + activeKey + ' ' + option.key;
             } else {
@@ -420,11 +380,9 @@
             keyInValue = false;
             showAutocomplete = false;
         } else {
-            // If we're selecting a search option
             value = (value ? value + ' ' : '') + option.key;
             activeKey = option.key;
             keyInValue = true;
-            // Show value options immediately
             autocompleteOptions = getValueAutocompleteOptions(option.key);
             showAutocomplete = true;
         }
@@ -432,7 +390,6 @@
         inputElement.focus();
     }
 
-    // Reset selected index when options change
     $effect(() => {
         if (autocompleteOptions) {
             selectedOptionIndex = 0;
@@ -560,7 +517,7 @@
         outline: none;
         font-size: 16px;
         padding: 4px 0;
-        padding-right: 36px; /* Make room for the search button */
+        padding-right: 36px;
     }
 
     .search-button {

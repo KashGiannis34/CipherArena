@@ -20,11 +20,9 @@ export async function GET({ url }) {
 
     try {
         let results;
-        // (ascending)
         if (metric === 'avgSolveTime' || metric === 'bestSolveTime') {
             results = await redis.zrange(leaderboardKey, 0, limit, 'WITHSCORES');
         } else {
-            // (descending)
             results = await redis.zrevrange(leaderboardKey, 0, limit, 'WITHSCORES');
         }
 

@@ -86,13 +86,12 @@
   .avatar-wrapper {
       display: inline-block;
       border-radius: 50%;
-      padding: 4px; /* Reserve space for the ring */
-      box-sizing: content-box; /* Ensures padding adds outside the avatar */
+      padding: 4px;
+      box-sizing: content-box;
       background-color: transparent;
       position: relative;
     }
 
-    /* Ring drawn in the padding area */
     .ring-wrapper::after {
       content: '';
       position: absolute;
@@ -114,7 +113,6 @@
       opacity: 0;
     }
 
-    /* Image fills the inner circle without overflow */
     .avatar {
       display: block;
       width: 100%;

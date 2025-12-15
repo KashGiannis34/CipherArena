@@ -37,7 +37,7 @@
 
 	.referenceTable table {
 		width: 100%;
-		table-layout: fixed; /* ensure equal cell width */
+		table-layout: fixed;
 		border-collapse: separate;
 		border-spacing: 0;
 		background-color: rgba(0, 0, 0, 0.175);
@@ -55,7 +55,7 @@
 	th, td {
 		font-family: 'Source Code Pro', monospace;
 		padding: 0.65vw;
-		aspect-ratio: 1 / 1; /* keep square shape */
+		aspect-ratio: 1 / 1;
 		border-bottom: 1px solid var(--bColor);
 		border-right: 1px solid var(--bColor);
 		overflow: hidden;
@@ -71,7 +71,6 @@
 		border-top: 1px solid var(--bColor);
 	}
 
-	/* Rounded corners */
 	table tr:first-child th:first-child {
 		border-top-left-radius: var(--bRadius);
 	}

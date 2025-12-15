@@ -6,13 +6,11 @@
   let authenticating = $state(false);
   let captchaToken = $state(null);
 
-  // Preserve form values to prevent them from being wiped
   let email = $state(form?.email || "");
   let username = $state(form?.username || "");
   let password = $state(form?.password || "");
   let confirmPassword = $state(form?.confirmPassword || "");
 
-  // Action to load and render reCAPTCHA
   function captchaAction(node) {
     let widgetId = null;
 

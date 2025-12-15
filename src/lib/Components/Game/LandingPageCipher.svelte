@@ -294,7 +294,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		width: 100%; /* This is key: it respects the parent's width */
+		width: 100%;
 		padding: 20px;
 		border-radius: 20px;
 		background: rgba(255, 255, 255, 0.05);

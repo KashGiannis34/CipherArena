@@ -30,9 +30,9 @@ export function numberToLetter(num, isSpanish = false) {
 
 function shiftArray(arr, shiftAmount) {
     const length = arr.length;
-    shiftAmount = ((shiftAmount % length) + length) % length; // Handle negative shifts
+    shiftAmount = ((shiftAmount % length) + length) % length;
 
-    if (shiftAmount === 0) return arr.slice(); // No shift needed
+    if (shiftAmount === 0) return arr.slice();
 
     return arr.slice(-shiftAmount).concat(arr.slice(0, -shiftAmount));
 }
@@ -159,7 +159,7 @@ function encodeAristocrat(plaintext, k, key) {
 }
 
 function encodeXenocrypt(plaintext, k, key) {
-    const freqTable = freqTableInit(k || '0', key, true); // true → include Ñ
+    const freqTable = freqTableInit(k || '0', key, true);
     const useInverseMapping = k === '1' || k === '3';
     const ciphertext = [];
 
@@ -167,7 +167,7 @@ function encodeXenocrypt(plaintext, k, key) {
         const upper = letter.toUpperCase();
 
         if (!isLetter(letter, true)) {
-            ciphertext.push(letter); // Leave punctuation/space unchanged
+            ciphertext.push(letter);
         } else if (useInverseMapping) {
             const index = freqTable.indexOf(upper);
             ciphertext.push(numberToLetter(index, true));
@@ -262,7 +262,6 @@ function freqTableInit(k, key, isSpanish = false) {
         return finalTable;
     }
 
-    // Default randomized table
     let shuffled;
     do {
         shuffled = [...baseAlphabet];
@@ -285,8 +284,8 @@ export const baconianMap = {
 };
 
 const baconianSymbolSets = [
-  { aSet: new Set(['.', '·']), bSet: new Set(['-', '—']) },             // Morse-style
-  { aSet: new Set(['0']), bSet: new Set(['1']) },                       // Binary
+  { aSet: new Set(['.', '·']), bSet: new Set(['-', '—']) },
+  { aSet: new Set(['0']), bSet: new Set(['1']) },
 
   // Number-based sets
   { aSet: new Set(['1','3','5','7','9']), bSet: new Set(['2','4','6','8','0']) },
@@ -352,8 +351,8 @@ function encodeBaconian(plaintext) {
         baseWord = fiveLetterWords[Math.floor(Math.random() * fiveLetterWords.length)];
         const { aSet, bSet } = generateDecoratedWordSet(baseWord);
 
-        aGroup = Array.from(aSet); // ['̇','̤','́','̕','̰']
-        bGroup = Array.from(bSet); // ['̄','̊','̇','͂','̱']
+        aGroup = Array.from(aSet);
+        bGroup = Array.from(bSet);
     }
 
     const ciphertext = [];
@@ -368,7 +367,7 @@ function encodeBaconian(plaintext) {
                     const accent = code[i] === 'A' ? aGroup[i] : bGroup[i];
                     decoratedWord += accent;
                 }
-                ciphertext.push(decoratedWord); // Push full decorated word
+                ciphertext.push(decoratedWord);
             } else {
                 ciphertext.push(baconianMapToSymbols(code, aGroup, bGroup));
             }
@@ -443,7 +442,7 @@ function generateDecoratedWordSet(baseWord) {
 
     let aWord = '';
     let bWord = '';
-    const usedPairs = new Set(); // Track used a/b marks for each position
+    const usedPairs = new Set();
 
     for (let i = 0; i < 5; i++) {
         const exclude = new Set();

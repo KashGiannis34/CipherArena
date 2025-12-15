@@ -15,7 +15,6 @@ export async function POST({ request }) {
 			return json({ error: 'User answer is required' }, { status: 400 });
 		}
 
-		// Decrypt the answer
 		let decryptedData;
 		try {
 			decryptedData = decrypt(encryptedAnswer);
@@ -33,24 +32,19 @@ export async function POST({ request }) {
 			return json({ error: 'Invalid problem data' }, { status: 400 });
 		}
 
-		// For problem type 6 (inverse matrix), userAnswer should be parsed if it's a string
 		let processedAnswer = userAnswer;
 		if (problemType === 6) {
-			// If it's already an array, keep it; if it's a string, try to parse it
 			if (typeof userAnswer === 'string') {
 				try {
 					processedAnswer = JSON.parse(userAnswer);
 				} catch {
-					// If parsing fails, keep as string and let Python handle the error
 					processedAnswer = userAnswer;
 				}
 			}
 		}
 
-		// Use the persistent bot service
 		const result = await checkAnswer(problemType, problemData, processedAnswer);
 
-		// Handle validation errors from Python (incorrect input types)
 		if (result.error) {
 			return json({
 				correct: false,
@@ -59,11 +53,9 @@ export async function POST({ request }) {
 			}, { status: 400 });
 		}
 
-		// Return the check result
 		return json({
 			correct: result.correct,
 			userAnswer: result.user_answer,
-			// Only return correct answer if the user got it wrong
 			...(result.correct ? {} : {
 				correctAnswer: result.correct_answer,
 				...(result.correct_answer_mod_26 !== undefined && { correctAnswerMod26: result.correct_answer_mod_26 }),

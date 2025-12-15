@@ -20,7 +20,7 @@
   let cipherRetrieved = $state(false);
   let resultRetrieved = $state(false);
   let players = $state([]);
-  let tooltipVisible = $state(null); // 'link' or 'code'
+  let tooltipVisible = $state(null);
   let tooltipText = $state('');
   let tooltipTimer;
   let isHost = $derived.by(() => {
@@ -33,11 +33,11 @@
   let forfeitVoters = $state([]);
   let hasForfeited = $derived.by(() => forfeitVoters.includes(data.username));
 
-  let historicalPlayers = $state([]); // Includes all players, even ones who left
-  let progressMap = $state({}); // { [username]: percentageFilled }
+  let historicalPlayers = $state([]);
+  let progressMap = $state({});
 
   let statusMessage = $state(null);
-  let statusType = $state('info'); // 'info', 'error', 'success'
+  let statusType = $state('info');
   let messageTimer;
 
   function showStatus(msg, type = 'info', duration = 3000) {
@@ -112,7 +112,7 @@
 
   async function fetchPlayers() {
     const res = await fetch(`/api/game-players?gameId=${data.roomID}`);
-    players = await res.json(); // array of { username, elo }
+    players = await res.json();
 
     if (gameState === 'started') {
       historicalPlayers = mergePlayerStatus(historicalPlayers, players);
@@ -128,7 +128,7 @@
           ...p,
           profilePicture: p.profilePicture ?? current?.profilePicture,
           connected: current?.connected ?? false,
-          left: !current // if not in `players`, they left
+          left: !current
         };
       });
     }
@@ -198,7 +198,7 @@
 
         socket.emit('get-initial-players', (initialPlayers) => {
           historicalPlayers = initialPlayers;
-          fetchPlayers(); // ✅ Then fetch current players and merge
+          fetchPlayers();
         });
       }
       if (gameState === 'finished') {
@@ -610,8 +610,8 @@
   }
 
   .leave-button-game-start {
-    display: block; /* Ensure it's a block element */
-    margin: 0 auto; /* Center it */
+    display: block;
+    margin: 0 auto;
   }
 
   .copy-box {

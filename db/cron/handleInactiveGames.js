@@ -22,7 +22,7 @@ cron.schedule('0 8 * * *', async () => {
     let deletedCount = 0;
 
     for (const game of populatedGames) {
-      const userIds = game.users; // These are ObjectIds
+      const userIds = game.users;
       const users = await UserGame.find({ _id: { $in: userIds } });
 
       const allDisconnected = users.every(user =>
@@ -36,7 +36,7 @@ cron.schedule('0 8 * * *', async () => {
         await UserGame.updateMany(
           {
             _id: { $in: userIds },
-            currentGame: game._id // Game._id is a string
+            currentGame: game._id
           },
           { $set: { currentGame: null } }
         );

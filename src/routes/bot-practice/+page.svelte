@@ -147,7 +147,6 @@
 
 			if (result.error) {
 				errorMessage = result.error;
-				// Don't clear result so we can still show it was incorrect
 				if (!result.correct) {
 					result = { ...result, correct: false };
 				}

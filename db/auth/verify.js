@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { VerificationToken } from "$db/models/VerificationToken"; // Ensure you have a VerificationToken model
+import { VerificationToken } from "$db/models/VerificationToken";
 import { UserAuth } from "$db/models/UserAuth";
 
 export async function createVerificationToken(user, limit, mode = "create") {

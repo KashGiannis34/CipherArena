@@ -87,7 +87,6 @@
     .close-btn:hover { color: #fff; transform: scale(1.05); }
     .close-btn:active { transform: scale(0.95); }
 
-    /* Button styling to match site */
     .button {
         align-self: center;
         background: linear-gradient(135deg, #6a11cb, #2575fc);

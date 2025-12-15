@@ -1,3 +1,7 @@
+import gracefulFs from 'graceful-fs';
+import fs from 'fs';
+gracefulFs.gracefulify(fs);
+
 import http from 'http';
 import express from 'express';
 import 'dotenv/config';
@@ -35,20 +39,19 @@ const io = new Server(server, {
 });
 globalThis.io = io;
 const redis = new Redis(process.env.REDIS_URL);
-const activeSockets = new Map(); // userId → socketId
-const lobbySockets = new Map(); // userId → socketId
-const rematchVotesMap = new Map(); // gameId → Set of usernames who requested rematch
-const forfeitVotesMap = new Map(); // gameId → Set of usernames who gave up
+const activeSockets = new Map();
+const lobbySockets = new Map();
+const rematchVotesMap = new Map();
+const forfeitVotesMap = new Map();
 
 io.use(async (socket, next) => {
-    // Authenticate socket before allowing connection
     const token = socket.handshake.auth.token;
 
     if (!token) {
         return next(new Error("No token"));
     }
 
-    const auth = authenticate(token); // runs jwt.verify
+    const auth = authenticate(token);
     if (auth == undefined) {
         console.log("No AUTH");
         return next(new Error("Invalid token"));
@@ -123,7 +126,6 @@ io.on('connection', async (socket) => {
         } catch (_) { }
     }
 
-    // Update the user's active socket in the DB
     if (user && socket.currentRoom != 'public-lobby') {
         user.currentSocketId = socketId;
         await user.save();
@@ -141,7 +143,6 @@ io.on('connection', async (socket) => {
             try {
                 const hostUG = await UserGame.findById(game.host);
                 if (!hostUG || !hostUG.currentSocketId) {
-                    // Reassign host to the reconnecting user
                     await Game.findByIdAndUpdate(user.currentGame, { host: userId });
                 }
 
@@ -196,10 +197,8 @@ io.on('connection', async (socket) => {
                 }
                 if (targetUser._id.equals(user._id)) socket.emit('error', 'You cannot kick yourself');
 
-                // 1. Run DB cleanup
                 await leaveGameCleanup(targetUser._id, game._id);
 
-                // 2. Kick active socket
                 const targetSocket = io.sockets.sockets.get(activeSockets.get(targetUser._id.toString()));
                 if (targetSocket) {
                     targetSocket.disconnectReason = 'kicked';
@@ -207,7 +206,6 @@ io.on('connection', async (socket) => {
                     targetSocket.disconnect();
                 }
 
-                // 3. Notify room
                 io.to(socket.currentRoom).emit('players-changed');
                 io.to('public-lobby').emit('lobbies-updated');
             } catch (err) {
@@ -454,7 +452,6 @@ io.on('connection', async (socket) => {
                     state: 'waiting'
                 };
 
-                // Fetch games + populate usernames and ensure we have all necessary fields
                 let games = await Game.find(query)
                     .select('_id params mode state createdAt users playerLimit autoFocus')
                     .sort({ createdAt: -1 }) // Newest first
@@ -462,14 +459,12 @@ io.on('connection', async (socket) => {
                     .populate({ path: 'users', select: 'username' })
                     .lean();
 
-                // Apply filters based on search terms
                 if (Object.keys(searchTerms).length > 0) {
-                    // If we have other search terms besides 'all', ignore 'all'
                     const hasOtherTerms = Object.keys(searchTerms).some(key => key !== 'all');
                     if (hasOtherTerms) {
                         delete searchTerms['all'];
                     }
-                    // If only 'all' is present, return all games without filtering
+
                     if (Object.keys(searchTerms).length === 0) {
                         cb(formatted);
                         return;
@@ -626,7 +621,6 @@ async function handleRematchRequest(game, io, rematchVotesMap, forfeitVotesMap, 
     const connectedUsernames = game.users
         .filter(u => u.currentSocketId)
         .map(u => u.username);
-    // If no one is connected, do not proceed with rematch logic
     if (connectedUsernames.length === 0) return;
     const allAgreed = connectedUsernames.every(name => rematchSet.has(name));
 
@@ -635,7 +629,6 @@ async function handleRematchRequest(game, io, rematchVotesMap, forfeitVotesMap, 
     rematchVotesMap.delete(game._id);
     forfeitVotesMap.delete(game._id);
 
-    // Remove disconnected users BEFORE rematch
     const toRemove = game.users.filter(u => !u.currentSocketId);
     for (const user of toRemove) {
         await leaveGameCleanup(user._id, game._id);
@@ -645,13 +638,11 @@ async function handleRematchRequest(game, io, rematchVotesMap, forfeitVotesMap, 
         game = await Game.findById(game._id).populate('users').exec();
     }
 
-    // If it's really just a singleplayer game, count it toward singleplayer total
     if (game.mode === 'ranked' && game.users.length === 1 && user._id.equals(game.users[0]._id)) {
         const cipherType = game.params.cipherType;
         user = await incrementTotal(user._id, cipherType, true);
     }
 
-    // Generate new cipher and reset game
     const newQuote = await generateQuote(game.params);
     game.quote = {
         id: newQuote.id,
@@ -677,13 +668,25 @@ server.listen(process.env.PORT || 3000, '0.0.0.0', () => {
     console.log('Server is running');
 });
 
-process.on('SIGTERM', () => {
-  console.log('[server] SIGTERM received');
-});
+const gracefulShutdown = async (signal) => {
+  console.log(`[server] ${signal} received, starting graceful shutdown...`);
 
-process.on('SIGINT', () => {
-  console.log('[server] SIGINT received');
-});
+  server.close(() => {
+    console.log('[server] HTTP server closed');
+  });
+
+  io.close(() => {
+    console.log('[server] Socket.IO server closed');
+  });
+
+  setTimeout(() => {
+    console.log('[server] Graceful shutdown complete');
+    process.exit(0);
+  }, 5000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 process.on('uncaughtException', (err) => {
   console.error('[server] Uncaught Exception:', err);

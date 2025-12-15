@@ -1,4 +1,3 @@
-// node scripts/backfillCache.js
 import 'dotenv/config';
 import mongoose from 'mongoose';
 import Redis from 'ioredis';

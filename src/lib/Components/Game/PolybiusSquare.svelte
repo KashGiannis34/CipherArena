@@ -27,18 +27,15 @@
 		let nextRow = row;
 		let nextCol = col;
 
-		// arrow key movement
 		if (key === 'ArrowUp') nextRow = Math.max(0, row - 1);
 		else if (key === 'ArrowDown') nextRow = Math.min(gridSize - 1, row + 1);
 		else if (key === 'ArrowLeft') nextCol = Math.max(0, col - 1);
 		else if (key === 'ArrowRight') nextCol = Math.min(gridSize - 1, col + 1);
 		else if (key === 'Backspace' || key === 'Delete') {
-			// clear input
 			e.target.value = '';
 			e.preventDefault();
 			return;
 		} else if (key.length === 1 && isLetter(key)) {
-			// allow letter input
 			e.target.value = key.toUpperCase();
 			if (autoFocus) {
 				nextCol += 1;
@@ -47,7 +44,7 @@
 					nextRow += 1;
 				}
 				if (nextRow >= gridSize) {
-					nextRow = gridSize - 1; // stay within bounds
+					nextRow = gridSize - 1;
 				}
 			}
 		} else {

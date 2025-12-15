@@ -23,7 +23,6 @@ export const actions = {
 		const password = data.get('password');
         const confirmPass = data.get('confirmPassword');
 
-        // Verify captcha
         const captchaResult = await verifyCaptchaFromFormData(data, getClientAddress());
         if (!captchaResult.success) {
             return fail(400, {
@@ -45,10 +44,8 @@ export const actions = {
             const user = await UserAuth.findOne({
             email: { $regex: `^${email}$`, $options: 'i' }
             });
-            // Generate verification token
             const token = await createVerificationToken(user, limit);
 
-            // Send verification email
             await sendVerificationEmail(email, token, limit);
         } catch (err) {
             console.error("Error sending verification email:", err);

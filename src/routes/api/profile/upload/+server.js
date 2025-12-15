@@ -33,12 +33,12 @@ export async function POST({ request, cookies }) {
 		const originalBuffer = Buffer.from(await file.arrayBuffer());
 		const compressedBuffer = await sharp(originalBuffer)
             .resize({
-                width: 512,          // Set a max width
-                height: 512,         // Set a max height
-                fit: 'inside',       // Keep aspect ratio, fitting within 512x512
-                withoutEnlargement: true, // Don't scale up images that are already small
+                width: 512,
+                height: 512,
+                fit: 'inside',
+                withoutEnlargement: true,
             })
-            .webp({ quality: 80 })   // Convert to WebP format with 80% quality
+            .webp({ quality: 80 })
             .toBuffer();
 
 		const filename = `${uuidv4()}.webp`;

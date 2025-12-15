@@ -16,7 +16,6 @@
   let lastOperation = $state(null);
   let lastValue = $state(null);
 
-  // Calculator functions
   function inputNumber(num) {
     if (waitingForNumber || display === '0' || justCalculated) {
       display = num;
@@ -102,7 +101,6 @@
     result = Math.round(result * 1000000000) / 1000000000;
     display = result.toString();
 
-    // Update state for the next calculation
     previousValue = result;
     operation = null;
     waitingForNumber = true;
@@ -119,7 +117,6 @@
     lastValue = null;
   }
 
-  // Dragging functions
   function handleMouseDown(e) {
     if (e.target.closest('.calc-button') || e.target.closest('.close-btn')) {
       return;
@@ -141,7 +138,6 @@
     const newX = e.clientX - dragOffset.x;
     const newY = e.clientY - dragOffset.y;
 
-    // Keep calculator within viewport bounds
     const rect = calculatorElement.getBoundingClientRect();
     const maxX = window.innerWidth - rect.width;
     const maxY = window.innerHeight - rect.height;
@@ -156,7 +152,6 @@
     document.removeEventListener('mouseup', handleMouseUp);
   }
 
-  // Focus management
   function focusCalculator() {
     if (calculatorElement) {
       calculatorElement.focus();
@@ -176,7 +171,6 @@
     }, 0);
   }
 
-  // Keyboard shortcuts - Fixed to work properly and prevent ghost characters
   function handleKeydown(e) {
     if (!visible) return;
 
@@ -197,13 +191,11 @@
           onFocusSwitch();
         }
       } else {
-        // If not focused, focus the calculator.
         focusCalculator();
       }
       return;
     }
 
-    // Handle calculator shortcuts if calculator is focused
     if (calculatorFocused) {
       if (e.key.startsWith('Arrow')) {
         e.preventDefault();
@@ -230,7 +222,6 @@
       e.preventDefault();
       e.stopPropagation();
 
-      // Full keyboard support for calculator operations
       if (e.key >= '0' && e.key <= '9') {
         inputNumber(e.key);
       } else if (e.key === '.') {
@@ -245,7 +236,6 @@
     }
   }
 
-  // Zoom animation
   function zoom(node, { duration = 300 }) {
     return {
       duration,
@@ -518,7 +508,6 @@
     background: linear-gradient(145deg, #2c5282, #3182ce);
   }
 
-  /* Mobile responsive */
   @media (max-width: 768px) {
     .calculator-container {
       min-width: 240px;

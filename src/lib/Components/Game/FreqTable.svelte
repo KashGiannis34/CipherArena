@@ -56,7 +56,7 @@
     function initFreq(text) {
         let obj = {};
         alphabet.split('').forEach(letter => {
-            obj[letter] = 0; // Initialize each letter with an empty string
+            obj[letter] = 0;
         });
 
         for (let letter of text) {

@@ -1,4 +1,3 @@
-// src/routes/profile/[[username]]/+page.server.js
 import { error, fail, redirect } from '@sveltejs/kit';
 import { UserGame } from '$dbutils/UserGame';
 import { authenticate } from '$dbutils/authenticate.js';
@@ -98,7 +97,6 @@ export const actions = {
       }
     }
 
-    // Remove auth and game profiles and any tokens
     await Promise.all([
       UserAuth.deleteOne({ _id: userId }),
       UserGame.deleteOne({ _id: userId }),
@@ -107,7 +105,6 @@ export const actions = {
 
     await decrementUserCount();
 
-    // Clear cookies
     try { cookies.delete('auth-token', { path: '/' }); } catch {}
     try { cookies.delete('email', { path: '/' }); } catch {}
     try { cookies.delete('username', { path: '/' }); } catch {}

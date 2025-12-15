@@ -42,7 +42,6 @@
     let directMap = initDirectMap(cipherType);
     let paramString = paramToString(params);
 
-    // Calculator state
     const mathIntensiveCiphers = ['Affine', 'Caesar', 'Nihilist', 'Hill'];
     const showCalculatorButton = mathIntensiveCiphers.includes(cipherType);
     let calculatorVisible = $state(false);
@@ -291,7 +290,6 @@
         clearPolybius = false;
     }
 
-    // Calculator functions
     function toggleCalculator() {
         if (!showCalculatorButton) return;
         calculatorVisible = !calculatorVisible;
@@ -309,7 +307,6 @@
             return;
         }
 
-        // Prevent any Alt key combination from typing letters
         if (e.altKey && e.key.length === 1) {
             e.preventDefault();
             e.stopPropagation();
@@ -318,7 +315,6 @@
     }
 
     function focusFirstAvailableInput() {
-        // Find the first input element that can be focused
         if (info.inputs && info.inputs.length > 0) {
             for (let i = 0; i < info.inputs.length; i++) {
                 const input = info.inputs[i];
@@ -333,9 +329,7 @@
     }
 
     function focusLastOrFirstAvailableInput() {
-        // Try to focus the last focused input, or the first available input
         if (info.inputs && info.inputs.length > 0) {
-            // Try last focused input first
             if (lastFocusedInputIndex >= 0 && lastFocusedInputIndex < info.inputs.length) {
                 const lastInput = info.inputs[lastFocusedInputIndex];
                 if (lastInput && typeof lastInput.focus === 'function') {
@@ -345,7 +339,6 @@
                 }
             }
 
-            // Fall back to first available input
             focusFirstAvailableInput();
         }
     }
@@ -383,11 +376,9 @@
     });
 
     function handleGlobalFocusIn(e) {
-        // Check if the focused element is a cipher input
         if (e.target && e.target.closest && e.target.closest('.cipher')) {
             cipherFocused = true;
 
-            // Track which input is focused
             if (info.inputs && info.inputs.length > 0) {
                 const inputIndex = info.inputs.indexOf(e.target);
                 if (inputIndex !== -1) {
@@ -399,7 +390,6 @@
 
     function handleGlobalFocusOut(e) {
         if (e.target && e.target.closest && e.target.closest('.cipher')) {
-            // Use a small delay to check if focus moved to another cipher input
             setTimeout(() => {
                 const activeElement = document.activeElement;
                 if (!activeElement || !activeElement.closest || !activeElement.closest('.cipher')) {
@@ -539,7 +529,7 @@
 
     .info {
         text-align: left;
-        align-self: flex-start; /* Push this text to the top-left corner */
+        align-self: flex-start;
         font-size: 1.2rem;
         font-weight: bold;
         margin-bottom: 30px;
@@ -570,7 +560,7 @@
     .buttons {
         display: flex;
         flex-wrap: wrap;
-        justify-content: center; /* center on small screens */
+        justify-content: center;
         gap: 1rem;
         width: 100%;
         margin-top: 1rem;
@@ -612,7 +602,6 @@
         animation: shake 0.4s ease;
     }
 
-    /* Calculator Button Styles */
     .calculator-toggle-container {
         position: fixed;
         top: 100px;
@@ -691,7 +680,6 @@
         letter-spacing: 0.5px;
     }
 
-    /* Mobile responsive adjustments */
     @media (max-width: 768px) {
         .calculator-toggle-container {
             top: 80px;

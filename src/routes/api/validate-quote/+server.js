@@ -25,7 +25,6 @@ export async function POST({ request, cookies }) {
         const isCorrect = req['input'] === ansText;
         if (!isCorrect) return json(false);
 
-        // --- AUTH + STATS UPDATE ---
         const auth = authenticate(cookies.get('auth-token'));
         if (auth?.id && cipherTypes[req['cipherType']]) {
             const solveTime = req['solveTime'];

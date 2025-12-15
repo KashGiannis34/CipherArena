@@ -10,7 +10,6 @@
         if (solved)
             return;
 
-        // Prevent Alt key combinations from being processed as letter input
         if (event.altKey) {
             event.preventDefault();
             return;
@@ -183,7 +182,7 @@
     }
 
     .focus {
-        background-color: rgba(199, 171, 255, 0.236) !important; /* softer base */
+        background-color: rgba(199, 171, 255, 0.236) !important;
         animation: focusPulse 1.5s ease-in-out infinite;
         box-shadow: 0 0 4px #9558ff26;
         transition: background-color 0.25s ease, box-shadow 0.25s ease;

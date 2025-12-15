@@ -1,7 +1,7 @@
 export async function findRandomEntry(schema, query) {
     const randomObj = await schema.aggregate([
-        { $match: query },    // Apply the query filter
-        { $sample: { size: 1 } } // Randomly sample 1 document
+        { $match: query },
+        { $sample: { size: 1 } }
     ]);
 
     // If no document is found, return null

@@ -23,10 +23,8 @@ export async function load({cookies}) {
 
         return {authToken: cookies.get("auth-token")};
     } catch (e) {
-        // If it's already a SvelteKit error, rethrow it
         if (e?.status) throw e;
 
-        // Otherwise, wrap it in a 500 error
         console.error('Error loading lobby:', e);
         throw error(500, {
             message: 'An unexpected error occurred while loading the lobby'

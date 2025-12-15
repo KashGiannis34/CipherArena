@@ -44,7 +44,7 @@
     }
 
     .main-container {
-        padding-top: 76px; /* navbar height (60px) + extra padding (16px) */
+        padding-top: 76px;
         min-height: 100vh;
         color: white;
         position: relative;

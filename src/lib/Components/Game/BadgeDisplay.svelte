@@ -24,7 +24,7 @@
       return {
           duration,
           css: t => {
-              const eased = cubicOut(t); // Apply easing
+              const eased = cubicOut(t);
               return `
                   transform: scale(${eased});
               `;
@@ -36,7 +36,7 @@
       return {
           duration,
           css: t => {
-              const eased = cubicOut(t); // Apply easing
+              const eased = cubicOut(t);
               return `
                   opacity: ${eased};
               `;
@@ -294,7 +294,6 @@
   opacity: 0.6;
 }
 
-/* Tooltip styling */
 .tooltip-wrapper {
   position: relative;
   display: inline-block;

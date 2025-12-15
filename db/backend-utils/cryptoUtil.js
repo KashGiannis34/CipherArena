@@ -24,25 +24,19 @@ function deriveKey(secret, salt) {
  */
 export function encrypt(data, secret=SECRET_JWT_KEY) {
 	try {
-		// Generate random salt and IV
 		const salt = crypto.randomBytes(SALT_LENGTH);
 		const iv = crypto.randomBytes(IV_LENGTH);
 
-		// Derive key from secret
 		const key = deriveKey(secret, salt);
 
-		// Create cipher
 		const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
 
-		// Encrypt the data
 		const jsonData = JSON.stringify(data);
 		let encrypted = cipher.update(jsonData, 'utf8', 'hex');
 		encrypted += cipher.final('hex');
 
-		// Get the auth tag
 		const authTag = cipher.getAuthTag();
 
-		// Combine salt + iv + encrypted + authTag
 		const result = Buffer.concat([
 			salt,
 			iv,
@@ -50,7 +44,6 @@ export function encrypt(data, secret=SECRET_JWT_KEY) {
 			authTag
 		]);
 
-		// Return as base64
 		return result.toString('base64');
 	} catch (error) {
 		console.error('Encryption error:', error);
@@ -66,27 +59,21 @@ export function encrypt(data, secret=SECRET_JWT_KEY) {
  */
 export function decrypt(encryptedData, secret=SECRET_JWT_KEY) {
 	try {
-		// Decode from base64
 		const buffer = Buffer.from(encryptedData, 'base64');
 
-		// Extract components
 		const salt = buffer.subarray(0, SALT_LENGTH);
 		const iv = buffer.subarray(SALT_LENGTH, SALT_LENGTH + IV_LENGTH);
 		const authTag = buffer.subarray(buffer.length - TAG_LENGTH);
 		const encrypted = buffer.subarray(SALT_LENGTH + IV_LENGTH, buffer.length - TAG_LENGTH);
 
-		// Derive key from secret
 		const key = deriveKey(secret, salt);
 
-		// Create decipher
 		const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
 		decipher.setAuthTag(authTag);
 
-		// Decrypt
 		let decrypted = decipher.update(encrypted, undefined, 'utf8');
 		decrypted += decipher.final('utf8');
 
-		// Parse and return
 		return JSON.parse(decrypted);
 	} catch (error) {
 		console.error('Decryption error:', error);

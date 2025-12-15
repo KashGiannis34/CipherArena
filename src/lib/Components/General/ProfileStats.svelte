@@ -90,7 +90,7 @@
 
 <style>
     .note-wrapper {
-        height: 1.25rem; /* consistent vertical space */
+        height: 1.25rem;
         display: flex;
         justify-content: center;
         align-items: center;

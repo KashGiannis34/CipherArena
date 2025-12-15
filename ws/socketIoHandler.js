@@ -22,21 +22,20 @@ export default async function injectSocketIO(server) {
         }
     });
     globalThis.io = io;
-    const activeSockets = new Map(); // userId → socketId
-    const lobbySockets = new Map(); // userId → socketId
-    const rematchVotesMap = new Map(); // gameId → Set of usernames who requested rematch
-    const forfeitVotesMap = new Map(); // gameId → Set of usernames who gave up
+    const activeSockets = new Map(); // userId -> socketId
+    const lobbySockets = new Map(); // userId -> socketId
+    const rematchVotesMap = new Map(); // gameId -> Set of usernames who requested rematch
+    const forfeitVotesMap = new Map(); // gameId -> Set of usernames who gave up
     const redis = new Redis(process.env.REDIS_URL);
 
     io.use(async (socket, next) => {
-        // Authenticate socket before allowing connection
         const token = socket.handshake.auth.token;
 
         if (!token) {
             return next(new Error("No token"));
         }
 
-        const auth = authenticate(token); // runs jwt.verify
+        const auth = authenticate(token);
         if (auth == undefined) {
             console.log("No AUTH");
             return next(new Error("Invalid token"));
@@ -111,7 +110,6 @@ export default async function injectSocketIO(server) {
             } catch (_) { }
         }
 
-        // Update the user's active socket in the DB
         if (user && socket.currentRoom != 'public-lobby') {
             user.currentSocketId = socketId;
             await user.save();
@@ -129,7 +127,6 @@ export default async function injectSocketIO(server) {
                 try {
                     const hostUG = await UserGame.findById(game.host);
                     if (!hostUG || !hostUG.currentSocketId) {
-                        // Reassign host to the reconnecting user
                         await Game.findByIdAndUpdate(user.currentGame, { host: userId });
                     }
 
@@ -184,10 +181,8 @@ export default async function injectSocketIO(server) {
                     }
                     if (targetUser._id.equals(user._id)) socket.emit('error', 'You cannot kick yourself');
 
-                    // 1. Run DB cleanup
                     await leaveGameCleanup(targetUser._id, game._id);
 
-                    // 2. Kick active socket
                     const targetSocket = io.sockets.sockets.get(activeSockets.get(targetUser._id.toString()));
                     if (targetSocket) {
                         targetSocket.disconnectReason = 'kicked';
@@ -195,7 +190,6 @@ export default async function injectSocketIO(server) {
                         targetSocket.disconnect();
                     }
 
-                    // 3. Notify room
                     io.to(socket.currentRoom).emit('players-changed');
                     io.to('public-lobby').emit('lobbies-updated');
                 } catch (err) {
@@ -226,7 +220,6 @@ export default async function injectSocketIO(server) {
                         game = await Game.findById(game._id).populate('users').exec();
                     }
 
-                    // If it's really just a singleplayer game, count it toward singleplayer total
                     if (game.mode === 'ranked' && game.users.length === 1 && user._id.equals(game.users[0]._id)) {
                         const cipherType = game.params.cipherType;
                         user = await incrementTotal(user._id, cipherType, true);
@@ -321,7 +314,7 @@ export default async function injectSocketIO(server) {
                     };
 
                     game.state = 'finished';
-                    game.lastMatchResult = matchResult; // ✅ Save to DB
+                    game.lastMatchResult = matchResult;
                     await game.save();
 
                     io.to(game._id).emit('cipher-solved', matchResult);
@@ -393,13 +386,11 @@ export default async function injectSocketIO(server) {
                             }
 
                             if (socket.disconnectReason != 'leftGame') {
-                                // Do not auto-forfeit on disconnect for single-player games
                                 if (latestGame.state == 'started' && latestGame.users.length > 1) {
                                     forfeitVotesMap.delete(game._id);
                                     await handleForfeitRequest(latestGame, true, io, forfeitVotesMap, rematchVotesMap, latestUser);
                                 }
 
-                                // Do not auto-rematch on disconnect for single-player games
                                 if (latestGame.state == 'finished' && latestGame.users.length > 1) {
                                     rematchVotesMap.delete(game._id);
                                     await handleRematchRequest(latestGame, io, rematchVotesMap, forfeitVotesMap, latestUser);
@@ -442,22 +433,19 @@ export default async function injectSocketIO(server) {
                         state: 'waiting'
                     };
 
-                    // Fetch games + populate usernames and ensure we have all necessary fields
                     let games = await Game.find(query)
                         .select('_id params mode state createdAt users playerLimit autoFocus')
-                        .sort({ createdAt: -1 }) // Newest first
+                        .sort({ createdAt: -1 })
                         .limit(effectiveLimit)
                         .populate({ path: 'users', select: 'username' })
                         .lean();
 
-                    // Apply filters based on search terms
                     if (Object.keys(searchTerms).length > 0) {
-                        // If we have other search terms besides 'all', ignore 'all'
                         const hasOtherTerms = Object.keys(searchTerms).some(key => key !== 'all');
                         if (hasOtherTerms) {
                             delete searchTerms['all'];
                         }
-                        // If only 'all' is present, return all games without filtering
+
                         if (Object.keys(searchTerms).length === 0) {
                             cb(formatted);
                             return;
@@ -616,7 +604,6 @@ async function handleRematchRequest(game, io, rematchVotesMap, forfeitVotesMap, 
     const connectedUsernames = game.users
         .filter(u => u.currentSocketId)
         .map(u => u.username);
-    // If no one is connected, do not proceed with rematch logic
     if (connectedUsernames.length === 0) return;
     const allAgreed = connectedUsernames.every(name => rematchSet.has(name));
 
@@ -625,7 +612,6 @@ async function handleRematchRequest(game, io, rematchVotesMap, forfeitVotesMap, 
     rematchVotesMap.delete(game._id);
     forfeitVotesMap.delete(game._id);
 
-    // Remove disconnected users BEFORE rematch
     const toRemove = game.users.filter(u => !u.currentSocketId);
     for (const user of toRemove) {
         await leaveGameCleanup(user._id, game._id);
@@ -635,7 +621,6 @@ async function handleRematchRequest(game, io, rematchVotesMap, forfeitVotesMap, 
         game = await Game.findById(game._id).populate('users').exec();
     }
 
-    // Generate new cipher and reset game
     const newQuote = await generateQuote(game.params);
     game.quote = {
         id: newQuote.id,

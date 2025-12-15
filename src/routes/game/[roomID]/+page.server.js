@@ -40,10 +40,8 @@ export async function load({cookies, params}) {
                 cipherType: game.params.cipherType, K: game.params.K, solve: game.params.solve};
         }
     } catch (e) {
-        // If it's already a SvelteKit error, rethrow it
         if (e?.status) throw e;
 
-        // Otherwise, wrap it in a 500 error
         console.error('Error loading game:', e);
         throw error(500, {
             message: 'An unexpected error occurred while loading the game'

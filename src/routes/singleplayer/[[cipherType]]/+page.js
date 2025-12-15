@@ -1,4 +1,3 @@
-// +page.server.js
 import { redirect } from '@sveltejs/kit';
 import { cipherTypes } from '$db/shared-utils/CipherTypes';
 

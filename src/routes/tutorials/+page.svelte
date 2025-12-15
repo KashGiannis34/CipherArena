@@ -199,7 +199,7 @@
     .tutorial-card p {
         color: rgba(220, 228, 255, 0.88);
         line-height: 1.6;
-        flex-grow: 1; /* Pushes the footer to the bottom */
+        flex-grow: 1;
     }
 
     .card-footer {
@@ -213,7 +213,7 @@
     }
 
     .practice-button {
-        flex: 1; /* Each button takes equal space */
+        flex: 1;
         display: inline-block;
         padding: 0.6rem 1rem;
         border-radius: 50px;
