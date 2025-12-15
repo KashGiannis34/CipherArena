@@ -1,4 +1,3 @@
-// Persistent Python Bot Service
 import { PythonShell } from 'python-shell';
 import path from 'path';
 import fs from 'fs';
@@ -6,8 +5,6 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-// In production, SvelteKit bundles this file under build/server; __dirname won't be /app/db.
-// Use the project root (CWD) to point Python at the real db directory which we copy into the image.
 const ROOT_DIR = process.cwd();
 const SCRIPT_DIR = path.resolve(ROOT_DIR, 'db');
 
@@ -20,7 +17,6 @@ let requestCount = 0;
 let startTime = Date.now();
 let lastActivityTime = Date.now();
 
-// Auto-restart after 30 minutes of inactivity
 const INACTIVITY_TIMEOUT = 30 * 60 * 1000;
 
 function checkInactivity() {
@@ -30,7 +26,6 @@ function checkInactivity() {
 	}
 }
 
-// Check for inactivity every 5 minutes
 setInterval(checkInactivity, 5 * 60 * 1000);
 
 function shutdownPythonShell() {
@@ -71,7 +66,7 @@ async function initPythonShell() {
 		const options = {
 			mode: 'text',
 			pythonPath: process.env.PYTHON_PATH || (process.env.NODE_ENV === 'production' ? 'python3' : 'python'),
-			pythonOptions: ['-u'], // Unbuffered output
+			pythonOptions: ['-u'],
 			scriptPath: SCRIPT_DIR
 		};
 
@@ -79,7 +74,6 @@ async function initPythonShell() {
 			console.log(`[Bot Service] Spawning Python: ${options.pythonPath} scriptPath=${options.scriptPath}`);
 			pythonShell = new PythonShell('codebusters_bot_server.py', options);
 
-			// Handle incoming messages
 			pythonShell.on('message', (message) => {
 				try {
 					const response = JSON.parse(message);
@@ -91,7 +85,6 @@ async function initPythonShell() {
 						return;
 					}
 
-					// Handle responses to requests
 					const requestId = response.id;
 					if (requestId && pendingRequests.has(requestId)) {
 						const { resolve: resolveRequest } = pendingRequests.get(requestId);
@@ -103,22 +96,18 @@ async function initPythonShell() {
 				}
 			});
 
-			// Show Python stderr for debugging (e.g., missing files, import errors)
 			pythonShell.on('stderr', (data) => {
 				console.error('[Bot Service][stderr]', data);
 			});
 
-			// Handle errors
 			pythonShell.on('error', (error) => {
 				console.error('[Bot Service] Python shell error:', error);
 
-				// Reject all pending requests
 				pendingRequests.forEach(({ reject }) => {
 					reject(new Error('Python process error: ' + error.message));
 				});
 				pendingRequests.clear();
 
-				// Clean up
 				shutdownPythonShell();
 
 				if (isInitializing) {
@@ -127,13 +116,11 @@ async function initPythonShell() {
 				}
 			});
 
-			// Handle process exit
 			pythonShell.on('close', (code, signal) => {
 				console.log(`[Bot Service] Python process closed (code=${code}, signal=${signal})`);
 				shutdownPythonShell();
 			});
 
-			// Timeout initialization after 15 seconds
 			setTimeout(() => {
 				if (isInitializing) {
 					isInitializing = false;
@@ -161,10 +148,8 @@ async function sendRequest(action, data) {
 	const id = ++requestId;
 
 	return new Promise((resolve, reject) => {
-		// Store the promise callbacks
 		pendingRequests.set(id, { resolve, reject });
 
-		// Set timeout for this specific request
 		const timeout = setTimeout(() => {
 			if (pendingRequests.has(id)) {
 				pendingRequests.delete(id);
@@ -172,7 +157,6 @@ async function sendRequest(action, data) {
 			}
 		}, 8000);
 
-		// Clear timeout when resolved
 		const originalResolve = resolve;
 		const wrappedResolve = (value) => {
 			clearTimeout(timeout);
@@ -187,7 +171,6 @@ async function sendRequest(action, data) {
 
 		pendingRequests.set(id, { resolve: wrappedResolve, reject: wrappedReject });
 
-		// Send the request
 		const request = JSON.stringify({ action, id, ...data });
 		try {
 			shell.send(request);
@@ -234,7 +217,6 @@ export function getStats() {
 	};
 }
 
-// Graceful shutdown
 process.on('SIGTERM', () => {
 	console.log('[Bot Service] Shutting down...');
 	shutdownPythonShell();

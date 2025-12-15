@@ -1,10 +1,8 @@
-# Codebusters practice - API version for SvelteKit integration
 import random
 import time
 import json
 import sys
 
-# Common keywords for Nihilist/Polybius squares (~100 words), all lowercase
 NIHILIST_KEYWORDS = [
     "cipher", "decode", "encode", "secret", "keyword", "matrix", "alpha", "bravo",
     "charlie", "delta", "echo", "foxtrot", "golf", "hotel", "india", "juliet",
@@ -201,7 +199,6 @@ def generate_inverse_matrix():
             key.append(int(random.random() * 26) + 1)
         det = (key[0] * key[3] - key[1] * key[2]) % 26
 
-    # Calculate inverse
     for n in range(1, 26):
         if (n * det) % 26 == 1:
             det = n
@@ -227,7 +224,6 @@ def check_inverse_matrix(matrix, user_answer):
         if not isinstance(user_answer, list) or len(user_answer) != 4:
             raise ValueError("Answer must be a list of 4 numbers")
 
-        # Validate all elements are integers
         user_answer = [int(x) for x in user_answer]
 
         key = matrix.copy()
@@ -551,7 +547,6 @@ def check_baconian(binary, user_answer):
         correct_answer = codes.get(binary, "")
         user_lower = user_answer.lower()
 
-        # Check if user answer matches any valid option
         correct = user_lower in correct_answer.split(',')
 
         return {
@@ -622,7 +617,6 @@ def check_remainder_cheese(number, user_answer):
     try:
         correct_answer = number % 26
 
-        # Accept both numeric and letter answers
         if isinstance(user_answer, str) and not user_answer.isnumeric():
             if len(user_answer) == 0:
                 raise ValueError("Answer cannot be empty")
@@ -656,7 +650,6 @@ def generate_memorize_decimals(decimals=-1):
     else:
         str_n = str(decimal_value)[0:index + decimals + 1]
 
-    # Generate reference table
     reference = []
     for num in range(1, 26):
         idx = str(num / 26.0).index('.')
@@ -678,8 +671,6 @@ def generate_memorize_decimals(decimals=-1):
 def check_memorize_decimals(decimal_str, user_answer):
     """Check answer for memorize decimals"""
     try:
-        # Try to reverse engineer the number from decimal
-        # This is approximate but works for the range 1-25
         n = None
         for num in range(1, 26):
             if decimal_str in str(num / 26.0):
@@ -691,7 +682,6 @@ def check_memorize_decimals(decimal_str, user_answer):
 
         correct_answer = n % 26
 
-        # Accept both numeric and letter answers
         if isinstance(user_answer, str) and not user_answer.isnumeric():
             if len(user_answer) == 0:
                 raise ValueError("Answer cannot be empty")
@@ -718,7 +708,6 @@ def generate_atbash_letter():
     """Generate an Atbash cipher letter problem"""
     number = int(random.random() * 26) + 65
     letter = chr(number)
-    # Atbash: A->Z, B->Y, C->X, etc. Formula: 25 - (letter - 65)
     answer = chr(90 - (number - 65))
     return {
         "type": "atbash_letter",
@@ -793,7 +782,6 @@ def check_atbash_word(word, user_answer):
         }
 
 def _normalize_keyword(keyword: str) -> str:
-    # Uppercase, remove non A-Z, map J->I, and de-duplicate preserving order
     seen = set()
     cleaned = []
     for ch in keyword.upper():
@@ -806,23 +794,17 @@ def _normalize_keyword(keyword: str) -> str:
     return "".join(cleaned)
 
 def generate_nihilist_table(keyword=None):
-    """Generate a Nihilist substitution table (5x5 Polybius square) using a keyword.
-    Keyword letters (deduped, J→I) fill the square first, followed by remaining alphabet in order.
-    Returns the 5x5 table (list of 5 lists, each of length 5).
-    """
-    # Alphabet without J (J merged with I)
+    """Generate a Nihilist substitution table (5x5 Polybius square) using a keyword."""
     alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
 
     if not keyword:
         keyword = random.choice(NIHILIST_KEYWORDS)
     norm_key = _normalize_keyword(keyword)
 
-    # Build sequence: keyword then remaining alphabet in order
     used = set(norm_key)
     remainder = [ch for ch in alphabet if ch not in used]
     sequence = list(norm_key) + remainder
 
-    # Create 5x5 table from sequence
     table = [sequence[i*5:(i+1)*5] for i in range(5)]
     return table
 
@@ -837,7 +819,7 @@ def nihilist_encode_letter(table, letter):
     """Encode a letter using nihilist table, returns row+col as two-digit number"""
     letter = letter.upper()
     if letter == 'J':
-        letter = 'I'  # J is combined with I
+        letter = 'I'
 
     for row_idx, row in enumerate(table):
         if letter in row:
@@ -855,11 +837,9 @@ def nihilist_decode_number(table, number):
 
 def generate_nihilist_encode():
     """Generate a nihilist encoding problem (letter to number)"""
-    # Choose a random keyword and build the table
     keyword = random.choice(NIHILIST_KEYWORDS)
     table = generate_nihilist_table(keyword)
 
-    # Pick a random letter
     alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
     letter = alphabet[int(random.random() * len(alphabet))]
 
@@ -896,11 +876,9 @@ def check_nihilist_encode(table, letter, user_answer):
 
 def generate_nihilist_decode():
     """Generate a nihilist decoding problem (number to letter)"""
-    # Choose a random keyword and build the table
     keyword = random.choice(NIHILIST_KEYWORDS)
     table = generate_nihilist_table(keyword)
 
-    # Generate valid row and column (1-5)
     row = int(random.random() * 5) + 1
     col = int(random.random() * 5) + 1
     number = row * 10 + col
@@ -938,14 +916,10 @@ def check_nihilist_decode(table, number, user_answer):
         }
 
 def generate_nihilist_keyword_decode():
-    """Generate Nihilist decode given a ciphertext NUMBER and a keyword letter (decode = ciphertext - keyword).
-    We generate by choosing a plaintext letter P and a keyword letter K, then set C = num(P) + num(K).
-    """
-    # Choose a random keyword and build the table
+    """Generate Nihilist decode given a ciphertext NUMBER and a keyword letter (decode = ciphertext - keyword)."""
     keyword = random.choice(NIHILIST_KEYWORDS)
     table = generate_nihilist_table(keyword)
 
-    # Pick a plaintext letter and a keyword letter from table
     p_r = int(random.random() * 5) + 1
     p_c = int(random.random() * 5) + 1
     plaintext_letter = table[p_r - 1][p_c - 1]
@@ -954,10 +928,9 @@ def generate_nihilist_keyword_decode():
     k_c = int(random.random() * 5) + 1
     keyword_letter = table[k_r - 1][k_c - 1]
 
-    # Encode both to numbers (rowcol) and make ciphertext number via addition
     p_num = p_r * 10 + p_c
     k_num = k_r * 10 + k_c
-    ciphertext_number = p_num + k_num  # range 22..110
+    ciphertext_number = p_num + k_num
 
     return {
         "type": "nihilist_keyword_decode",
@@ -978,12 +951,10 @@ def check_nihilist_keyword_decode(table, ciphertext_number, keyword_letter, user
         if not isinstance(user_answer, str) or len(user_answer) == 0:
             return {"error": "Invalid input: answer must be a letter", "correct": False, "user_answer": user_answer}
 
-        # keyword number from table
         k_num = nihilist_encode_letter(table, keyword_letter)
         if k_num is None:
             return {"error": "Invalid keyword letter for table", "correct": False, "user_answer": user_answer}
 
-        # subtract as ordinary numbers
         p_num = int(ciphertext_number) - k_num
         if p_num < 11 or p_num > 55:
             return {"error": "Resulting pair is out of range", "correct": False, "user_answer": user_answer}
@@ -1003,7 +974,6 @@ def check_nihilist_keyword_decode(table, ciphertext_number, keyword_letter, user
             "user_answer": user_answer
         }
 
-# Main function to handle command line arguments
 def main():
     if len(sys.argv) < 2:
         print(json.dumps({"error": "No command specified"}))
@@ -1073,8 +1043,6 @@ def main():
 
             problem_type = int(sys.argv[2])
 
-            # Parse the problem data and user answer from subsequent arguments
-            # Expected format: check <type> <json_problem_data> <user_answer>
             if len(sys.argv) < 5:
                 print(json.dumps({"error": "Missing problem data or user answer"}))
                 return
@@ -1126,7 +1094,6 @@ def main():
                 result = {"error": "Invalid problem type"}
 
             print(json.dumps(result))
-
         else:
             print(json.dumps({"error": "Invalid command. Use 'generate' or 'check'"}))
 

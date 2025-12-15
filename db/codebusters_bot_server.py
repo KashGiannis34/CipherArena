@@ -1,11 +1,8 @@
-# Persistent Codebusters Bot Server
-# This keeps the Python process alive and handles requests via stdin/stdout
 import sys
 import json
 import time
 import random
 
-# Import all the functions from the original bot
 from codebusters_bot import (
     generate_two_digit_multiplication,
     generate_letter_to_value,
@@ -115,10 +112,8 @@ def handle_check(problem_type, problem_data, user_answer):
 
 def main():
     """Main loop - read requests from stdin, write responses to stdout"""
-    # Signal that we're ready
     print(json.dumps({"type": "ready", "data": {"status": "initialized"}}), flush=True)
 
-    # Process requests
     for line in sys.stdin:
         try:
             request = json.loads(line.strip())

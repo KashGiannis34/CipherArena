@@ -7,7 +7,7 @@
   let src = $state("");
   let ringColor = $state('#bcaeff');
   let imgRef = $state(null);
-  let lastFetchedProfileId = $state(""); // New state to track last successful fetch
+  let lastFetchedProfileId = $state("");
 
   $effect(() => {
     if (!profilePicture || profilePicture === 'default') {
@@ -84,42 +84,42 @@
 
 <style>
   .avatar-wrapper {
-      display: inline-block;
-      border-radius: 50%;
-      padding: 4px;
-      box-sizing: content-box;
-      background-color: transparent;
-      position: relative;
-    }
+    display: inline-block;
+    border-radius: 50%;
+    padding: 4px;
+    box-sizing: content-box;
+    background-color: transparent;
+    position: relative;
+  }
 
-    .ring-wrapper::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      border-radius: 50%;
-      border: var(--ring-thickness) solid var(--ring-color);
-      box-sizing: border-box;
-      opacity: 0.6;
-      animation: soft-ring 3s ease-in-out infinite;
-      pointer-events: none;
-    }
+  .ring-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    border: var(--ring-thickness) solid var(--ring-color);
+    box-sizing: border-box;
+    opacity: 0.6;
+    animation: soft-ring 3s ease-in-out infinite;
+    pointer-events: none;
+  }
 
-    .ring-wrapper.no-ring::after {
-      border-color: transparent;
-      animation: none;
-      opacity: 0;
-    }
+  .ring-wrapper.no-ring::after {
+    border-color: transparent;
+    animation: none;
+    opacity: 0;
+  }
 
-    .avatar {
-      display: block;
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
-    }
+  .avatar {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
 
   .spinner {
     position: absolute;
