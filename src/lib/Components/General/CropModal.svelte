@@ -133,7 +133,7 @@ input[type="range"] {
 }
 
 .error-message {
-  color: #ff6b6b;
+  color: var(--color-error-dark);
   background: rgba(0, 0, 0, 0.4);
   padding: 0.5rem 1rem;
   border-radius: 6px;

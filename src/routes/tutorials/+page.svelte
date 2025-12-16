@@ -155,7 +155,7 @@
 
     .tutorial-card {
         background: rgba(20, 22, 30, 0.45);
-        border: 1px solid rgba(255, 255, 255, 0.12);
+        border: 1px solid var(--glass-border);
         border-radius: 1rem;
         padding: 2rem;
         text-align: left;
@@ -181,8 +181,8 @@
         position: absolute;
         top: 1rem;
         right: 1rem;
-        background-color: rgba(255, 107, 107, 0.8);
-        color: white;
+        background-color: var(--color-warning-badge);
+        color: var(--text-primary);
         padding: 0.25rem 0.6rem;
         border-radius: 99px;
         font-size: 0.75rem;
@@ -192,12 +192,12 @@
 
     .tutorial-card h3 {
         font-size: 1.5rem;
-        color: #fff;
+        color: var(--text-primary);
         margin: 0 0 0.75rem 0;
     }
 
     .tutorial-card p {
-        color: rgba(220, 228, 255, 0.88);
+        color: var(--color-text-soft);
         line-height: 1.6;
         flex-grow: 1;
     }
@@ -218,8 +218,8 @@
         padding: 0.6rem 1rem;
         border-radius: 50px;
         background: transparent;
-        color: #fff;
-        border: 1px solid rgba(255, 255, 255, 0.5);
+        color: var(--text-primary);
+        border: 1px solid var(--text-muted);
         font-weight: 500;
         text-align: center;
         text-decoration: none;
@@ -228,21 +228,21 @@
     }
 
     .practice-button:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: #fff;
+        background: var(--glass-bg-hover);
+        border-color: var(--text-primary);
     }
 
     .landing { position: relative; min-height: 100vh; overflow: hidden; background: transparent; }
     .container { max-width: 1440px; margin: 0 auto; padding: 1.25rem; overflow-x: hidden; }
-    .section { margin: 0.75rem auto; padding: 3rem 2.5rem; background: rgba(255, 255, 255, 0.06); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1); border-radius: 2rem; color: white; text-align: center; position: relative; overflow: hidden; transition: all 0.3s ease; }
+    .section { margin: 0.75rem auto; padding: 3rem 2.5rem; background: var(--glass-bg); box-shadow: var(--glass-shadow); border-radius: 2rem; color: var(--text-primary); text-align: center; position: relative; overflow: hidden; transition: all 0.3s ease; }
     .hero-section { padding: 5rem 2.5rem; }
-    .hero { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 900; margin-bottom: 1rem; letter-spacing: -0.02em; background: linear-gradient(135deg, #ffffff, #cfd8ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: text-glow 2s ease-in-out infinite alternate; }
+    .hero { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 900; margin-bottom: 1rem; letter-spacing: -0.02em; background: var(--gradient-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: text-glow 2s ease-in-out infinite alternate; }
     .subhero { font-size: 1.28rem; line-height: 1.65; margin-bottom: 1.4rem; color: rgba(255, 255, 255, 0.86); }
-    .section h2 { font-size: 2.5rem; font-weight: 700; margin-bottom: 1.5rem; color: #fff; position: relative; z-index: 1; }
+    .section h2 { font-size: 2.5rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-primary); position: relative; z-index: 1; }
     .animatable { opacity: 0; transform: translateY(30px); transition: opacity 600ms ease, transform 600ms ease; }
     :global(.animatable.visible) { opacity: 1; transform: translateY(0); }
-    @keyframes text-glow { from { text-shadow: 0 0 4px #fff, 0 0 6px #6a5acd, 0 0 12px #6a5acd; } to { text-shadow: 0 0 6px #fff, 0 0 8px #836fff, 0 0 16px #836fff; } }
-    .section::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 2rem; border: 2px solid transparent; background: linear-gradient(90deg, #4ecdc4, #7877c6, #ff6b6b, #7877c6, #4ecdc4) border-box; background-size: 200% auto; mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: destination-out; mask-composite: exclude; opacity: 0; transition: opacity 0.4s ease-in-out; }
+    @keyframes text-glow { from { text-shadow: 0 0 4px var(--text-primary), 0 0 6px var(--color-purple-glow), 0 0 12px var(--color-purple-glow); } to { text-shadow: 0 0 6px var(--text-primary), 0 0 8px var(--color-purple-glow-light), 0 0 16px var(--color-purple-glow-light); } }
+    .section::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 2rem; border: 2px solid transparent; background: var(--gradient-rainbow) border-box; background-size: 200% auto; mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: destination-out; mask-composite: exclude; opacity: 0; transition: opacity 0.4s ease-in-out; }
     .section:hover::before { opacity: 1; animation: move-gradient-border 4s ease-in-out infinite; }
     @keyframes move-gradient-border { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 

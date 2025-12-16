@@ -2,8 +2,8 @@
     import Letter from "./Letter.svelte";
     import FreqTable from "./FreqTable.svelte";
     import Container from "../General/Container.svelte";
-    import {ENGLISH_ALPHABET, isSolvableChunk, SPANISH_ALPHABET} from "$db/shared-utils/CipherUtil";
-    import {Confetti} from 'svelte-confetti';
+    import { isSolvableChunk } from "$db/shared-utils/CipherUtil";
+    import { Confetti } from 'svelte-confetti';
     import { cipherTypes } from "$db/shared-utils/CipherTypes";
     import LoadingOverlay from "../General/LoadingOverlay.svelte";
     import { fade } from "svelte/transition";
@@ -18,6 +18,20 @@
     import MatrixInput from "./MatrixInput.svelte";
     import AffineInput from "./AffineInput.svelte";
     import Calculator from "./Calculator.svelte";
+    import { debounce } from "$lib/util/helpers.js";
+    import { MATH_INTENSIVE_CIPHERS, GAME_MODES } from "$lib/util/constants.js";
+    import {
+        initQuote,
+        initLetterInputs,
+        initLetterFocus,
+        initLettersWithIndices,
+        getDirectMap,
+        paramToString,
+        getNextInputIndex,
+        getNextEmptyInputIndex,
+        getInputText,
+        calculateProgress
+    } from "$lib/util/cipherUtils.js";
 
     let {quote, hash, cipherType, autoFocus, params, keys, onSolved, mode, newProblem, fetchAnswerStatus, onProgressUpdate, autoSwitch} = $props();
     let spanish = cipherType == 'Xenocrypt';
@@ -28,22 +42,21 @@
     let submissionError=$state(false);
     let clearPolybius = $state(false);
     let debouncedProgressUpdate;
-    let initialQuote = initQuote(quote, cipherTypes[cipherType]['spacing']);
+    let initialQuote = initQuote(quote, cipherTypes[cipherType]['spacing'], cipherType);
 
     let info = $state({
         cipherText: initialQuote,
         cipherTextTrim: initialQuote.filter(c => c !== ' '),
-        letterInputs: initLetterInputs(),
-        letterFocus: initLetterFocus(),
+        letterInputs: initLetterInputs(spanish),
+        letterFocus: initLetterFocus(spanish),
         inputs: []
     });
 
-    let lettersWithIndices = initLWI();
-    let directMap = initDirectMap(cipherType);
+    let lettersWithIndices = initLettersWithIndices(initialQuote, cipherType, keys);
+    let directMap = getDirectMap(cipherType);
     let paramString = paramToString(params);
 
-    const mathIntensiveCiphers = ['Affine', 'Caesar', 'Nihilist', 'Hill'];
-    const showCalculatorButton = mathIntensiveCiphers.includes(cipherType);
+    const showCalculatorButton = MATH_INTENSIVE_CIPHERS.includes(cipherType);
     let calculatorVisible = $state(false);
     let calculatorPosition = $state({ x: 50, y: 50 });
     let mainInputElement;
@@ -51,23 +64,15 @@
     let calculatorFocused = $state(false);
     let lastFocusedInputIndex = $state(-1);
 
-    function debounce(func, delay) {
-        let timeout;
-        return (...args) => {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func(...args), delay);
-        };
-    }
-
     function clearQuote() {
-        info.letterInputs = initLetterInputs();
+        info.letterInputs = initLetterInputs(spanish);
         for (let input of info.inputs) {
             if (input != undefined) {
                 input.value = '';
             }
         }
 
-        if (mode === "multiplayer") {
+        if (mode === GAME_MODES.MULTIPLAYER) {
             debouncedProgressUpdate();
         }
 
@@ -76,48 +81,9 @@
         }
     }
 
-    function paramToString(obj) {
-        let val = obj.K;
-        let res = "K"+val;
-        if (res == "K0") {
-            return "Random ";
-        } else if (res == "K1" || res == "K2" || res == "K3") {
-            return res + " ";
-        } else {
-            return "";
-        }
-    }
-
     function onArrow(key, index) {
-        let inc;
-        if (key == "ArrowRight" || event.key == " " || event.key == "Tab") {
-            inc = 1;
-        } else {
-            inc = -1;
-        }
-
-        const len = info.inputs.length;
-        let currIndex = index;
-        let triedAll = false;
-
-        while (!triedAll) {
-            let nextIndex = (currIndex + inc + len) % len;
-            let prevChar = info.cipherTextTrim[currIndex];
-            let nextChar = info.cipherTextTrim[nextIndex];
-
-            if (isSolvableChunk(nextChar, cipherType) && (nextChar !== prevChar || !directMap)) {
-                currIndex = nextIndex;
-                break;
-            }
-
-            currIndex = nextIndex;
-            if (currIndex === index) {
-                currIndex = (index + inc + len) % len;
-                triedAll = true;
-            }
-        }
-
-        info.inputs[currIndex]?.focus();
+        const nextIndex = getNextInputIndex(key, index, info.inputs, info.cipherTextTrim, cipherType, directMap);
+        info.inputs[nextIndex]?.focus();
     }
 
     function onFocus(letter, focus) {
@@ -126,155 +92,34 @@
         info.letterFocus[letter] = focus;
     }
 
-    function onChange(letter, val, index) {
-        if (debouncedProgressUpdate && mode === "multiplayer" && info.inputs[index].value != val && (val === '' || info.inputs[index].value === '')) {
+    function onChange(letter, newValue, index) {
+        if (debouncedProgressUpdate && mode === GAME_MODES.MULTIPLAYER && info.inputs[index].value != newValue && (newValue === '' || info.inputs[index].value === '')) {
             debouncedProgressUpdate();
         }
 
         if (!directMap) {
-            info.inputs[index].value = val;
+            info.inputs[index].value = newValue;
         } else {
-            info.letterInputs[letter] = val;
+            info.letterInputs[letter] = newValue;
         }
 
-        if (autoFocus && val !== '') {
-            const len = info.inputs.length;
-            let currIndex = index;
-            let triedAll = false;
-
-            while (!triedAll) {
-                currIndex = (currIndex + 1) % len;
-
-                if (directMap) {
-                    const normalizedLetter = info.cipherTextTrim[currIndex].toUpperCase();
-                    if (
-                        isSolvableChunk(normalizedLetter, cipherType) &&
-                        normalizedLetter !== letter &&
-                        info.letterInputs[normalizedLetter] === ''
-                    ) {
-                        break;
-                    }
-                } else {
-                    if (
-                        isSolvableChunk(info.cipherTextTrim[currIndex], cipherType) &&
-                        info.inputs[currIndex].value === ''
-                    ) {
-                        break;
-                    }
-                }
-
-                if (currIndex === index) {
-                    triedAll = true;
-                }
-            }
-
-            info.inputs[currIndex]?.focus();
+        if (autoFocus && newValue !== '') {
+            const nextIndex = getNextEmptyInputIndex(index, info.inputs, info.cipherTextTrim, cipherType, directMap, info.letterInputs, letter);
+            info.inputs[nextIndex]?.focus();
         }
-    }
-
-    function initQuote(quoteArr, spacing) {
-        if (spacing === -1) return quoteArr;
-
-        const spaced = [];
-        let count = 0;
-
-        for (const chunk of quoteArr) {
-            if (!isSolvableChunk(chunk, cipherType)) continue;
-
-            spaced.push(chunk);
-            if (isSolvableChunk(chunk, cipherType)) {
-                count++;
-                if (spacing != 0 && count % spacing === 0) {
-                    spaced.push(" ");
-                }
-            }
-        }
-
-        return spaced;
-    }
-
-    function initLetterInputs() {
-        const alphabet = spanish ? SPANISH_ALPHABET : ENGLISH_ALPHABET;
-        const letterInputs = {};
-        alphabet.split('').forEach(letter => {
-            letterInputs[letter] = '';
-        });
-        return letterInputs;
-    }
-
-    function initLetterFocus() {
-        const alphabet = spanish ? SPANISH_ALPHABET : ENGLISH_ALPHABET;
-        const letterFocus = {};
-        alphabet.split('').forEach(letter => {
-            letterFocus[letter] = false;
-        });
-        return letterFocus;
-    }
-
-    function initDirectMap(type) {
-        return cipherTypes[cipherType]['directMap'];
-    }
-
-    function initLWI() {
-        let res = [];
-        let index = 0;
-        let currentWord = [];
-        const keyword = keys[0];
-        const addKey = cipherTypes[cipherType]['stackKey'];
-        let keywordIndex = 0;
-
-        for (let char of info.cipherText) {
-            if (char === ' ') {
-                if (currentWord.length) res.push(currentWord);
-                currentWord = [];
-                continue;
-            }
-
-            let keywordChar = '';
-
-            if (addKey && isSolvableChunk(char, cipherType)) {
-                keywordChar = keyword[keywordIndex].toUpperCase();
-                keywordIndex = (keywordIndex + 1) % keyword.length;
-            }
-
-            currentWord.push({ letter: char, index, keyLetter: keywordChar });
-            index++;
-        }
-
-        if (currentWord.length) res.push(currentWord);
-        return res;
-    }
-
-    function getInputText() {
-        let text = '';
-        for (let input of info.inputs) {
-            if (input != undefined ) {
-                if (input.value != '')
-                    text += input.value;
-                else
-                    text += ' ';
-            }
-        }
-        return text;
     }
 
     async function checkQuote() {
-        let i = getInputText();
+        const inputText = getInputText(info.inputs);
         isChecking = true;
 
-        const answer = await fetchAnswerStatus(i, hash, cipherType, keys, params.Solve, startTime);
-        if (mode == 'singleplayer') {
-            solved = answer.solved;
-        } else {
-            solved = answer.solved;
-        }
+        const answer = await fetchAnswerStatus(inputText, hash, cipherType, keys, params.Solve, startTime);
+        solved = answer.solved;
         isChecking = false;
 
-        if (solved) {
-            if (mode == 'singleplayer') {
-                onSolved(answer);
-            }
-        } else {
+        if (solved && mode === GAME_MODES.SINGLEPLAYER) {
+            onSolved(answer);
+        } else if (!solved) {
             triggerFailUI();
         }
     }
@@ -354,7 +199,7 @@
     onMount(() => {
         if (mode == "multiplayer") {
             debouncedProgressUpdate = debounce(() => {
-                const filled = getInputText().replace(/[^A-Za-z]/g, '').length;
+                const filled = getInputText(info.inputs).replace(/[^A-Za-z]/g, '').length;
                 const total = info.cipherText.filter(chunk => isSolvableChunk(chunk, cipherType)).length;
                 const percent = Math.floor((filled / total) * 100);
                 onProgressUpdate(percent);
@@ -460,8 +305,8 @@
         {#if !solved}
             <button class="button" onclick={clearQuote}>Clear</button>
         {/if}
-        {#if (mode == 'singleplayer' && !autoSwitch) || !solved}
-            <button class="button" onclick={(solved && mode=="singleplayer") ? newProblem:checkQuote}>{(solved && mode=="singleplayer") ? 'New Problem' : 'Submit'}</button>
+        {#if (mode === GAME_MODES.SINGLEPLAYER && !autoSwitch) || !solved}
+            <button class="button" onclick={(solved && mode === GAME_MODES.SINGLEPLAYER) ? newProblem : checkQuote}>{(solved && mode === GAME_MODES.SINGLEPLAYER) ? 'New Problem' : 'Submit'}</button>
         {/if}
     </div>
     {#if submissionError}
@@ -540,7 +385,7 @@
     }
 
     .highlight {
-        background: rgba(255, 255, 255, 0.2);
+        background: var(--glass-bg-active);
     }
 
     .cipher {
@@ -576,10 +421,10 @@
 
     .cipher-error {
         margin-top: 1rem;
-        color: #ff4d4f;
-        background-color: #2a0000;
+        color: var(--color-error-dark);
+        background-color: rgba(42, 0, 0, 1);
         padding: 0.75rem 1.25rem;
-        border: 1px solid #ff4d4f;
+        border: 1px solid var(--color-error-dark);
         border-radius: 8px;
         font-size: 1rem;
         font-weight: 500;
@@ -615,8 +460,8 @@
     }
 
     .calculator-toggle-btn {
-        background: linear-gradient(145deg, #8d2fff, #5619f0);
-        border: 2px solid #4a5568;
+        background: linear-gradient(145deg, var(--color-primary), var(--color-primary-dark));
+        border: 2px solid var(--color-gray-border);
         border-radius: 50%;
         width: 56px;
         height: 56px;
@@ -631,7 +476,7 @@
     }
 
     .calculator-toggle-btn:hover {
-        background: linear-gradient(145deg, #5619f0, #8d2fff);
+        background: linear-gradient(145deg, var(--color-primary-dark), var(--color-primary));
         transform: translateY(-2px);
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
     }
@@ -642,20 +487,20 @@
     }
 
     .calculator-toggle-btn.cipher-focused {
-        background: linear-gradient(145deg, #38a169, #2f855a);
-        border-color: #4adede;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(74, 222, 222, 0.3);
+        background: var(--gradient-btn-success);
+        border-color: var(--color-accent);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 2px var(--color-accent-muted);
     }
 
     .calculator-toggle-btn.cipher-focused:hover {
-        background: linear-gradient(145deg, #2f855a, #38a169);
+        background: linear-gradient(145deg, var(--color-success-darker), var(--color-success-dark));
     }
 
     .calculator-hint {
-        color: #cbd5e0;
+        color: var(--text-tertiary);
         font-size: 11px;
         font-weight: 500;
-        background: rgba(0, 0, 0, 0.7);
+        background: var(--glass-overlay);
         padding: 2px 6px;
         border-radius: 4px;
         white-space: nowrap;
@@ -673,7 +518,7 @@
 
     .calculator-hint-label {
         font-size: 9px;
-        color: #a0aec0;
+        color: var(--text-secondary);
         font-weight: 400;
         text-align: center;
         text-transform: uppercase;

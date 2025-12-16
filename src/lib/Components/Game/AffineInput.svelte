@@ -152,7 +152,7 @@
 }
 
 .result {
-  color: #4adede;
+  color: var(--color-accent);
   font-weight: bold;
 }
 
@@ -185,11 +185,11 @@
 
 .scalar:focus {
   outline: none;
-  background-color: rgba(255, 255, 255, 0.20) !important;
+  background-color: var(--glass-bg-active) !important;
 }
 
 .scalar:hover {
-  background-color: #ffffff0a;
+  background-color: var(--glass-bg);
   cursor: pointer;
 }
 

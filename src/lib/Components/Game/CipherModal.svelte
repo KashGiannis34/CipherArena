@@ -192,14 +192,14 @@
   }
 
   .profile-link {
-    color: black;
+    color: var(--color-neutral-950);
 		text-decoration: none;
 		font-weight: 500;
 		transition: color 0.2s;
 	}
 
 	.profile-link:hover {
-		color: #4e9aff;
+		color: var(--color-link);
 		text-decoration: underline;
 	}
 
@@ -210,7 +210,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: var(--glass-overlay);
     }
 
     .modal-wrapper {
@@ -249,12 +249,12 @@
     }
 
     .won-player {
-    border-left: 6px solid #4caf50;
+    border-left: 6px solid var(--color-success-light);
     background: linear-gradient(to right, #c9ffd7, #e0ffe9);
     }
 
     .lost-player {
-    border-left: 6px solid #ff5757;
+    border-left: 6px solid var(--color-error);
     background: linear-gradient(to right, #ffe0e0, #ffd2d2);
     }
 
@@ -293,11 +293,11 @@
     }
 
     .elo-change-slide.up {
-      color: #36d67d;
+      color: var(--color-success);
     }
 
     .elo-change-slide.down {
-      color: #e14c4c;
+      color: var(--color-error-darker);
     }
 
     @keyframes pushInFade {
@@ -380,7 +380,7 @@
 
     .player-status-tag {
     font-size: 0.8rem;
-    color: #c00;
+    color: var(--color-error-darkest);
     margin-left: 0.5rem;
     font-weight: 500;
     }
@@ -389,11 +389,11 @@
     font-size: 0.8rem;
     font-weight: 500;
     margin-left: 0.5rem;
-    color: #27ae60;
+    color: var(--color-success-dark);
     }
 
     .player-rematch-tag.gray {
-    color: #888;
+    color: var(--color-neutral-700);
     }
 
     .rematch-line {

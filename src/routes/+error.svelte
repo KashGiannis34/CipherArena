@@ -52,7 +52,7 @@
         font-size: 5rem;
         font-weight: 700;
         margin: 0;
-        background: linear-gradient(135deg, #7555ff 0%, #a992ff 100%);
+        background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -62,13 +62,13 @@
     .error-title {
         font-size: 1.75rem;
         margin: 1rem 0;
-        color: #a992ff;
+        color: var(--color-primary-light);
         font-weight: 600;
     }
 
     .error-message {
         margin: 1.5rem 0;
-        color: #cccccc;
+        color: var(--color-neutral-400);
         font-size: 1.1rem;
         line-height: 1.5;
     }
@@ -92,14 +92,14 @@
     }
 
     .button:not(.secondary) {
-        background: linear-gradient(135deg, #7555ff 0%, #6344ee 100%);
-        color: white;
+        background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+        color: var(--text-primary);
     }
 
     .button.secondary {
         background: transparent;
-        border: 2px solid #7555ff;
-        color: #7555ff;
+        border: 2px solid var(--color-primary);
+        color: var(--color-primary);
     }
 
     .button:hover {

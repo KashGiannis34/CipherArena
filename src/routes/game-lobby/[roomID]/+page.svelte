@@ -6,6 +6,7 @@
 	import { broadcastTabEvent } from '$lib/util/crossTabEvents.js';
   	import { onMount } from 'svelte';
   	import Container from "$lib/Components/General/Container.svelte";
+	import { leaveCurrentGame, joinGame } from '$lib/util/gameApi.js';
 
 	let { data } = $props();
 	let showJoinGameButton = $state(false);
@@ -20,48 +21,30 @@
 		goto(`/auth/register?roomId=${data.gameId}`);
 	}
 
-	async function leaveGame() {
+	async function handleLeaveGame() {
 		authenticating = true;
-        const res = await fetch('/api/leave-current-game', {method: 'POST'});
-        const data = await res.json();
+        const result = await leaveCurrentGame();
 
-        if (data.success) {
+        if (result.success) {
 			showJoinGameButton = true;
 			feedback = "You left your previous game. Now join this game.";
         } else {
-            feedback = data.message;
-        }
-
-        if (data.disconnectSocket) {
-            broadcastTabEvent('leave-game', { gameId: data.gameId });
+            feedback = result.data?.message ?? 'Failed to leave game';
         }
 		authenticating = false;
     }
 
-	async function joinGame() {
-        try {
-            authenticating = true;
-            feedback = '';
-            const response = await fetch('/api/join-game', {
-                method: 'POST',
-                body: JSON.stringify({ roomCode: data.gameId }),
-                headers: {
-                    'content-type': 'application/json'
-                }
-            });
+	async function handleJoinGame() {
+        authenticating = true;
+        feedback = '';
+        const result = await joinGame(data.gameId);
+        authenticating = false;
 
-            const res = await response.json();
-            authenticating = false;
-
-            if (res.success) {
-                window.location.href = window.location.href;
-            } else {
-                feedback = res.message;
-            }
-        } catch (error) {
-            feedback = error.toString();
+        if (result.success) {
+            window.location.href = window.location.href;
+        } else {
+            feedback = result.data?.message ?? 'Failed to join game';
         }
-		authenticating = false;
     }
 </script>
 
@@ -94,9 +77,9 @@
 				<p class="subtitle">Leave your current game before joining this one.</p>
 				<div class="buttons">
 					{#if showJoinGameButton}
-						<button class="btn login" onclick={joinGame}>Join Game</button>
+						<button class="btn login" onclick={handleJoinGame}>Join Game</button>
 					{:else}
-						<button class="btn login" onclick={leaveGame}>Leave Game</button>
+						<button class="btn login" onclick={handleLeaveGame}>Leave Game</button>
 					{/if}
 				</div>
 				{#if feedback}
@@ -137,7 +120,7 @@
 
 	.subtitle {
 		font-size: 1.05rem;
-		color: #a7a7c1;
+		color: var(--text-secondary);
 		text-align: center;
 		margin: 0;
 	}
@@ -175,19 +158,19 @@
 	}
 
 	.login {
-		background: rgba(117, 85, 255, 0.8);
-		color: white;
+		background: var(--color-purple-bright);
+		color: var(--text-primary);
 	}
 
 	.register {
-		background: rgba(255, 255, 255, 0.08);
-		color: #e0cbff;
-		border: 1px solid #b29cff;
+		background: var(--glass-bg);
+		color: var(--color-purple-soft);
+		border: 1px solid var(--color-purple-border);
 	}
 
 	.info {
 		text-align: center;
-		color: aquamarine;
+		color: var(--color-info);
 		font-size: 0.95rem;
 		margin-top: 0.5rem;
 	}

@@ -81,16 +81,16 @@
         right: 12px;
         font-size: 1.25rem;
         cursor: pointer;
-        color: #eee;
+        color: var(--color-neutral-200);
         transition: transform 0.08s ease, color 0.2s ease;
     }
-    .close-btn:hover { color: #fff; transform: scale(1.05); }
+    .close-btn:hover { color: var(--text-primary); transform: scale(1.05); }
     .close-btn:active { transform: scale(0.95); }
 
     .button {
         align-self: center;
-        background: linear-gradient(135deg, #6a11cb, #2575fc);
-        color: white;
+        background: var(--gradient-primary-hover);
+        color: var(--text-primary);
         border: none;
         max-width: 50%;
         border-radius: 10px;

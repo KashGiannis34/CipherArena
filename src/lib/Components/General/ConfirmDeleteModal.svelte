@@ -98,7 +98,7 @@
 
     .desc {
       margin: 0 0 12px 0;
-      color: #d7dbea;
+      color: var(--text-tertiary);
       opacity: 0.95;
       font-size: 0.95rem;
     }
@@ -147,8 +147,8 @@
     .secondary:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(180, 172, 255, 0.6); }
 
     .danger {
-      background: linear-gradient(135deg, #ff416c, #ff4b2b);
-      color: white;
+      background: var(--gradient-btn-error);
+      color: var(--text-primary);
       border: none;
       border-radius: 10px;
       padding: 0.6rem 0.9rem;
@@ -166,7 +166,7 @@
     .hint {
       margin: 8px 0 0 0;
       font-size: 0.85rem;
-      color: #d7dbea;
+      color: var(--text-tertiary);
       opacity: 0.8;
     }
   </style>

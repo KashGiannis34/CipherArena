@@ -287,10 +287,10 @@ input:placeholder-shown {
 }
 input:focus {
   outline: none;
-  background-color: rgba(255, 255, 255, 0.20) !important;
+  background-color: var(--glass-bg-active) !important;
 }
 input:hover {
-  background-color: #ffffff0a;
+  background-color: var(--glass-bg);
   cursor: pointer;
 }
 

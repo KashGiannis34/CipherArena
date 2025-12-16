@@ -10,11 +10,13 @@ function getSplitter() {
 export const ENGLISH_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 export const SPANISH_ALPHABET = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
 
+/** Returns true if character is a valid letter in the specified alphabet. */
 export function isLetter(character, isSpanish = false) {
     const alphabet = isSpanish ? SPANISH_ALPHABET : ENGLISH_ALPHABET;
     return alphabet.includes(character ? character.toUpperCase() : character) && character !== '' && character !== ' ';
 }
 
+/** Converts a letter to its 0-based index in the alphabet. Returns -1 if invalid. */
 export function letterToNumber(char, isSpanish = false) {
     if (typeof char !== 'string' || char.length !== 1) return -1;
     const alphabet = isSpanish ? SPANISH_ALPHABET : ENGLISH_ALPHABET;
@@ -23,6 +25,7 @@ export function letterToNumber(char, isSpanish = false) {
     return index !== -1 ? index : -1;
 }
 
+/** Converts a 0-based index to its corresponding letter. Returns empty string if out of range. */
 export function numberToLetter(num, isSpanish = false) {
     const alphabet = isSpanish ? SPANISH_ALPHABET : ENGLISH_ALPHABET;
     return (num >= 0 && num < alphabet.length) ? alphabet[num] : '';
@@ -45,34 +48,25 @@ function checkSelfDecode(arr, isSpanish = false) {
     return false;
 }
 
+/** Encodes plaintext using the specified cipher algorithm. Routes to appropriate encoder based on type. */
 export function encodeQuote(plaintext, cipherType, keys, params) {
-    if (cipherType === 'Aristocrat') {
-        const k = params['K'] == '-1' ? '0' : params['K'];
-        return encodeAristocrat(plaintext, k, keys[0]);
-    } else if (cipherType === 'Porta') {
-        return encodePorta(plaintext, keys[0]);
-    } else if (cipherType === 'Caesar') {
-        return encodeCaesar(plaintext);
-    } else if (cipherType === 'Atbash') {
-        return encodeAtbash(plaintext);
-    } else if (cipherType === 'Baconian') {
-        return encodeBaconian(plaintext);
-    } else if (cipherType === 'Nihilist') {
-        return encodeNihilist(plaintext, keys[0], keys[1]);
-    } else if (cipherType === 'Xenocrypt') {
-        const k = params['K'] == '-1' ? '0' : params['K'];
-        return encodeXenocrypt(plaintext, k, keys[0]);
-    } else if (cipherType === 'Checkerboard') {
-        return encodeCheckerboard(plaintext, keys[0], keys[1], keys[2]);
-    } else if (cipherType === 'Hill') {
-        return encodeHill(plaintext, keys[0]);
-    } else if (cipherType === 'Affine') {
-        return encodeAffine(plaintext, keys[0], keys[1]);
-    } else {
-        return encodeAristocrat(plaintext, '0');
-    }
+    const encoders = {
+        'Aristocrat': () => encodeAristocrat(plaintext, params['K'] === '-1' ? '0' : params['K'], keys[0]),
+        'Porta': () => encodePorta(plaintext, keys[0]),
+        'Caesar': () => encodeCaesar(plaintext),
+        'Atbash': () => encodeAtbash(plaintext),
+        'Baconian': () => encodeBaconian(plaintext),
+        'Nihilist': () => encodeNihilist(plaintext, keys[0], keys[1]),
+        'Xenocrypt': () => encodeXenocrypt(plaintext, params['K'] === '-1' ? '0' : params['K'], keys[0]),
+        'Checkerboard': () => encodeCheckerboard(plaintext, keys[0], keys[1], keys[2]),
+        'Hill': () => encodeHill(plaintext, keys[0]),
+        'Affine': () => encodeAffine(plaintext, keys[0], keys[1])
+    };
+
+    return (encoders[cipherType] || (() => encodeAristocrat(plaintext, '0')))();
 }
 
+/** Calculates the determinant of a 2x2 matrix from a 4-letter key (mod 26). */
 export function findDeterminant(word) {
     if (word.length !== 4) return -1;
 

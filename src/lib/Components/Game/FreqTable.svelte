@@ -119,11 +119,6 @@
 </div>
 
 <style>
-    :root {
-        --bColor: rgba(255, 255, 255, 0.497);
-        --bRadius: 0.5rem;
-    }
-
     table, tr, th, td {
         display: block;
     }
@@ -135,9 +130,9 @@
         border-spacing: 0;
         margin: 20px 0;
         text-align: center;
-        border-radius: var(--bRadius);
+        border-radius: 0.5rem;
         overflow: hidden;
-        background-color: rgba(0, 0, 0, 0.175);
+        background-color: var(--table-header-bg);
         font-size: 1.8vw;
         transition-duration: 0ms !important;
     }
@@ -154,12 +149,12 @@
     }
 
     .selected {
-        background-color: #ffffff28 !important;
+        background-color: var(--table-highlight-bg) !important;
     }
 
     th, td {
-        border-bottom: 1px solid var(--bColor);
-        border-right: 1px solid var(--bColor);
+        border-bottom: 1px solid var(--table-border-color);
+        border-right: 1px solid var(--table-border-color);
         text-align: center;
         font-family: 'Source Code Pro', monospace;
     }
@@ -169,27 +164,27 @@
     }
 
     table tr th {
-        border-left: 1px solid var(--bColor);
+        border-left: 1px solid var(--table-border-color);
     }
 
     table tr th:first-child,
     table tr td:first-child {
-        border-top: 1px solid var(--bColor);
+        border-top: 1px solid var(--table-border-color);
     }
 
     table tr:first-child th:first-child {
-        border-top-left-radius: var(--bRadius);
+        border-top-left-radius: 0.5rem;
     }
 
     table tr:last-child td:first-child {
-        border-top-right-radius: var(--bRadius);
+        border-top-right-radius: 0.5rem;
     }
 
     table tr:first-child th:last-child {
-        border-bottom-left-radius: var(--bRadius);
+        border-bottom-left-radius: 0.5rem;
     }
 
     table tr:last-child td:last-child {
-        border-bottom-right-radius: var(--bRadius);
+        border-bottom-right-radius: 0.5rem;
     }
 </style>

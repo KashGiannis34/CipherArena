@@ -24,7 +24,7 @@
 
 <style>
 	:root {
-		--bColor: rgba(255, 255, 255, 0.497);
+		--bColor: var(--table-border-color);
 		--bRadius: 0.5rem;
 	}
 
@@ -40,7 +40,7 @@
 		table-layout: fixed;
 		border-collapse: separate;
 		border-spacing: 0;
-		background-color: rgba(0, 0, 0, 0.175);
+		background-color: var(--table-header-bg);
 		text-align: center;
 		border-radius: var(--bRadius);
 		font-size: 1.6vw;
@@ -86,7 +86,7 @@
 
 	th:hover,
 	td:hover {
-		background-color: rgba(255, 255, 255, 0.1);
+		background-color: var(--table-highlight-bg);
 		cursor: default;
 	}
 </style>

@@ -4,10 +4,10 @@
   let {username, players = [], progressMap = {}, forfeitVoters = []} = $props();
 
   function getProgressColor(progress) {
-    if (progress >= 80) return '#4caf50'; // green
-    if (progress >= 50) return '#ffc107'; // yellow
-    if (progress > 0) return '#f44336';   // red
-    return '#ccc'; // no progress
+    if (progress >= 80) return 'var(--color-success-dark)'; // green
+    if (progress >= 50) return 'var(--color-warning)'; // yellow
+    if (progress > 0) return 'var(--color-error-dark)';   // red
+    return 'var(--color-neutral-400)'; // no progress
   }
 
 </script>
@@ -45,23 +45,23 @@
 
 <style>
   .progress-player-card.forfeited {
-    border-left-color: #ff5c5c;
-    background: rgba(255, 92, 92, 0.08);
+    border-left-color: var(--color-error);
+    background: var(--color-error-bg);
   }
 
   .status-tag.forfeit-tag {
-    color: #ffa1a1;
+    color: var(--color-error);
   }
 
   .profile-link {
-    color: #fff;
+    color: var(--text-primary);
 		text-decoration: none;
 		font-weight: 500;
 		transition: color 0.2s;
 	}
 
 	.profile-link:hover {
-		color: #4e9aff;
+		color: var(--color-link);
 		text-decoration: underline;
 	}
 
@@ -78,9 +78,9 @@
     align-items: center;
     gap: 1rem;
     padding: 0.75rem 1rem;
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--glass-bg);
     border-radius: 0.75rem;
-    border-left: 5px solid #7555ff;
+    border-left: 5px solid var(--color-primary);
     box-shadow:
       0 4px 20px rgba(0, 0, 0, 0.3),
       inset 0 1px 1px rgba(255, 255, 255, 0.1);
@@ -102,13 +102,13 @@
   .progress-username {
     font-weight: 600;
     font-size: 1rem;
-    color: #f0f0ff;
+    color: var(--color-neutral-100);
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   }
 
   .status-tag {
     font-size: 0.85rem;
-    color: #ff8b8b;
+    color: var(--color-error);
     margin-left: 0.5rem;
   }
 
@@ -127,7 +127,7 @@
     transform: scaleX(0);
     transition: transform 0.5s ease, background-color 0.3s ease;
     border-radius: 6px;
-    background-color: #999;
+    background-color: var(--color-neutral-500);
   }
 
   .danger-pulse {

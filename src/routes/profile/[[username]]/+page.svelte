@@ -200,8 +200,8 @@
 }
 
 .upload-error {
-  color: #fca5a5;
-  background: rgba(239, 68, 68, 0.15);
+  color: var(--color-error);
+  background: var(--color-error-bg);
   border: 1px solid rgba(239, 68, 68, 0.3);
   padding: 0.75rem 1.25rem;
   border-radius: 10px;
@@ -401,7 +401,7 @@
 }
 
 .no-data {
-  color: #aaa;
+  color: var(--color-neutral-600);
   font-style: italic;
   text-align: center;
 }
@@ -416,7 +416,7 @@
 }
 .settings-header .subtle {
   margin: 0;
-  color: #bfc6d1;
+  color: var(--text-tertiary);
   opacity: 0.9;
   font-size: 0.95rem;
 }
@@ -453,7 +453,7 @@
 }
 .settings-card .subtle {
   margin: 0 0 0.75rem 0;
-  color: #bfc6d1;
+  color: var(--text-tertiary);
   opacity: 0.9;
   font-size: 0.9rem;
 }
@@ -534,15 +534,15 @@
 .danger-card .more-info { margin: 0 0 0.75rem 0; }
 
 .danger-button {
-  background-image: linear-gradient(45deg, #ff416c 0%, #ff4b2b 51%, #ff416c 100%);
-  box-shadow: 0px 0px 14px -7px #ff2f2f;
+  background-image: linear-gradient(45deg, var(--color-error-dark) 0%, var(--color-error-darker) 51%, var(--color-error-dark) 100%);
+  box-shadow: 0px 0px 14px -7px var(--color-error-dark);
   margin: 0 auto;
 }
 
 .disabled {
-  background: #222 !important;
-  color: #aaa !important;
-  border-color: #444 !important;
+  background: var(--color-neutral-950) !important;
+  color: var(--color-neutral-600) !important;
+  border-color: var(--color-gray-border) !important;
   opacity: 0.6;
   cursor: not-allowed;
   pointer-events: none;

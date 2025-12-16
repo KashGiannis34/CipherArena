@@ -4,6 +4,8 @@
 	import { ENGLISH_ALPHABET, isSolvableChunk, SPANISH_ALPHABET } from '$db/shared-utils/CipherUtil';
 	import { cipherTypes } from '$db/shared-utils/CipherTypes';
 	import { onMount } from 'svelte';
+	import { debounce } from '$lib/util/helpers.js';
+	import { initQuote, initLetterInputs, initLetterFocus, paramToString, getInputText } from '$lib/util/cipherUtils.js';
 
 	let {
 		quote = 'Zit jxoea wkgvf ygb pxdhl gctk zit sqmn rgu.'.toUpperCase().split(''),
@@ -18,20 +20,12 @@
 	let isChecking = $state(false);
 	let submissionError = $state(false);
 	let clearPolybius = $state(false);
-	let initialQuote = initQuote(quote, cipherTypes[cipherType]['spacing']);
+	let initialQuote = initQuote(quote, cipherTypes[cipherType]['spacing'], cipherType);
 	let debouncedProgressUpdate;
-
-	function debounce(func, delay) {
-		let timeout;
-		return (...args) => {
-			clearTimeout(timeout);
-			timeout = setTimeout(() => func(...args), delay);
-		};
-	}
 
 	onMount(() => {
 		debouncedProgressUpdate = debounce(() => {
-			const filled = getInputText()
+			const filled = getInputText(info.inputs)
 				.replace(/[^A-Za-z]/g, '')
 				.length;
 			const total = info.cipherText.filter(chunk => isSolvableChunk(chunk, cipherType)).length;
@@ -45,26 +39,14 @@
 	let info = $state({
 		cipherText: initialQuote,
 		cipherTextTrim: initialQuote.filter(c => c !== ' '),
-		letterInputs: initLetterInputs(),
-		letterFocus: initLetterFocus(),
+		letterInputs: initLetterInputs(spanish),
+		letterFocus: initLetterFocus(spanish),
 		inputs: []
 	});
 
 	let lettersWithIndices = initLWI();
-	let directMap = initDirectMap(cipherType);
+	let directMap = cipherTypes[cipherType]['directMap'];
 	let paramString = paramToString(params);
-
-	function paramToString(obj) {
-		let val = obj.K;
-		let res = 'K' + val;
-		if (res == 'K0') {
-			return 'Random ';
-		} else if (res == 'K1' || res == 'K2' || res == 'K3') {
-			return res + ' ';
-		} else {
-			return '';
-		}
-	}
 
 	function onArrow(key, index) {
 		let inc;
@@ -103,16 +85,16 @@
 		info.letterFocus[letter] = focus;
 	}
 
-	function onChange(letter, val, index) {
+	function onChange(letter, newValue, index) {
 		debouncedProgressUpdate();
 
 		if (!directMap) {
-			info.inputs[index].value = val;
+			info.inputs[index].value = newValue;
 		} else {
-			info.letterInputs[letter] = val;
+			info.letterInputs[letter] = newValue;
 		}
 
-		if (autoFocus && val !== '') {
+		if (autoFocus && newValue !== '') {
 			const len = info.inputs.length;
 			let currIndex = index;
 			let triedAll = false;
@@ -147,49 +129,6 @@
 		}
 	}
 
-	function initQuote(quoteArr, spacing) {
-		if (spacing === -1) return quoteArr;
-
-		const spaced = [];
-		let count = 0;
-
-		for (const chunk of quoteArr) {
-			if (!isSolvableChunk(chunk, cipherType)) continue;
-
-			spaced.push(chunk);
-			if (isSolvableChunk(chunk, cipherType)) {
-				count++;
-				if (spacing != 0 && count % spacing === 0) {
-					spaced.push(' ');
-				}
-			}
-		}
-
-		return spaced;
-	}
-
-	function initLetterInputs() {
-		const alphabet = spanish ? SPANISH_ALPHABET : ENGLISH_ALPHABET;
-		const letterInputs = {};
-		alphabet.split('').forEach(letter => {
-			letterInputs[letter] = '';
-		});
-		return letterInputs;
-	}
-
-	function initLetterFocus() {
-		const alphabet = spanish ? SPANISH_ALPHABET : ENGLISH_ALPHABET;
-		const letterFocus = {};
-		alphabet.split('').forEach(letter => {
-			letterFocus[letter] = false;
-		});
-		return letterFocus;
-	}
-
-	function initDirectMap(type) {
-		return cipherTypes[cipherType]['directMap'];
-	}
-
 	function initLWI() {
 		let res = [];
 		let index = 0;
@@ -218,17 +157,6 @@
 
 		if (currentWord.length) res.push(currentWord);
 		return res;
-	}
-
-	function getInputText() {
-		let text = '';
-		for (let input of info.inputs) {
-			if (input != undefined) {
-				if (input.value != '') text += input.value;
-				else text += ' ';
-			}
-		}
-		return text;
 	}
 </script>
 
@@ -297,12 +225,10 @@
 		width: 100%;
 		padding: 20px;
 		border-radius: 20px;
-		background: rgba(255, 255, 255, 0.05);
-		box-shadow:
-			0 8px 32px rgba(0, 0, 0, 0.37),
-			inset 0 0 0.5px rgba(255, 255, 255, 0.1);
-		border: 1px solid rgba(255, 255, 255, 0.18);
-		color: #ffffff;
+		background: var(--glass-bg);
+		box-shadow: var(--glass-shadow-lg);
+		border: 1px solid var(--glass-border);
+		color: var(--text-primary);
 		margin-bottom: -50px;
 	}
 
@@ -319,7 +245,7 @@
 	}
 
 	.highlight {
-		background: rgba(255, 255, 255, 0.2);
+		background: var(--glass-bg-active);
 	}
 
 	.cipher {

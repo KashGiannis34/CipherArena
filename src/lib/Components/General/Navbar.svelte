@@ -231,8 +231,8 @@
 
     .signup,
     .verify-btn {
-        background: #3924865e !important;
-        color: #eaeeff !important;
+        background: rgba(57, 36, 134, 0.37) !important;
+        color: var(--color-neutral-100) !important;
         border: none;
         padding: 0.4rem 0.8rem;
         border-radius: 6px;
@@ -244,7 +244,7 @@
 
     .signup:hover,
     .verify-btn:hover {
-        background: #b3a0ff48 !important;
+        background: rgba(179, 160, 255, 0.28) !important;
     }
 
     .nav-right {

@@ -153,7 +153,7 @@
 
 	.metric-note-inline {
 		font-size: 0.75rem;
-		color: rgba(255, 255, 255, 0.5);
+		color: var(--text-muted);
 		margin: 0;
 	}
 
@@ -162,14 +162,14 @@
 	}
 
 	.profile-link {
-		color: #fff;
+		color: var(--text-primary);
 		text-decoration: none;
 		font-weight: 500;
 		transition: color 0.2s;
 	}
 
 	.profile-link:hover {
-		color: #4e9aff;
+		color: var(--color-link);
 		text-decoration: underline;
 	}
 
@@ -178,12 +178,10 @@
 		width: 100%;
 		margin: 0.75rem auto;
 		padding: 3rem 2.5rem;
-		background: rgba(255, 255, 255, 0.06);
-		box-shadow:
-		0 4px 20px rgba(0, 0, 0, 0.3),
-		inset 0 1px 1px rgba(255, 255, 255, 0.1);
+		background: var(--glass-bg);
+		box-shadow: var(--glass-shadow);
 		border-radius: 2rem;
-		color: white;
+		color: var(--text-primary);
 	}
 
 	.cipher-type-selector {
@@ -196,23 +194,23 @@
 
 	.cipher-type-selector button {
 		background: transparent;
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		color: white;
+		border: 1px solid var(--glass-border-strong);
+		color: var(--text-primary);
 		padding: 0.5rem 1rem;
 		border-radius: 8px;
 		cursor: pointer;
 	}
 
 	.cipher-type-selector button:hover {
-		background: rgba(255, 255, 255, 0.1);
+		background: var(--glass-bg-hover);
 		transform: scale(1.05);
 	}
 
 	.cipher-type-selector button.selected {
-        background: rgba(255, 255, 255, 0.12);
+        background: var(--glass-bg);
         position: relative;
         z-index: 1;
-        color: white;
+        color: var(--text-primary);
         box-shadow: 0 0 0 rgba(0, 0, 0, 0);
 
         animation:
@@ -226,25 +224,25 @@
             box-shadow: 0 0 0 rgba(0, 0, 0, 0);
         }
         to {
-            box-shadow: 0 0 8px #ff4ec4, inset 0 0 2px #ff4ec4;
+            box-shadow: 0 0 8px var(--color-pink-glow), inset 0 0 2px var(--color-pink-glow);
         }
     }
 
     @keyframes rainbowGlow {
         0% {
-            box-shadow: 0 0 8px #ff4ec4, inset 0 0 2px #ff4ec4;
+            box-shadow: 0 0 8px var(--color-pink-glow), inset 0 0 2px var(--color-pink-glow);
         }
         25% {
-            box-shadow: 0 0 8px #4e9aff, inset 0 0 2px #4e9aff;
+            box-shadow: 0 0 8px var(--color-link), inset 0 0 2px var(--color-link);
         }
         50% {
-            box-shadow: 0 0 8px #4eff9a, inset 0 0 2px #4eff9a;
+            box-shadow: 0 0 8px var(--color-green-glow), inset 0 0 2px var(--color-green-glow);
         }
         75% {
-            box-shadow: 0 0 8px #fff94e, inset 0 0 2px #fff94e;
+            box-shadow: 0 0 8px var(--color-warning), inset 0 0 2px var(--color-warning);
         }
         100% {
-            box-shadow: 0 0 8px #ff4ec4, inset 0 0 2px #ff4ec4;
+            box-shadow: 0 0 8px var(--color-pink-glow), inset 0 0 2px var(--color-pink-glow);
         }
     }
 
@@ -260,7 +258,7 @@
     .leaderboard-table th,
     .leaderboard-table td {
         padding: 0.75rem 1rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid var(--glass-bg-hover);
         vertical-align: middle;
     }
 
@@ -291,7 +289,7 @@
 	}
 
 	.table-row:hover {
-		background-color: rgba(255, 255, 255, 0.05);
+		background-color: var(--glass-bg);
 	}
 
 	@keyframes fade-in {
@@ -325,8 +323,8 @@
 
     .metric-toggle button {
         background: transparent;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: white;
+        border: 1px solid var(--glass-border-strong);
+        color: var(--text-primary);
         padding: 0.4rem 0.8rem;
         border-radius: 6px;
         cursor: pointer;
@@ -334,8 +332,8 @@
     }
 
     .metric-toggle button.selected {
-        background: rgba(255, 255, 255, 0.15);
+        background: var(--glass-bg);
         font-weight: bold;
-        box-shadow: 0 0 6px rgba(255, 255, 255, 0.3);
+        box-shadow: 0 0 6px var(--glass-border);
     }
 </style>

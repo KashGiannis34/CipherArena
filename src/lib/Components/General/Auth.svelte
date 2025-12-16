@@ -28,15 +28,7 @@
         renderCaptcha();
       };
       script.onerror = () => {
-        node.innerHTML = `<p
-        style="text-align: center;
-        padding: 8px 12px;
-        border-radius: 8px;
-        width: fit-content;
-        margin: 0 auto;
-        font-size: 0.95rem;
-        background-color: rgba(255, 100, 100, 0.15);
-        color: #ff7f7f;">
+        node.innerHTML = `<p class="captcha-error">
         Failed to load captcha. Please refresh the page.</p>`;
       };
       document.head.appendChild(script);
@@ -207,13 +199,13 @@
 
   .forgot-password a {
     font-size: 0.9rem;
-    color: rgba(93, 239, 255, 0.85);
+    color: var(--text-accent);
     text-decoration: none;
     transition: 0.3s ease;
   }
 
   .forgot-password a:hover {
-    color: rgba(68, 202, 255, 0.562);
+    color: var(--color-link-light);
     cursor: pointer;
   }
 
@@ -246,23 +238,23 @@
     padding: 6px 10px;
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(218, 218, 255, 0.2);
+    border: 1px solid var(--glass-border);
     transition: border 0.3s ease, background 0.3s ease;
   }
 
   form label:focus-within {
-    border-color: rgb(141, 191, 255);
-    background: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 0 10px rgba(141, 191, 255, 0.3);
+    border-color: var(--color-link-light);
+    background: var(--glass-bg);
+    box-shadow: 0 0 10px var(--color-link-muted);
   }
 
   form label i {
-    color: #ffffffaa;
+    color: var(--text-muted);
     margin-right: 6px;
   }
 
   form label:focus-within i {
-    color: rgb(141, 191, 255);
+    color: var(--color-link-light);
     font-size: larger;
   }
 
@@ -271,22 +263,22 @@ input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active{
     -webkit-background-clip: text;
-    -webkit-text-fill-color: #ffffff;
+    -webkit-text-fill-color: var(--text-primary);
     transition: background-color 5000s ease-in-out 0s;
-    box-shadow: inset 0 0 20px 20px #534e8529;
-    caret-color: white !important;
+    box-shadow: inset 0 0 20px 20px rgba(83, 78, 133, 0.16);
+    caret-color: var(--text-primary) !important;
 }
 
   form label input {
     width: 100%;
     border: none;
     background: transparent;
-    color: white;
+    color: var(--text-primary);
     padding: 8px 10px;
   }
 
   form input::placeholder {
-    color: rgba(235, 219, 255, 0.538);
+    color: var(--text-muted);
   }
 
   form input:focus {
@@ -294,35 +286,22 @@ input:-webkit-autofill:active{
   }
 
   button.button {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--glass-bg-hover);
+    border: 1px solid var(--glass-border-strong);
     padding: 10px 18px;
     border-radius: 12px;
-    color: white;
+    color: var(--text-primary);
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
   }
 
   button.button:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--glass-bg-active);
   }
 
   button.button:active {
     transform: scale(0.97);
-  }
-
-  .spin {
-    animation: spin 2s infinite;
-  }
-
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
   }
 
   .options {
@@ -373,14 +352,14 @@ input:-webkit-autofill:active{
     width: fit-content;
     margin: 0;
     padding-bottom: 16px;
-    color: rgb(93, 239, 255);
+    color: var(--text-accent);
     cursor: pointer;
     transition: 0.5s ease;
     text-decoration: none;
   }
 
   .options div a:hover {
-    color: rgba(68, 202, 255, 0.562);
+    color: var(--color-link-light);
     cursor: pointer;
   }
 
@@ -399,13 +378,13 @@ input:-webkit-autofill:active{
   }
 
   .error {
-    background-color: rgba(255, 100, 100, 0.15);
-    color: #ff7f7f;
+    background-color: var(--color-error-bg);
+    color: var(--color-error);
   }
 
   .message {
     background-color: rgba(0, 255, 200, 0.1);
-    color: aquamarine;
+    color: var(--color-success);
   }
 
   .captcha-wrapper {
@@ -415,5 +394,16 @@ input:-webkit-autofill:active{
     justify-content: center;
     align-items: center;
     min-height: 78px;
+  }
+
+  .captcha-wrapper :global(.captcha-error) {
+    text-align: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    width: fit-content;
+    margin: 0 auto;
+    font-size: 0.95rem;
+    background-color: var(--color-error-bg);
+    color: var(--color-error);
   }
 </style>

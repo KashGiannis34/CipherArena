@@ -100,7 +100,7 @@
         position: absolute;
         bottom: 10px;
         right: 10px;
-        background: #2a2a2a;
+        background: var(--color-neutral-900);
         border-radius: 50%;
         padding: 6px;
         cursor: pointer;
@@ -114,8 +114,8 @@
         top: 100%;
         left: 50%;
         transform: translateX(-50%) translateY(6px);
-        background-color: #333;
-        color: #fff;
+        background-color: var(--color-neutral-900);
+        color: var(--text-primary);
         font-size: 0.8rem;
         padding: 0.4rem 0.75rem;
         border-radius: 6px;

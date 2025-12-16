@@ -124,7 +124,7 @@ class:focus={focus && !solved} onclick={handleClick}>
     }
 
     .selected {
-        background-color: #ffffff28 !important;
+        background-color: var(--table-highlight-bg) !important;
     }
 
     .focus {
@@ -165,13 +165,13 @@ class:focus={focus && !solved} onclick={handleClick}>
 
 
     td:hover {
-        background-color: #ffffff10;
+        background-color: var(--glass-bg);
         cursor: pointer;
     }
 
     td {
-        border-bottom: 1px solid var(--bColor);
-        border-right: 1px solid var(--bColor);
+        border-bottom: 1px solid var(--table-border-color);
+        border-right: 1px solid var(--table-border-color);
         text-align: center;
         display: block;
         padding-top: 0.65vw;
@@ -179,11 +179,11 @@ class:focus={focus && !solved} onclick={handleClick}>
     }
 
     .last {
-        border-bottom-right-radius: var(--bRadius);
+        border-bottom-right-radius: 0.5rem;
     }
 
     :not(.error) {
-        color: rgb(235, 254, 255);
+        color: var(--text-primary);
         transition-duration: 0ms;
     }
 
@@ -196,6 +196,6 @@ class:focus={focus && !solved} onclick={handleClick}>
     }
 
     input::placeholder {
-        color: #ffffff31;
+        color: var(--text-muted);
     }
 </style>

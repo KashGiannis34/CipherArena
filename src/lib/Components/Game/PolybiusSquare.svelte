@@ -127,20 +127,15 @@
 </div>
 
 <style>
-	:root {
-		--bColor: rgba(255, 255, 255, 0.497);
-		--bRadius: 0.5rem;
-	}
-
 	.referenceTable table {
 		width: min(90vw, 400px);
 		font-size: clamp(0.75rem, 2vw, 1.2rem);
 		margin: 1rem auto;
 		border-collapse: separate;
 		border-spacing: 0;
-		background-color: rgba(0, 0, 0, 0.175);
+		background-color: var(--table-header-bg);
 		text-align: center;
-		border-radius: var(--bRadius);
+		border-radius: 0.5rem;
 		overflow: hidden;
 		table-layout: fixed;
 	}
@@ -154,8 +149,8 @@
 	th,
 	td {
 		font-family: 'Source Code Pro', monospace;
-		border-bottom: 1px solid var(--bColor);
-		border-right: 1px solid var(--bColor);
+		border-bottom: 1px solid var(--table-border-color);
+		border-right: 1px solid var(--table-border-color);
 		aspect-ratio: 1 / 1;
 		overflow: hidden;
 	}
@@ -165,7 +160,7 @@
 	}
 
 	input {
-		color: white;
+		color: var(--text-primary);
 		text-align: center;
 		width: 100%;
 		height: 100%;
@@ -180,32 +175,32 @@
 
 	input:focus {
 		outline: none;
-		background-color: rgba(255, 255, 255, 0.20) !important;
+		background-color: var(--glass-bg-active) !important;
 	}
 
 	table th:first-child,
 	table td:first-child {
-		border-left: 1px solid var(--bColor);
+		border-left: 1px solid var(--table-border-color);
 	}
 
 	table tr:first-child th {
-		border-top: 1px solid var(--bColor);
+		border-top: 1px solid var(--table-border-color);
 	}
 
 	table tr:first-child th:first-child {
-		border-top-left-radius: var(--bRadius);
+		border-top-left-radius: 0.5rem;
 	}
 	table tr:first-child th:last-child {
-		border-top-right-radius: var(--bRadius);
+		border-top-right-radius: 0.5rem;
 	}
 	table tr:last-child th:first-child {
-		border-bottom-left-radius: var(--bRadius);
+		border-bottom-left-radius: 0.5rem;
 	}
 	table tr:last-child td:last-child {
-		border-bottom-right-radius: var(--bRadius);
+		border-bottom-right-radius: 0.5rem;
 	}
 
 	.highlight {
-		background-color: rgba(255, 255, 255, 0.1);
+		background-color: var(--table-highlight-bg);
 	}
 </style>

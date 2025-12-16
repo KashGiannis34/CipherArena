@@ -2,6 +2,7 @@
     import Navbar from "$lib/Components/General/Navbar.svelte";
     import { PUBLIC_APP_URL } from '$env/static/public';
     import { page } from '$app/stores';
+    import "$lib/css/app.css";
 
     let {data, children} = $props();
 </script>
@@ -31,7 +32,7 @@
     .app-container {
         min-height: 100vh;
         overflow-x: hidden;
-        background: linear-gradient(to right, #000428, #000046);
+        background: var(--gradient-bg);
     }
 
     .navbar-space {

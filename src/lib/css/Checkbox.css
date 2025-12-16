@@ -1,13 +1,13 @@
 @supports (-webkit-appearance: none) or (-moz-appearance: none) {
     .checkbox input[type=checkbox] {
-        --active: linear-gradient(45deg, #8d2fff 0%, #5619f0  51%, #2f2fff  100%);;
-        --active-inner: #fff;
-        --focus: 2px rgba(39, 94, 254, .3);
-        --border: #BBC1E1;
-        --border-hover: #275EFE;
-        --background: #fff;
-        --disabled: #F6F8FF;
-        --disabled-inner: #E1E6F9;
+        --active: var(--gradient-primary);
+        --active-inner: var(--color-neutral-50);
+        --focus: var(--checkbox-focus);
+        --border: var(--checkbox-border);
+        --border-hover: var(--checkbox-border-hover);
+        --background: var(--checkbox-bg);
+        --disabled: var(--checkbox-disabled);
+        --disabled-inner: var(--checkbox-disabled-inner);
         -webkit-appearance: none;
         -moz-appearance: none;
         height: 21px;

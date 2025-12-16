@@ -99,7 +99,7 @@
 
     .note-inline {
         font-size: 0.75rem;
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--text-muted);
         margin: 0;
     }
 
@@ -112,16 +112,16 @@
 
   .stat-mode-selector button {
     padding: 0.4rem 0.8rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     border-radius: 6px;
-    color: white;
+    color: var(--text-primary);
     cursor: pointer;
   }
 
   .stat-mode-selector button.selected {
-    background: rgba(148, 131, 255, 0.25);
-    border-color: rgba(148, 131, 255, 0.6);
+    background: var(--color-primary-muted);
+    border-color: var(--color-primary-border);
   }
 
   .table-wrapper {
@@ -137,7 +137,7 @@
     .leaderboard-table th,
     .leaderboard-table td {
         padding: 0.75rem 1rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid var(--glass-bg-hover);
         vertical-align: middle;
         text-align: center;
     }
@@ -152,6 +152,6 @@
     }
 
     .table-row:hover {
-        background-color: rgba(255, 255, 255, 0.05);
+        background-color: var(--glass-bg);
     }
 </style>

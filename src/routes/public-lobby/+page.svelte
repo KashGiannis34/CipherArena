@@ -3,35 +3,31 @@
     import { io } from 'socket.io-client';
     import LoadingOverlay from '$lib/Components/General/LoadingOverlay.svelte';
     import { PUBLIC_APP_URL } from '$env/static/public';
-
-    import { broadcastTabEvent } from "$lib/util/crossTabEvents";
     import Container from "$lib/Components/General/Container.svelte";
     import Options from "$lib/Components/Game/Options.svelte";
-    import {cipherTypes} from '$db/shared-utils/CipherTypes.js';
+    import { cipherTypes } from '$db/shared-utils/CipherTypes.js';
     import { goto } from "$app/navigation";
     import { fade } from 'svelte/transition';
     import SearchBar from '$lib/Components/General/SearchBar.svelte';
+    import { debounce, createStatusManager } from "$lib/util/helpers.js";
+    import { leaveCurrentGame, createGame as createGameApi } from "$lib/util/gameApi.js";
+    import { GAME_MODES, DEFAULT_GAME_OPTIONS, STATUS_TYPES } from "$lib/util/constants.js";
 
     let { data } = $props();
 
-    let options = $state({'AutoFocus':true, 'Ranked':true, 'playerLimit': 2});
+    let options = $state({ ...DEFAULT_GAME_OPTIONS, Ranked: true });
     let cipherType = $state('Aristocrat');
     let cipherOption = $state('Random');
-    let cipherOptionObj = {'K':'Random'};
+    let cipherOptionObj = { 'K': 'Random' };
     let feedbackCreate = $state('');
     let showLeaveGameButton = $state(false);
 
     let statusMessage = $state(null);
-    let statusType = $state('info');
-    let statusTimer;
+    let statusType = $state(STATUS_TYPES.INFO);
+    const statusManager = createStatusManager();
 
-    function showStatus(msg, type = 'info', duration = 3000) {
-    statusMessage = msg;
-    statusType = type;
-    clearTimeout(statusTimer);
-    statusTimer = setTimeout(() => {
-        statusMessage = null;
-    }, duration);
+    function showStatus(msg, type = STATUS_TYPES.INFO, duration = 3000) {
+        statusManager.show(v => statusMessage = v, v => statusType = v, msg, type, duration);
     }
 
     let lobbies = $state([]);
@@ -42,72 +38,44 @@
     let limit = 50;
     let socket;
 
-    function debounce(func, delay) {
-        let timeout;
-        return function (...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), delay);
-        };
-    }
-
     async function fetchLobbies({ searchValue = '' } = {}) {
-        if (!socket?.connected) {
-            return;
-        }
+        if (!socket?.connected) return;
 
         const fetchPromise = new Promise((resolve) => {
             const searchTerms = {};
             const words = searchValue.split(' ');
             let currentOption = null;
 
-            for (let i = 0; i < words.length; i++) {
-                const word = words[i].trim();
-                if (!word) continue;
+            for (const word of words) {
+                const trimmed = word.trim();
+                if (!trimmed) continue;
 
-                if (word.endsWith(':')) {
-                    currentOption = word;
+                if (trimmed.endsWith(':')) {
+                    currentOption = trimmed;
                 } else if (currentOption) {
-                    if (!searchTerms[currentOption]) {
-                        searchTerms[currentOption] = [];
-                    }
-                    searchTerms[currentOption].push(word);
+                    searchTerms[currentOption] = searchTerms[currentOption] || [];
+                    searchTerms[currentOption].push(trimmed);
                 }
             }
 
-            const request = { searchTerms, limit };
-            socket.emit('get-public-lobbies', request, (data) => {
-                if (Array.isArray(data)) {
-                    lobbies = data;
-                } else {
-                    lobbies = [];
-                }
+            socket.emit('get-public-lobbies', { searchTerms, limit }, (data) => {
+                lobbies = Array.isArray(data) ? data : [];
                 resolve();
             });
         });
 
-        const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Fetch lobbies timeout')), 5000);
-        });
-
         try {
-            await Promise.race([fetchPromise, timeoutPromise]);
+            await Promise.race([fetchPromise, new Promise((_, reject) => setTimeout(() => reject(new Error('Fetch lobbies timeout')), 5000))]);
         } catch (error) {
-            showStatus('Error fetching games', 'error');
+            showStatus('Error fetching games', STATUS_TYPES.ERROR);
             lobbies = [];
         }
     }
 
-
     const debouncedFetchLobbies = debounce(fetchLobbies, 500);
 
     function changeCipherOption(option, optionObj) {
-        let nOption;
-        if (option[0] === "!") {
-            nOption = option.substring(1);
-        } else {
-            nOption = cipherTypes[cipherType]['options'][0] + option;
-        }
-
+        const nOption = option[0] === "!" ? option.substring(1) : cipherTypes[cipherType]['options'][0] + option;
         cipherOption = nOption;
         cipherOptionObj = optionObj;
     }
@@ -117,58 +85,39 @@
     }
 
     function onOptionChange(option, value) {
-        if (value) {
-            options[option] = value;
-        } else {
-            options[option] = !options[option];
-        }
+        options[option] = value ?? !options[option];
     }
 
-    async function createGame() {
-        let res = null;
+    async function handleCreateGame() {
         try {
             loading = true;
             feedbackCreate = '';
-            const response = await fetch('/api/create-game', {
-                method: 'POST',
-                body: JSON.stringify({cipherType, cipherOptionObj, options, mode:(options.Ranked ? "ranked": "public")}),
-                headers: {
-                    'content-type': 'application/json'
-                }
-		    });
-            res = await response.json();
+            const mode = options.Ranked ? GAME_MODES.RANKED : GAME_MODES.PUBLIC;
+            const res = await createGameApi({ cipherType, cipherOptionObj, options, mode });
             loading = false;
-            if (res['success']) {
-                goto(`/game/${res['gameId']}`);
+
+            if (res.success) {
+                goto(`/game/${res.gameId}`);
             } else {
                 feedbackCreate = res.message;
             }
-
-            if (res['leaveGame']) {
-                showLeaveGameButton = true;
-            } else {
-                showLeaveGameButton = false;
-            }
+            showLeaveGameButton = !!res.leaveGame;
         } catch (error) {
+            loading = false;
             feedbackCreate = error.toString();
         }
     }
 
-    async function leaveGame() {
+    async function handleLeaveGame() {
         loading = true;
-        const res = await fetch('/api/leave-current-game', { method: 'POST' });
-        const data = await res.json();
+        const data = await leaveCurrentGame();
 
         if (data.success) {
-            loading = false;
             feedbackCreate = "You left your previous game. Now retry creating or joining.";
         } else {
             feedbackCreate = data.message;
         }
-
-        if (data.disconnectSocket) {
-            broadcastTabEvent('leave-game', { gameId: data.gameId });
-        }
+        loading = false;
         showLeaveGameButton = false;
     }
 
@@ -237,10 +186,10 @@
             <h2>New Public Game</h2>
             <Options options={options} onOptionChange={onOptionChange} cipherType={cipherType} multiplayer={true} cipherOption={cipherOption} changeCipherOption={changeCipherOption} changeType={changeType}/>
             <div class="button-row">
-                <button class="button" onclick={createGame}>Create Game</button>
+                <button class="button" onclick={handleCreateGame}>Create Game</button>
 
                 {#if showLeaveGameButton}
-                    <button class="button" onclick={leaveGame} style="color: #fa6969;">Leave Current Game</button>
+                    <button class="button leave-game-btn" onclick={handleLeaveGame}>Leave Current Game</button>
                 {/if}
             </div>
 
@@ -319,41 +268,16 @@
 
 <style>
 
-  .status-bar {
-    position: fixed;
-    bottom: 1.5rem;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 1rem;
-    z-index: 2000;
-    max-width: 90vw;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    text-align: center;
-    color: white;
-    opacity: 0.95;
-    }
-
-    .status-bar.info {
-    background: #555;
-    }
-
-    .status-bar.success {
-    background: #28c76f;
-    }
-
-    .status-bar.error {
-    background: #ea5455;
-    }
-
   .button-row {
     display: flex;
     gap: 12px;
     align-items: center;
     justify-content: center;
     flex-wrap: wrap;
+  }
+
+  .leave-game-btn {
+    color: var(--color-error);
   }
 
   .waiting-container {
@@ -416,22 +340,22 @@
     align-items: center;
     justify-content: space-between;
     padding: 1.2rem 1.5rem;
-    background-color: #7555ff;
-    border: 1px solid #703cff;
+    background-color: var(--color-primary-500);
+    border: 1px solid var(--color-primary-600);
     border-radius: 12px;
     box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
-    color: white;
+    color: var(--text-primary);
     transition: transform 0.2s ease, background-color 0.2s ease;
   }
 
   .player-card:not(.full):hover {
-    background-color: #684cff;
+    background-color: var(--color-primary-600);
     transform: translateY(-2px);
   }
 
   .player-card.full {
-    background-color: #5a4499;
-    border-color: #4a3780;
+    background-color: var(--color-primary-dark);
+    border-color: var(--color-primary-alt);
     opacity: 0.8;
     cursor: not-allowed;
   }
@@ -458,11 +382,11 @@
 
   .player-elo {
     font-size: 0.9rem;
-    color: #ddd;
+    color: var(--text-secondary);
   }
 
   .player-elo.full-text {
-    color: #ff9494;
+    color: var(--color-error);
   }
 
   .button-row {
@@ -472,8 +396,8 @@
   }
 
   .copy-box {
-    background-color: #fff;
-    color: #5c3cff;
+    background-color: var(--text-primary);
+    color: var(--color-primary-600);
     font-weight: 600;
     border: none;
     border-radius: 8px;
@@ -483,13 +407,13 @@
   }
 
   .copy-box:hover {
-    background-color: #e5dbff;
+    background-color: var(--color-purple-soft);
     transform: scale(1.03);
   }
 
   .full-indicator {
-    background-color: #ff6b6b;
-    color: white;
+    background-color: var(--color-error-dark);
+    color: var(--text-primary);
     font-weight: 600;
     padding: 0.5rem 1rem;
     border-radius: 8px;
@@ -513,51 +437,51 @@
   }
 
   .player-card.in-game {
-    background: linear-gradient(135deg, #6a11cb88, #2575fc88);
-    border: 2px solid #8855ff;
+    background: linear-gradient(135deg, rgba(106, 17, 203, 0.53), rgba(37, 117, 252, 0.53));
+    border: 2px solid var(--color-primary);
     box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
     animation: pulse 2s ease-in-out infinite;
     transform-origin: center;
   }
 
   .player-card.in-game:hover {
-    background: linear-gradient(135deg, #6a11cbcc, #2575fccc);
+    background: linear-gradient(135deg, rgba(106, 17, 203, 0.8), rgba(37, 117, 252, 0.8));
     transform: translateY(-2px) scale(1.02);
     animation: none;
     box-shadow: 0 8px 30px rgba(106, 17, 203, 0.6);
-    border-color: #aa77ff;
+    border-color: var(--color-primary-light);
   }
 
   .player-card.in-game .player-name {
-    color: white;
+    color: var(--text-primary);
     font-weight: 700;
   }
 
   .copy-box.rejoin {
-    background: #8855ff;
-    color: white;
+    background: var(--color-primary-500);
+    color: var(--text-primary);
     font-weight: 600;
     border: none;
     padding: 0.6rem 1.2rem;
   }
 
   .copy-box.rejoin:hover {
-    background: #9966ff;
+    background: var(--color-primary-600);
     transform: scale(1.05);
   }
 
   @keyframes pulse {
     0% {
         box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
-        border-color: #8855ff;
+        border-color: var(--color-primary);
     }
     50% {
         box-shadow: 0 8px 30px rgba(106, 17, 203, 0.6);
-        border-color: #aa77ff;
+        border-color: var(--color-primary-light);
     }
     100% {
         box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
-        border-color: #8855ff;
+        border-color: var(--color-primary);
     }
   }
 
@@ -584,8 +508,8 @@
     top: 100%;
     left: 50%;
     transform: translateX(-50%) translateY(6px);
-    background-color: #333;
-    color: #fff;
+    background-color: var(--surface-dark);
+    color: var(--text-primary);
     font-size: 0.8rem;
     padding: 0.4rem 0.75rem;
     border-radius: 6px;
@@ -603,6 +527,6 @@
     transform: translateX(-50%);
     border-width: 6px;
     border-style: solid;
-    border-color: transparent transparent #333 transparent;
+    border-color: transparent transparent var(--surface-dark) transparent;
   }
 </style>

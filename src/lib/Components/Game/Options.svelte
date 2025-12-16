@@ -124,7 +124,7 @@
     }
 
     .player-limit-label {
-        color: rgb(235, 254, 255);
+        color: var(--text-primary);
         font-weight: 500;
     }
 

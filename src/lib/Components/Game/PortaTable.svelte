@@ -61,7 +61,7 @@
 
 <style>
 	:root {
-		--bColor: rgba(255, 255, 255, 0.497);
+		--bColor: var(--table-border-color);
 		--bRadius: 0.5rem;
 	}
 
@@ -70,7 +70,7 @@
 		margin: 1rem auto;
 		border-collapse: separate;
 		border-spacing: 0;
-		background-color: rgba(0, 0, 0, 0.175);
+		background-color: var(--table-header-bg);
 		font-size: 1.4vw;
 		text-align: center;
 		border-radius: var(--bRadius);
@@ -123,15 +123,15 @@
 	}
 
     td:hover {
-        background-color: rgba(255, 255, 255, 0.2);
+        background-color: var(--glass-bg-active);
         cursor: default;
     }
 
     tr:hover {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: var(--table-highlight-bg);
     }
 
     .highlight {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: var(--table-highlight-bg);
     }
 </style>

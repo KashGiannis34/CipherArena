@@ -37,7 +37,7 @@
 
 <style>
 	:root {
-		--bColor: rgba(255, 255, 255, 0.497);
+		--bColor: var(--table-border-color);
 		--bRadius: 0.5rem;
 	}
 
@@ -46,7 +46,7 @@
 		margin: 1rem auto;
 		border-collapse: separate;
 		border-spacing: 0;
-		background-color: rgba(0, 0, 0, 0.175);
+		background-color: var(--table-header-bg);
 		font-size: 1.4vw;
 		text-align: left;
 		border-radius: var(--bRadius);
@@ -75,7 +75,6 @@
         border-top: 1px solid var(--bColor);
     }
 
-	/* Rounded corners */
 	table tr:first-child td:first-child {
 		border-top-left-radius: var(--bRadius);
 	}
@@ -93,7 +92,7 @@
 	}
 
     td:hover {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: var(--table-highlight-bg);
         cursor: default;
     }
 </style>

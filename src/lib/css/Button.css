@@ -4,12 +4,12 @@
   text-transform: uppercase;
   transition: 0.5s;
   background-size: 200% auto;
-  color: white;
+  color: var(--text-primary);
   border-radius: 30px;
   display: block;
   border: 0px;
   font-weight: 700;
-  background-image: linear-gradient(45deg, #8d2fff 0%, #5619f0  51%, #2f2fff  100%);
+  background-image: var(--gradient-primary);
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
@@ -23,7 +23,7 @@
 
 .button:hover {
   background-position: right center;
-  color: #fff;
+  color: var(--text-primary);
   text-decoration: none;
 }
 

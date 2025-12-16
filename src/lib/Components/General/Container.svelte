@@ -19,12 +19,10 @@
         padding: 20px;
 
 		border-radius: 2rem;
-        background: rgba(255, 255, 255, 0.06);
-        box-shadow:
-        0 4px 20px rgba(0, 0, 0, 0.3),
-        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        background: var(--glass-bg);
+        box-shadow: var(--glass-shadow);
 
-        color: var(--color, #ffffff);
+        color: var(--color, var(--text-primary));
         text-align: left;
         padding-top: var(--paddingTop, 20px);
         margin-bottom: 24px;

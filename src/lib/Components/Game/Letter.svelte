@@ -126,7 +126,7 @@
     .key-letter {
         font-family: 'Source Code Pro', monospace;
         font-size: 1.0rem;
-        color: #bcd8ff8d !important;
+        color: var(--color-link-muted) !important;
     }
 
 
@@ -169,47 +169,42 @@
     }
 
     .selected {
-        background-color: #ffffff28 !important;
+        background-color: var(--table-highlight-bg) !important;
     }
 
     :not(.error) {
-        color: rgb(235, 254, 255);
+        color: var(--text-primary);
         transition-duration: 0ms;
     }
 
     .error {
-        color: rgb(219, 44, 44);
+        color: var(--color-error-darker);
     }
 
     .focus {
-        background-color: rgba(199, 171, 255, 0.236) !important;
+        background-color: var(--color-primary-muted) !important;
         animation: focusPulse 1.5s ease-in-out infinite;
-        box-shadow: 0 0 4px #9558ff26;
+        box-shadow: 0 0 4px var(--color-primary-muted);
         transition: background-color 0.25s ease, box-shadow 0.25s ease;
         border-radius: 4px;
     }
 
     @keyframes focusPulse {
         0%, 100% {
-            box-shadow: 0 0 4px rgba(13, 20, 143, 0.15);
+            box-shadow: 0 0 4px var(--color-primary-muted);
         }
         50% {
-            box-shadow: 0 0 14px rgba(182, 126, 255, 0.35);
+            box-shadow: 0 0 14px var(--color-primary-border);
         }
     }
 
 
     input:hover {
-        background-color: #ffffff0a;
+        background-color: var(--glass-bg);
         cursor: pointer;
     }
 
     input::placeholder {
-        color: #ffffff31;
-    }
-
-    :not(.error) {
-        color: rgb(235, 254, 255);
-        transition-duration: 0ms;
+        color: var(--text-muted);
     }
 </style>

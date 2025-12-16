@@ -5,7 +5,7 @@
   let { profilePicture, size = 40, useColorRing = false, preserveSize = false, onColorExtract = null } = $props();
   let loading = $state(true);
   let src = $state("");
-  let ringColor = $state('#bcaeff');
+  let ringColor = $state('var(--color-ring-default, #bcaeff)');
   let imgRef = $state(null);
   let lastFetchedProfileId = $state("");
 
@@ -129,7 +129,7 @@
     height: 70%;
     transform: translate(-50%, -50%);
     border: 3px solid rgba(0, 0, 0, 0.1);
-    border-top-color: #555;
+    border-top-color: var(--color-neutral-800);
     border-radius: 50%;
     animation: spin 0.6s linear infinite;
   }

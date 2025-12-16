@@ -1,15 +1,16 @@
 <script>
     import Container from "$lib/Components/General/Container.svelte";
     import Options from "$lib/Components/Game/Options.svelte";
-    import {cipherTypes} from '$db/shared-utils/CipherTypes';
+    import { cipherTypes } from '$db/shared-utils/CipherTypes';
     import { goto } from "$app/navigation";
-    import { broadcastTabEvent } from "$lib/util/crossTabEvents";
     import LoadingOverlay from "$lib/Components/General/LoadingOverlay.svelte";
+    import { leaveCurrentGame, createGame as createGameApi, joinGame as joinGameApi } from "$lib/util/gameApi.js";
+    import { GAME_MODES, DEFAULT_GAME_OPTIONS } from "$lib/util/constants.js";
 
-    let options = $state({'AutoFocus':true, 'playerLimit': 2});
+    let options = $state({ ...DEFAULT_GAME_OPTIONS });
     let cipherType = $state('Aristocrat');
     let cipherOption = $state('Random');
-    let cipherOptionObj = {'K':'Random'};
+    let cipherOptionObj = { 'K': 'Random' };
     let feedbackCreate = $state('');
     let authenticating = $state(false);
     let showLeaveGameButton = $state(false);
@@ -17,15 +18,8 @@
     let joinCode = $state('');
     let feedbackJoin = $state('');
 
-
     function changeCipherOption(option, optionObj) {
-        let nOption;
-        if (option[0] === "!") {
-            nOption = option.substring(1);
-        } else {
-            nOption = cipherTypes[cipherType]['options'][0] + option;
-        }
-
+        const nOption = option[0] === "!" ? option.substring(1) : cipherTypes[cipherType]['options'][0] + option;
         cipherOption = nOption;
         cipherOptionObj = optionObj;
     }
@@ -35,57 +29,33 @@
     }
 
     function onOptionChange(option, value) {
-        if (value) {
-            options[option] = value;
-        } else {
-            options[option] = !options[option];
-        }
+        options[option] = value ?? !options[option];
     }
 
-    async function createGame() {
-        let res = null;
+    async function handleCreateGame() {
         try {
             authenticating = true;
             feedbackCreate = '';
-            const response = await fetch('/api/create-game', {
-                method: 'POST',
-                body: JSON.stringify({cipherType, cipherOptionObj, options, mode:"private"}),
-                headers: {
-                    'content-type': 'application/json'
-                }
-		    });
-            res = await response.json();
+            const res = await createGameApi({ cipherType, cipherOptionObj, options, mode: GAME_MODES.PRIVATE });
             authenticating = false;
-            if (res['success']) {
-                goto(`/game/${res['gameId']}`);
+
+            if (res.success) {
+                goto(`/game/${res.gameId}`);
             } else {
                 feedbackCreate = res.message;
             }
-
-            if (res['leaveGame']) {
-                showLeaveGameButton = true;
-            } else {
-                showLeaveGameButton = false;
-            }
+            showLeaveGameButton = !!res.leaveGame;
         } catch (error) {
+            authenticating = false;
             feedbackCreate = error.toString();
         }
     }
 
-    async function joinGame() {
-        let res = null;
+    async function handleJoinGame() {
         try {
             authenticating = true;
             feedbackJoin = '';
-            const response = await fetch('/api/join-game', {
-                method: 'POST',
-                body: JSON.stringify({ roomCode: joinCode.toUpperCase() }),
-                headers: {
-                    'content-type': 'application/json'
-                }
-            });
-
-            res = await response.json();
+            const res = await joinGameApi(joinCode);
             authenticating = false;
 
             if (res.success) {
@@ -93,42 +63,32 @@
             } else {
                 feedbackJoin = res.message;
             }
-
-            if (res['leaveGame']) {
-                showLeaveGameButton2 = true;
-            } else {
-                showLeaveGameButton2 = false;
-            }
+            showLeaveGameButton2 = !!res.leaveGame;
         } catch (error) {
             authenticating = false;
             feedbackJoin = error.toString();
         }
     }
 
-    async function leaveGame() {
+    async function handleLeaveGame() {
         authenticating = true;
-        const res = await fetch('/api/leave-current-game', { method: 'POST'});
-        const data = await res.json();
+        const data = await leaveCurrentGame();
 
         if (data.success) {
+            const feedback = "You left your previous game. Now retry creating or joining.";
             if (showLeaveGameButton) {
                 showLeaveGameButton = false;
-                feedbackCreate = "You left your previous game. Now retry creating or joining.";
+                feedbackCreate = feedback;
             } else {
                 showLeaveGameButton2 = false;
-                feedbackJoin = "You left your previous game. Now retry creating or joining.";
+                feedbackJoin = feedback;
             }
-
         } else {
             if (showLeaveGameButton) {
                 feedbackCreate = data.message;
             } else {
                 feedbackJoin = data.message;
             }
-        }
-
-        if (data.disconnectSocket) {
-            broadcastTabEvent('leave-game', { gameId: data.gameId });
         }
         authenticating = false;
     }
@@ -146,10 +106,10 @@
     <h2>New Private Game</h2>
     <Options options={options} onOptionChange={onOptionChange} cipherType={cipherType} multiplayer={true} cipherOption={cipherOption} changeCipherOption={changeCipherOption} changeType={changeType}/>
     <div class="button-row">
-        <button class="button" onclick={createGame}>Create Game</button>
+        <button class="button" onclick={handleCreateGame}>Create Game</button>
 
         {#if showLeaveGameButton}
-            <button class="button" onclick={leaveGame} style="color: #fa6969;">Leave Current Game</button>
+            <button class="button leave-game-btn" onclick={handleLeaveGame}>Leave Current Game</button>
         {/if}
     </div>
 
@@ -167,10 +127,10 @@
         </label>
 
         <div class="button-row">
-            <button class="button" onclick={joinGame}>Join Game</button>
+            <button class="button" onclick={handleJoinGame}>Join Game</button>
 
             {#if showLeaveGameButton2}
-                <button class="button" onclick={leaveGame} style="color: #fa6969;">Leave Current Game</button>
+                <button class="button leave-game-btn" onclick={handleLeaveGame}>Leave Current Game</button>
             {/if}
         </div>
     </div>
@@ -232,5 +192,9 @@
         input {
             width: 100%;
         }
+    }
+
+    .leave-game-btn {
+        color: var(--color-error);
     }
 </style>

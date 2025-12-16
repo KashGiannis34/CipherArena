@@ -113,7 +113,7 @@ class:focus={focus && !solved} onclick={handleClick}>
 
 <style>
     input {
-        color: rgb(235, 254, 255);
+        color: var(--text-primary);
         text-align: center;
         width: 100%;
         height: 100%;
@@ -173,9 +173,9 @@ class:focus={focus && !solved} onclick={handleClick}>
     }
 
     td {
-        border-top: 1px solid var(--bColor);
-        border-bottom: 1px solid var(--bColor);
-        border-right: 1px solid var(--bColor);
+        border-top: 1px solid var(--table-border-color);
+        border-bottom: 1px solid var(--table-border-color);
+        border-right: 1px solid var(--table-border-color);
         text-align: center;
         display: block;
         padding-top: 0.65vw;
@@ -183,7 +183,7 @@ class:focus={focus && !solved} onclick={handleClick}>
     }
 
     .last {
-        border-top-right-radius: var(--bRadius);
+        border-top-right-radius: 0.5rem;
     }
 
     input:hover {

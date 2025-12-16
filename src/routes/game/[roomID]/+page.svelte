@@ -12,6 +12,9 @@
   import ProgressDisplay from '$lib/Components/Game/ProgressDisplay.svelte';
   import { PUBLIC_APP_URL } from '$env/static/public';
   import Confetti from 'svelte-confetti';
+  import { createStatusManager } from '$lib/util/helpers.js';
+  import { leaveCurrentGame, navigateToLobby } from '$lib/util/gameApi.js';
+  import { GAME_STATES, STATUS_TYPES } from '$lib/util/constants.js';
 
   let { data } = $props();
   let stopListening;
@@ -37,16 +40,11 @@
   let progressMap = $state({});
 
   let statusMessage = $state(null);
-  let statusType = $state('info');
-  let messageTimer;
+  let statusType = $state(STATUS_TYPES.INFO);
+  const statusManager = createStatusManager();
 
-  function showStatus(msg, type = 'info', duration = 3000) {
-    statusMessage = msg;
-    statusType = type;
-    clearTimeout(messageTimer);
-    messageTimer = setTimeout(() => {
-      statusMessage = null;
-    }, duration);
+  function showStatus(msg, type = STATUS_TYPES.INFO, duration = 3000) {
+    statusManager.show(v => statusMessage = v, v => statusType = v, msg, type, duration);
   }
 
   function checkQuote(quote, hash, cipherType, keys, solve) {
@@ -90,19 +88,15 @@
   }
 
   async function leaveGame() {
-      gameState = "leavingGame";
+      gameState = GAME_STATES.LEAVING;
       try {
-        const res = await fetch('/api/leave-current-game', { method: 'POST', body: JSON.stringify({ gameId: data.roomID }) });
+        await leaveCurrentGame(data.roomID);
       } catch (e) {
-        showStatus('Leave game failed.', 'error');
+        showStatus('Leave game failed.', STATUS_TYPES.ERROR);
       } finally {
         socket?.emit('leave-room');
         socket?.disconnect();
-        if (data.mode == 'private') {
-          goto('/private-lobby');
-        } else {
-          goto('/public-lobby');
-        }
+        navigateToLobby(data.mode);
       }
   }
 
@@ -114,10 +108,10 @@
     const res = await fetch(`/api/game-players?gameId=${data.roomID}`);
     players = await res.json();
 
-    if (gameState === 'started') {
+    if (gameState === GAME_STATES.STARTED) {
       historicalPlayers = mergePlayerStatus(historicalPlayers, players);
     }
-    if (gameState === 'finished' && matchResult.players) {
+    if (gameState === GAME_STATES.FINISHED && matchResult.players) {
       const assignedPlayers = new Map(players.map(p => [p.username, p]));
       const basePlayers = new Map(historicalPlayers.map(p => [p.username, p]));
 
@@ -183,12 +177,12 @@
       showStatus(error, 'error');
     })
 
-    socket.on('ready', (val) => {
+    socket.on('ready', (serverGameState) => {
       socket.emit('join-room');
-      if (val) {
-        gameState = val;
+      if (serverGameState) {
+        gameState = serverGameState;
       }
-      if (gameState == 'started') {
+      if (gameState === GAME_STATES.STARTED) {
         socket.emit('get-cipher-info', info => {
           cipherData.params = info.params;
           cipherData.autoFocus = info.autoFocus;
@@ -201,7 +195,7 @@
           fetchPlayers();
         });
       }
-      if (gameState === 'finished') {
+      if (gameState === GAME_STATES.FINISHED) {
         socket.emit('get-match-result', result => {
           if (result) {
             matchResult = {
@@ -306,11 +300,11 @@
   </div>
 {/if}
 
-{#if gameState === "disconnected"}
+{#if gameState === GAME_STATES.DISCONNECTED}
   <div transition:fade>Disconnected.</div>
-{:else if gameState === "leavingGame"}
+{:else if gameState === GAME_STATES.LEAVING}
   <LoadingOverlay />
-{:else if gameState === "waiting"}
+{:else if gameState === GAME_STATES.WAITING}
   <div class="waiting-container">
     <div class="top-bar">
       <div
@@ -404,14 +398,14 @@
           <div class="player-info-wrapper">
             <div class="player-left-group">
               <ProfilePicture profilePicture={player.profilePicture} size={40} useColorRing={player.username == data.username} preserveSize={true}/>
-              <div class="player-name" style={(player.connected ? "color: #ffffff;" : "color: #ff7d7d;") + (player.username === data.username ? " font-weight: 700;" : "font-weight: 200;")}>
+              <div class="player-name" class:disconnected={!player.connected} class:is-current-user={player.username === data.username}>
                 <a href={`/profile/${player.username}`} target="_blank" rel="noopener noreferrer" class="profile-link">
                   {player.username}
                 </a>
                 {(!player.connected ? " (DISCONNECTED)" : "") + (player.host ? " (HOST)" : "")}
               </div>
             </div>
-            <div class="player-elo" style={(player.connected ? "color: #ffffff;" : "color: #ff7d7d;") + (player.username === data.username ? " font-weight: 700;" : "font-weight: 200;")}>
+            <div class="player-elo" class:disconnected={!player.connected} class:is-current-user={player.username === data.username}>
               ELO: {player.elo}
             </div>
           </div>
@@ -426,7 +420,7 @@
         <button class="button leave-button" onclick={leaveGame}>Leave Game</button>
     </div>
   </div>
-{:else if gameState === "started" && cipherRetrieved}
+{:else if gameState === GAME_STATES.STARTED && cipherRetrieved}
   <div transition:fade>
     <ProgressDisplay username={data.username} players={historicalPlayers} progressMap={progressMap} forfeitVoters={forfeitVoters}/>
 
@@ -454,7 +448,7 @@
       </button>
     </div>
   </div>
-{:else if gameState === "finished"}
+{:else if gameState === GAME_STATES.FINISHED}
   {#if matchResult.players}
     <CipherModal
       won={matchResult.won}
@@ -499,42 +493,6 @@
     margin-top: 2rem;
   }
 
-  .status-bar {
-    position: fixed;
-    bottom: 1.5rem;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 0.75rem 1.25rem;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 1rem;
-    z-index: 2000;
-    max-width: 90vw;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.08);
-    text-align: center;
-    color: white;
-    opacity: 0.96;
-    backdrop-filter: blur(14px);
-    border: 1px solid rgba(255,255,255,0.16);
-    background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
-  }
-
-  .status-bar.info { border-color: rgba(255,255,255,0.16); }
-  .status-bar.success { border-color: rgba(54, 214, 125, 0.4); }
-  .status-bar.error { border-color: rgba(225, 76, 76, 0.4); }
-
-  .profile-link {
-		color: #fff;
-		text-decoration: none;
-		font-weight: 500;
-		transition: color 0.2s;
-	}
-
-	.profile-link:hover {
-		color: #4e9aff;
-		text-decoration: underline;
-	}
-
   .waiting-container {
     display: flex;
     flex-direction: column;
@@ -560,7 +518,7 @@
     margin: 2vh 0;
     width: 100%;
     max-width: 1100px;
-    color: #fff;
+    color: var(--text-primary);
     text-shadow: 0 0 20px rgba(255,255,255,0.25), 0 2px 4px rgba(0,0,0,0.35);
   }
 
@@ -618,9 +576,9 @@
     position: relative;
     cursor: pointer;
     padding: 0.6rem 1rem;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.14);
-    color: #ffffff;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
     border-radius: 10px;
     font-weight: 600;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -644,8 +602,8 @@
     top: 100%;
     left: 50%;
     transform: translateX(-50%) translateY(6px);
-    background-color: #333;
-    color: #fff;
+    background-color: var(--color-neutral-900);
+    color: var(--text-primary);
     font-size: 0.8rem;
     padding: 0.4rem 0.75rem;
     border-radius: 6px;
@@ -701,7 +659,7 @@
 
   .kick-left-icon {
     font-size: 1.5rem;
-    color: #ff3c3c;
+    color: var(--color-error-dark);
     cursor: pointer;
     user-select: none;
     position: absolute;
@@ -711,14 +669,14 @@
   }
 
   .kick-left-icon:hover {
-    color: #e60000;
+    color: var(--color-error-darkest);
   }
 
   .kick-left-tooltip {
     visibility: hidden;
     opacity: 0;
-    background-color: #333;
-    color: #fff;
+    background-color: var(--color-neutral-900);
+    color: var(--text-primary);
     font-size: 0.75rem;
     padding: 0.3rem 0.6rem;
     border-radius: 4px;
@@ -762,10 +720,20 @@
 
   .player-name {
     font-weight: 600;
-    color: white;
+    color: var(--text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .player-name.disconnected,
+  .player-elo.disconnected {
+    color: var(--color-error);
+  }
+
+  .player-name.is-current-user,
+  .player-elo.is-current-user {
+    font-weight: 700;
   }
 
   .player-card:hover .kick-left-wrapper ~ .player-info-wrapper .player-left-group {
@@ -801,7 +769,7 @@
 
   .game-subtext {
     font-size: 0.9rem;
-    color: #eee;
+    color: var(--color-neutral-200);
   }
 
   .top-bar {

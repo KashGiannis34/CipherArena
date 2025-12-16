@@ -23,8 +23,8 @@
         height: 12vw;
         max-width: 60px;
         max-height: 60px;
-        border: 5px solid #cce1f9;
-        border-top: 5px solid #2b72d6;
+        border: 5px solid var(--color-neutral-300);
+        border-top: 5px solid var(--color-blue-mid);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         margin-bottom: 1rem;

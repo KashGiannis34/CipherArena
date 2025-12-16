@@ -160,7 +160,7 @@
 
 .badge-info p {
   font-size: 1rem;
-  color: #ddd;
+  color: var(--color-neutral-300);
 }
 
 .back-icon {
@@ -171,11 +171,11 @@
   margin-bottom: 0.75rem;
   display: inline-block;
   cursor: pointer;
-  color: #ccc;
+  color: var(--color-neutral-400);
 }
 
 .back-icon:hover {
-  color: #e4e0ff;
+  color: var(--color-hero-light);
 }
 
 .badge-display-wrapper {
@@ -254,7 +254,7 @@
 }
 
 .close-btn:hover {
-  color: #e4e0ff;
+  color: var(--color-hero-light);
 }
 
 .badge-grid {
@@ -302,9 +302,9 @@
 .tooltip {
   visibility: hidden;
   width: 180px;
-  background-color: #333333d6;
+  background-color: var(--glass-overlay);
   backdrop-filter: blur(10px);
-  color: #fff;
+  color: var(--text-primary);
   text-align: center;
   border-radius: 6px;
   padding: 0.5rem;
@@ -325,7 +325,7 @@
 .no-badges {
   text-align: center;
   padding: 2rem;
-  color: #eee;
+  color: var(--color-neutral-200);
   max-width: 400px;
   margin: 0 auto;
   animation: fadeInScale 0.5s ease-out;
@@ -356,12 +356,12 @@
 .no-badges h4 {
   font-size: 1.3rem;
   margin-top: 1rem;
-  color: #ccc;
+  color: var(--color-neutral-400);
 }
 
 .no-badges p {
   font-size: 0.95rem;
-  color: #aaa;
+  color: var(--color-neutral-600);
   margin: 0.5rem 0 1rem;
 }
 
@@ -395,7 +395,7 @@
 .badge-progress {
   margin-top: 0.5rem;
   font-size: 0.95rem;
-  color: #bbb;
+  color: var(--color-neutral-500);
   font-style: italic;
 }
 

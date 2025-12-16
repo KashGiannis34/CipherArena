@@ -520,7 +520,7 @@
 	.picker-title {
 		margin: 0;
 		font-size: clamp(1.5rem, 2.2vw, 1.8rem);
-		color: #ffffff;
+		color: var(--text-primary);
 	}
 
 	.search-wrapper {
@@ -700,7 +700,7 @@
 		gap: 0.75rem;
 		font-weight: 650;
 		font-size: 1rem;
-		color: #ffffff;
+		color: var(--text-primary);
 	}
 
 	.playback-btn.primary:hover:not(:disabled) {
@@ -877,7 +877,7 @@
 		border: 1px solid rgba(241, 196, 15, 0.35);
 		margin: 1rem 0;
 		font-size: 0.95rem;
-		color: #ffe8a3;
+		color: var(--color-warning-muted);
 	}
 
 	.reference {
@@ -954,8 +954,8 @@
 
 	.answer-section button {
 		padding: 0.85rem 1.6rem;
-		background: linear-gradient(45deg, #8d2fff 0%, #5619f0  51%, #2f2fff  100%);
-		color: white;
+		background: var(--gradient-primary);
+		color: var(--text-primary);
 		border: none;
 		border-radius: 12px;
 		cursor: pointer;
@@ -997,13 +997,13 @@
 	.result.correct {
 		background: rgba(56, 142, 60, 0.25);
 		border-color: rgba(129, 199, 132, 0.4);
-		color: #dcf8e0;
+		color: var(--color-success-light);
 	}
 
 	.result.incorrect {
-		background: rgba(229, 57, 53, 0.25);
+		background: var(--color-error-bg);
 		border-color: rgba(244, 143, 177, 0.4);
-		color: #ffd7dc;
+		color: var(--color-error);
 	}
 
 	.result p {
@@ -1013,13 +1013,13 @@
 	.success {
 		font-weight: 700;
 		font-size: 1.5rem;
-		color: #d4fbdc;
+		color: var(--color-success-light);
 	}
 
 	.error {
 		font-weight: 700;
 		font-size: 1.5rem;
-		color: #ffccd5;
+		color: var(--color-error);
 	}
 
 	.result-details {

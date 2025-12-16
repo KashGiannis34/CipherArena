@@ -8,7 +8,7 @@
     text-transform: uppercase;
     transition: 0.5s !important;
     background-size: 200% auto;
-    color: white;
+    color: var(--text-primary);
     border-radius: 6px;
     display: block;
     border: 0px;
@@ -25,14 +25,13 @@
 }
 
 .btn:not(.dropdown-item):hover {
-    background-color: #00000030 !important;
+    background-color: var(--overlay-light) !important;
 }
 
 .btn:not(.dropdown-item):focus {
-    background-color: #00000070 !important;
+    background-color: var(--overlay-medium) !important;
 }
 
 .btn-group {
-    box-shadow: 0px 0px 14px -7px #f019e9;
-    background: linear-gradient(45deg, #8d2fff 0%, #5619f0  51%, #2f2fff  100%);
+    background: var(--gradient-primary);
 }

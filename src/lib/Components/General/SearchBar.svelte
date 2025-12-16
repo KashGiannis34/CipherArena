@@ -552,8 +552,8 @@
     }
 
     .search-token {
-        background: #7555ff;
-        color: white;
+        background: var(--color-primary);
+        color: var(--text-primary);
         padding: 2px 8px;
         border-radius: 4px;
         font-weight: 500;
@@ -578,7 +578,7 @@
     }
 
     .search-token.value {
-        background: #5d44cc;
+        background: var(--color-primary-dark);
         margin-left: 1px;
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
@@ -590,7 +590,7 @@
     }
 
     .search-token.error {
-        background: #ff5555;
+        background: var(--color-error-dark);
     }
 
     .search-input::placeholder {
@@ -615,8 +615,8 @@
         top: 100%;
         left: 0;
         right: 0;
-        background: #2a2a2a;
-        border: 1px solid #3a3a3a;
+        background: var(--color-bg-card);
+        border: 1px solid var(--color-gray-border);
         border-radius: 4px;
         margin-top: 4px;
         z-index: 1000;
@@ -629,8 +629,8 @@
         padding: 8px 12px;
         font-size: 12px;
         font-weight: 600;
-        color: #72767d;
-        background: #222;
+        color: var(--color-neutral-700);
+        background: var(--color-neutral-950);
         letter-spacing: 0.5px;
     }
 
@@ -647,16 +647,16 @@
 
     .autocomplete-option:hover,
     .autocomplete-option.selected {
-        background-color: #3a3a3a;
-        border-left-color: #7555ff;
+        background-color: var(--color-gray-border);
+        border-left-color: var(--color-primary);
     }
 
     .autocomplete-option.selected {
-        background-color: #2d2d2d;
+        background-color: var(--color-gray-border-dark);
     }
 
     .autocomplete-option:hover.selected {
-        background-color: #3a3a3a;
+        background-color: var(--color-gray-border);
     }
 
     .option-label {
@@ -666,16 +666,16 @@
     }
 
     .option-key {
-        color: #7555ff;
+        color: var(--color-primary);
         font-weight: 500;
     }
 
     .option-description {
-        color: #dcddde;
+        color: var(--color-neutral-300);
     }
 
     .option-example {
-        color: #72767d;
+        color: var(--color-neutral-700);
         font-size: 12px;
         font-style: italic;
     }

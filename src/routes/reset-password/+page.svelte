@@ -59,10 +59,10 @@
     input:-webkit-autofill:focus,
     input:-webkit-autofill:active{
         -webkit-background-clip: text;
-        -webkit-text-fill-color: #ffffff;
+        -webkit-text-fill-color: var(--text-primary);
         transition: background-color 5000s ease-in-out 0s;
-        box-shadow: inset 0 0 20px 20px #534e8529;
-        caret-color: white !important;
+        box-shadow: inset 0 0 20px 20px rgba(83, 78, 133, 0.16);
+        caret-color: var(--text-primary) !important;
     }
 
   h1 {
@@ -94,18 +94,18 @@
   }
 
   label:focus-within {
-    border-color: rgb(141, 191, 255);
-    background: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 0 10px rgba(141, 191, 255, 0.3);
+    border-color: var(--color-link-light);
+    background: var(--glass-bg);
+    box-shadow: 0 0 10px var(--color-link-muted);
   }
 
   label i {
-    color: #ffffffaa;
+    color: var(--text-muted);
     margin-right: 6px;
   }
 
   label:focus-within i {
-    color: rgb(141, 191, 255);
+    color: var(--color-link-light);
     font-size: larger;
   }
 
@@ -126,31 +126,22 @@
   }
 
   .button {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--glass-bg-hover);
+    border: 1px solid var(--glass-border-strong);
     padding: 10px 18px;
     border-radius: 12px;
-    color: white;
+    color: var(--text-primary);
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
   }
 
   .button:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--glass-bg-active);
   }
 
   .button:active {
     transform: scale(0.97);
-  }
-
-  .spin {
-    animation: spin 2s infinite linear;
-  }
-
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
   }
 
   .error, .message {
@@ -163,13 +154,13 @@
   }
 
   .error {
-    background-color: rgba(255, 100, 100, 0.15);
-    color: #ff7f7f;
+    background-color: var(--color-error-bg);
+    color: var(--color-error);
   }
 
   .message {
     background-color: rgba(0, 255, 200, 0.1);
-    color: aquamarine;
+    color: var(--color-info);
   }
 
   .options {
@@ -179,12 +170,12 @@
   }
 
   .options a {
-    color: rgb(93, 239, 255);
+    color: var(--color-accent-light);
     text-decoration: none;
     transition: 0.3s ease;
   }
 
   .options a:hover {
-    color: rgba(68, 202, 255, 0.562);
+    color: var(--color-accent-muted);
   }
 </style>
