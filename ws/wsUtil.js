@@ -142,7 +142,7 @@ export async function updateStatsAfterWin(redis, gameUsers, winner, cipherType, 
       await updateUserInLeaderboards(redis, player.username, cipherType, player.stats[cipherType]);
 
       if (player.stats.All) {
-          await updateUserInLeaderboards(player.username, 'All', player.stats.All);
+          await updateUserInLeaderboards(redis, player.username, 'All', player.stats.All);
       }
     } catch (redisError) {
       console.error('CRITICAL: Failed to update leaderboards in Redis for user:', player.username, redisError);
