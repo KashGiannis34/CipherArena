@@ -340,23 +340,25 @@
     align-items: center;
     justify-content: space-between;
     padding: 1.2rem 1.5rem;
-    background-color: var(--color-primary-500);
-    border: 1px solid var(--color-primary-600);
+    background: var(--glass-bg);
+    border: 1px solid var(--color-primary-border);
     border-radius: 12px;
-    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--glass-shadow);
     color: var(--text-primary);
     transition: transform 0.2s ease, background-color 0.2s ease;
+    backdrop-filter: blur(10px);
   }
 
   .player-card:not(.full):hover {
-    background-color: var(--color-primary-600);
+    background: var(--glass-bg-hover);
+    border-color: var(--color-primary-light);
     transform: translateY(-2px);
   }
 
   .player-card.full {
-    background-color: var(--color-primary-dark);
-    border-color: var(--color-primary-alt);
-    opacity: 0.8;
+    background: rgba(0, 0, 0, 0.3);
+    border-color: var(--color-gray-border);
+    opacity: 0.7;
     cursor: not-allowed;
   }
 
@@ -396,19 +398,18 @@
   }
 
   .copy-box {
-    background-color: var(--text-primary);
-    color: var(--color-primary-600);
+    background: var(--gradient-primary);
+    color: var(--text-primary);
     font-weight: 600;
     border: none;
     border-radius: 8px;
     padding: 0.5rem 1rem;
     cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    transition: all 0.2s ease;
   }
 
   .copy-box:hover {
-    background-color: var(--color-purple-soft);
-    transform: scale(1.03);
+    transform: scale(1.05);
   }
 
   .full-indicator {
@@ -455,19 +456,6 @@
   .player-card.in-game .player-name {
     color: var(--text-primary);
     font-weight: 700;
-  }
-
-  .copy-box.rejoin {
-    background: var(--color-primary-500);
-    color: var(--text-primary);
-    font-weight: 600;
-    border: none;
-    padding: 0.6rem 1.2rem;
-  }
-
-  .copy-box.rejoin:hover {
-    background: var(--color-primary-600);
-    transform: scale(1.05);
   }
 
   @keyframes pulse {
