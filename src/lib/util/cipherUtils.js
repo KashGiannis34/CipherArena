@@ -83,12 +83,16 @@ export function initLettersWithIndices(cipherText, cipherType, keys = []) {
 }
 
 /** Converts K parameter to display string. */
-export function paramToString(params) {
-    const val = params?.K;
-    const res = 'K' + val;
-    if (res === 'K0' || val === 'Random') return 'Random ';
-    if (res === 'K1' || res === 'K2' || res === 'K3') return res + ' ';
-    return '';
+export function paramToString(obj) {
+    let val = obj.K;
+    let res = "K" + val;
+    if (res == "K0") {
+        return "Random ";
+    } else if (res == "K1" || res == "K2" || res == "K3") {
+        return res + " ";
+    } else {
+        return "";
+    }
 }
 
 /** Gets the next input index when navigating with arrow keys. */
