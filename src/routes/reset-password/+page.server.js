@@ -1,8 +1,8 @@
 import { fail } from '@sveltejs/kit';
-import { UserAuth } from '$db/models/UserAuth';
-import { VerificationToken } from '$db/models/VerificationToken';
+import { UserAuth } from '$models/UserAuth';
+import { VerificationToken } from '$models/VerificationToken';
 import pkg from 'argon2';
-import { verify_password } from '$db/auth/register';
+import { verify_password } from '$auth/register';
 const argon2 = pkg;
 
 const TOKEN_EXPIRATION_MINUTES = 20;

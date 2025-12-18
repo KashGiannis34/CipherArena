@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { authenticate } from '$dbutils/authenticate';
+import { authenticate } from '$utils/authenticate';
 
 /** @type {import('./$types').PageLoad} */
 export async function load({cookies}) {

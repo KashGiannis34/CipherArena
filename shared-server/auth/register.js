@@ -1,6 +1,6 @@
-import { UserAuth } from "$db/models/UserAuth";
-import { UserGame } from "$dbutils/UserGame";
-import { incrementUserCount } from "$dbutils/userCount.js";
+import { UserAuth } from "../models/UserAuth.js";
+import { UserGame } from "../game/UserGame.js";
+import { incrementUserCount } from "../utils/userCount.js";
 import pkg from 'argon2';
 const argon2 = pkg;
 

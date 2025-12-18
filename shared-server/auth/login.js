@@ -1,4 +1,4 @@
-import { UserAuth } from "$db/models/UserAuth";
+import { UserAuth } from "../models/UserAuth.js";
 import jwt from "jsonwebtoken";
 const SECRET_JWT_KEY = process.env.SECRET_JWT_KEY;
 import pkg from 'argon2';

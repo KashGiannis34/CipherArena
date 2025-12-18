@@ -1,4 +1,4 @@
-import redis from '../redis.js';
+import redis from '../services/redis.js';
 
 const USER_COUNT_KEY = 'total_user_count';
 

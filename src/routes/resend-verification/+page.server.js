@@ -1,6 +1,6 @@
-import { UserAuth } from '$db/models/UserAuth';
-import { createVerificationToken } from '$db/auth/verify';
-import { sendVerificationEmail } from '$db/auth/mailer';
+import { UserAuth } from '$models/UserAuth';
+import { createVerificationToken } from '$auth/verify';
+import { sendVerificationEmail } from '$auth/mailer';
 
 const RATE_LIMIT_MINUTES = 5;
 const EXPIRE_LIMIT_MINUTES = 20;

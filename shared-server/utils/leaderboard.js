@@ -1,4 +1,4 @@
-import { cipherTypes } from "../shared-utils/CipherTypes.js";
+import { cipherTypes } from "../shared/CipherTypes.js";
 /**
  * Updates a user's score and trims the leaderboard to the top 50.
  * @param {string} username - The user's username.

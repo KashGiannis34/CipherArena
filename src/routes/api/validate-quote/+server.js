@@ -1,10 +1,10 @@
 import { json } from '@sveltejs/kit';
-import { getQuoteModel } from '$dbutils/getQuoteModel';
+import { getQuoteModel } from '$game/getQuoteModel';
 import { ObjectId } from 'mongodb';
-import { stripQuote, encodeQuote } from '$db/shared-utils/CipherUtil';
-import { authenticate } from '$db/backend-utils/authenticate';
-import { cipherTypes } from '$db/shared-utils/CipherTypes';
-import { incrementWin } from '$dbutils/statsUtil.js';
+import { stripQuote, encodeQuote } from '$shared/CipherUtil';
+import { authenticate } from '$utils/authenticate';
+import { cipherTypes } from '$shared/CipherTypes';
+import { incrementWin } from '$utils/statsUtil.js';
 
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function POST({ request, cookies }) {

@@ -11,9 +11,14 @@ const config = {
 		// 	checkOrigin: false
 		// },
 		alias: {
-			$db: './db',
-			$utils: './db/shared-utils',
-			$dbutils: './db/backend-utils',
+			$server: './shared-server',
+			$shared: './shared-server/shared',
+			$models: './shared-server/models',
+			$game: './shared-server/game',
+			$auth: './shared-server/auth',
+			$utils: './shared-server/utils',
+			$services: './shared-server/services',
+			$bots: './shared-server/bots',
 		},
 	},
 };

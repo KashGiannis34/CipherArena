@@ -1,6 +1,6 @@
-import { authenticate } from '$dbutils/authenticate';
+import { authenticate } from '$utils/authenticate';
 import { json } from '@sveltejs/kit';
-import { leaveGameCleanup } from '$dbutils/leaveGameCleanup.js';
+import { leaveGameCleanup } from '$game/leaveGameCleanup.js';
 
 export async function POST({ cookies, request }) {
     const auth = authenticate(cookies.get('auth-token'));

@@ -1,4 +1,4 @@
-import redis from '$db/redis.js';
+import redis from '$services/redis.js';
 import { json } from '@sveltejs/kit';
 
 /** @type {import('./$types').RequestHandler} */

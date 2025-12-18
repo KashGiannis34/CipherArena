@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
-import { checkAnswer } from '$db/botService';
-import { decrypt } from '$db/backend-utils/cryptoUtil';
+import { checkAnswer } from '$bots/botService';
+import { decrypt } from '$utils/cryptoUtil';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {

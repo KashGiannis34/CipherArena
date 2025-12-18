@@ -1,4 +1,4 @@
-import { cipherTypes } from '$db/shared-utils/CipherTypes.js';
+import { cipherTypes } from '$shared/CipherTypes.js';
 
 export const badgeCriteria = [
   {

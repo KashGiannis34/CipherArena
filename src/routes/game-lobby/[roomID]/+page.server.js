@@ -1,11 +1,11 @@
 import { redirect, error } from '@sveltejs/kit';
-import { cipherTypes } from '$db/shared-utils/CipherTypes';
-import { generateQuote } from '$dbutils/GenerateQuote';
-import { authenticate } from '$dbutils/authenticate';
-import { UserGame } from '$dbutils/UserGame';
+import { cipherTypes } from '$shared/CipherTypes';
+import { generateQuote } from '$game/generateQuote';
+import { authenticate } from '$utils/authenticate';
+import { UserGame } from '$game/UserGame';
 import { ObjectId } from 'mongodb';
-import { Game } from '$dbutils/Game';
-import { joinGame } from '$db/joinGame';
+import { Game } from '$game/Game';
+import { joinGame } from '$game/joinGame';
 
 /** @type {import('./$types').PageLoad} */
 export async function load({cookies, params}) {

@@ -1,8 +1,8 @@
-import { findRandomEntry } from "./dbUtil.js";
+import { findRandomEntry } from "../utils/dbUtil.js";
 import { getQuoteModel } from "./getQuoteModel.js";
-import { Word } from "./Word.js";
-import { cipherTypes } from "../shared-utils/CipherTypes.js";
-import { encodeQuote, findDeterminant } from "../shared-utils/CipherUtil.js";
+import { Word } from "../models/Word.js";
+import { cipherTypes } from "../shared/CipherTypes.js";
+import { encodeQuote, findDeterminant } from "../shared/CipherUtil.js";
 
 export async function generateQuote(p) {
     const randomQuote = await findRandomEntry(getQuoteModel(p['cipherType']), {length: {$gte: cipherTypes[p['cipherType']]['length'][0], $lte: cipherTypes[p['cipherType']]['length'][1]}});

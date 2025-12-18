@@ -1,4 +1,4 @@
-import { Game } from '$dbutils/Game';
+import { Game } from '$game/Game';
 import { json } from '@sveltejs/kit';
 
 export async function GET({ url }) {

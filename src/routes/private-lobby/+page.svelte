@@ -1,7 +1,7 @@
 <script>
     import Container from "$lib/Components/General/Container.svelte";
     import Options from "$lib/Components/Game/Options.svelte";
-    import { cipherTypes } from '$db/shared-utils/CipherTypes';
+    import { cipherTypes } from '$shared/CipherTypes';
     import { goto } from "$app/navigation";
     import LoadingOverlay from "$lib/Components/General/LoadingOverlay.svelte";
     import { leaveCurrentGame, createGame as createGameApi, joinGame as joinGameApi } from "$lib/util/gameApi.js";

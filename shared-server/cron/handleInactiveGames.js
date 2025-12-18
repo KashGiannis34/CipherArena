@@ -1,6 +1,6 @@
 import cron from 'node-cron';
-import { Game } from '../backend-utils/Game.js';
-import { UserGame } from '../backend-utils/UserGame.js';
+import { Game } from '../game/Game.js';
+import { UserGame } from '../game/UserGame.js';
 
 // Run daily at 8 AM UTC = 3 AM EST / 12 AM PST
 cron.schedule('0 8 * * *', async () => {

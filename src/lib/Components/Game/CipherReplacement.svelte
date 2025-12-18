@@ -1,5 +1,5 @@
 <script>
-    import {isLetter, numberToLetter} from "$db/shared-utils/CipherUtil";
+    import {isLetter, numberToLetter} from "$shared/CipherUtil";
 
     let {inputs=$bindable(), letterInputs=$bindable(), cipherLetter, index, inputValue, autoFocus, onArrow, onFocus, onChange, onDelete, solved, spanish} = $props();
     let focus = $state(false);

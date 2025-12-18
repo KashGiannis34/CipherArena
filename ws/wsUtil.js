@@ -1,9 +1,9 @@
-import { getQuoteModel } from '../db/backend-utils/getQuoteModel.js';
+import { getQuoteModel } from '../shared-server/game/getQuoteModel.js';
 import { ObjectId } from 'mongodb';
-import { encodeQuote, stripQuote } from '../db/shared-utils/CipherUtil.js';
-import { UserGame } from '../db/backend-utils/UserGame.js';
-import { cipherTypes } from '../db/shared-utils/CipherTypes.js';
-import { updateUserInLeaderboards } from '../db/backend-utils/leaderboard.js';
+import { encodeQuote, stripQuote } from '../shared-server/shared/CipherUtil.js';
+import { UserGame } from '../shared-server/game/UserGame.js';
+import { cipherTypes } from '../shared-server/shared/CipherTypes.js';
+import { updateUserInLeaderboards } from '../shared-server/utils/leaderboard.js';
 
 export function calculateElo(players, winnerUsername, cipherType, K = 32, eloFloor = 100) {
   const eloChanges = {};

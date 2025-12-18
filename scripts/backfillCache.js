@@ -2,8 +2,8 @@ import 'dotenv/config';
 import mongoose from 'mongoose';
 import Redis from 'ioredis';
 
-import { UserGame } from '../db/backend-utils/UserGame.js';
-import { updateUserInLeaderboards } from '../db/backend-utils/leaderboard.js';
+import { UserGame } from '../shared-server/game/UserGame.js';
+import { updateUserInLeaderboards } from '../shared-server/utils/leaderboard.js';
 
 const USER_COUNT_KEY = 'total_user_count';
 

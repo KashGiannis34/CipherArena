@@ -1,7 +1,7 @@
 import { json, fail } from '@sveltejs/kit';
-import { UserAuth } from '$db/models/UserAuth';
-import { createVerificationToken } from '$db/auth/verify';
-import { sendPasswordResetEmail } from '$db/auth/mailer';
+import { UserAuth } from '$models/UserAuth';
+import { createVerificationToken } from '$auth/verify';
+import { sendPasswordResetEmail } from '$auth/mailer';
 
 const RATE_LIMIT_MINUTES = 5;
 const EXPIRE_LIMIT_MINUTES = 20;

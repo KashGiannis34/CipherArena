@@ -1,7 +1,7 @@
 <script>
     import { fade } from 'svelte/transition';
     import LoadingOverlay from './LoadingOverlay.svelte';
-    import { cipherTypes } from '$db/shared-utils/CipherTypes';
+    import { cipherTypes } from '$shared/CipherTypes';
 
     let { value = '', onSearch = () => {} } = $props();
 

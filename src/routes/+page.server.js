@@ -1,5 +1,5 @@
-import redis from '$db/redis.js';
-import { UserGame } from '$db/backend-utils/UserGame.js';
+import redis from '$services/redis.js';
+import { UserGame } from '$game/UserGame.js';
 
 const USER_COUNT_KEY = 'total_user_count';
 

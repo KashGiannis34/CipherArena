@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
-import { generateQuote } from '$dbutils/GenerateQuote';
-import { authenticate } from '$dbutils/authenticate';
-import { incrementTotal } from '$dbutils/statsUtil.js';
+import { generateQuote } from '$game/generateQuote';
+import { authenticate } from '$utils/authenticate';
+import { incrementTotal } from '$utils/statsUtil.js';
 
 export async function POST({ request, cookies }) {
     try {

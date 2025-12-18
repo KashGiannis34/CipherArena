@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { getStats } from '$db/botService';
+import { getStats } from '$bots/botService';
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET() {

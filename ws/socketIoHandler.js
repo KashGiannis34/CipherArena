@@ -1,14 +1,14 @@
 import { Server } from 'socket.io';
-import { Game } from '../db/backend-utils/Game.js';
-import { encodeQuote, stripQuote } from '../db/shared-utils/CipherUtil.js';
+import { Game } from '../shared-server/game/Game.js';
+import { encodeQuote, stripQuote } from '../shared-server/shared/CipherUtil.js';
 import { ObjectId } from 'mongodb';
-import { authenticate } from '../db/backend-utils/authenticate.js';
-import { UserGame } from '../db/backend-utils/UserGame.js';
-import { leaveGameCleanup } from '../db/backend-utils/leaveGameCleanup.js';
+import { authenticate } from '../shared-server/utils/authenticate.js';
+import { UserGame } from '../shared-server/game/UserGame.js';
+import { leaveGameCleanup } from '../shared-server/game/leaveGameCleanup.js';
 import socketIORateLimiter from '@d3vision/socket.io-rate-limiter';
 import * as wsUtil from './wsUtil.js';
-import { generateQuote } from '../db/backend-utils/GenerateQuote.js';
-import { incrementTotal, incrementWin } from '../db/backend-utils/statsUtil.js';
+import { generateQuote } from '../shared-server/game/generateQuote.js';
+import { incrementTotal, incrementWin } from '../shared-server/utils/statsUtil.js';
 import Redis from 'ioredis';
 import 'dotenv/config';
 

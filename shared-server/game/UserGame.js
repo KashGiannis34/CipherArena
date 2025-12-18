@@ -1,4 +1,4 @@
-import { cipherTypes } from "../shared-utils/CipherTypes.js";
+import { cipherTypes } from "../shared/CipherTypes.js";
 import mongoose from "mongoose";
 
 const CipherStatsSchema = new mongoose.Schema({

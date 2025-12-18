@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
-import { generateProblem } from '$db/botService';
-import { encrypt } from '$db/backend-utils/cryptoUtil';
+import { generateProblem } from '$bots/botService';
+import { encrypt } from '$utils/cryptoUtil';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {

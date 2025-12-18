@@ -1,5 +1,5 @@
-import { Game } from '$dbutils/Game';
-import { UserGame } from '$dbutils/UserGame';
+import { Game } from './Game.js';
+import { UserGame } from './UserGame.js';
 import { ObjectId } from 'mongodb';
 
 /**
@@ -7,8 +7,8 @@ import { ObjectId } from 'mongodb';
  * @param {string} roomCode - The game ID
  * @param {string} userGameId - The UserGame ID
  * @param {Object} [opts]
- * @param {import('$db/models/UserGame').UserGameDoc} [opts.userGame] - Optional preloaded UserGame doc
- * @param {import('$db/models/Game').GameDoc} [opts.game] - Optional preloaded Game doc
+ * @param {import('./UserGame.js').UserGameDoc} [opts.userGame] - Optional preloaded UserGame doc
+ * @param {import('./Game.js').GameDoc} [opts.game] - Optional preloaded Game doc
  * @returns {{ success: boolean, message?: string, gameId?: string, leaveGame?: string }}
  */
 export async function joinGame(roomCode, userGameId, { userGame = null, game = null } = {}) {

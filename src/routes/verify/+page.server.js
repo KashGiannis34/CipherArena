@@ -1,6 +1,6 @@
-import { VerificationToken } from '$db/models/VerificationToken';
-import { UserAuth } from '$db/models/UserAuth';
-import { cookie_options } from '$dbutils/dbUtil';
+import { VerificationToken } from '$models/VerificationToken';
+import { UserAuth } from '$models/UserAuth';
+import { cookie_options } from '$utils/dbUtil';
 
 /** @type {import('./$types').PageLoad} */
 export async function load({params, url, cookies}) {

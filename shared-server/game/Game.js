@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import {cipherTypes} from "../shared-utils/CipherTypes.js";
+import { cipherTypes } from "../shared/CipherTypes.js";
 
 const GameSchema = new mongoose.Schema({
     _id: {

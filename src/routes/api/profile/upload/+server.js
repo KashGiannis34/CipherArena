@@ -1,9 +1,9 @@
-import { getS3Client } from '$db/s3Client';
+import { getS3Client } from '$services/s3Client';
 import {PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { UserGame } from '$dbutils/UserGame.js';
+import { UserGame } from '$game/UserGame.js';
 import { json } from '@sveltejs/kit';
 import { v4 as uuidv4 } from 'uuid';
-import { authenticate } from '$dbutils/authenticate.js';
+import { authenticate } from '$utils/authenticate.js';
 import sharp from 'sharp';
 
 export async function POST({ request, cookies }) {

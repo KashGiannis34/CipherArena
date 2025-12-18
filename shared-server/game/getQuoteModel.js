@@ -1,5 +1,5 @@
-import { Quote } from './Quote.js';
-import { SpanishQuote } from './SpanishQuote.js';
+import { Quote } from '../models/Quote.js';
+import { SpanishQuote } from '../models/SpanishQuote.js';
 
 /**
  * Returns the appropriate quote model based on cipher type.

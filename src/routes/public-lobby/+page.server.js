@@ -1,8 +1,8 @@
 import { redirect, error } from '@sveltejs/kit';
-import { authenticate } from '$dbutils/authenticate';
-import { UserGame } from '$dbutils/UserGame';
+import { authenticate } from '$utils/authenticate';
+import { UserGame } from '$game/UserGame';
 import { ObjectId } from 'mongodb';
-import { Game } from '$dbutils/Game';
+import { Game } from '$game/Game';
 
 /** @type {import('./$types').PageLoad} */
 export async function load({cookies}) {

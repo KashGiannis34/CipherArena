@@ -1,11 +1,11 @@
-import { register_user } from '$db/auth/register';
-import { UserAuth } from '$db/models/UserAuth';
+import { register_user } from '$auth/register';
+import { UserAuth } from '$models/UserAuth';
 import { fail } from '@sveltejs/kit';
 import { redirect } from '@sveltejs/kit';
-import { createVerificationToken } from '$db/auth/verify';
-import { sendVerificationEmail } from '$db/auth/mailer';
-import { verifyCaptchaFromFormData } from '$dbutils/captchaUtil';
-import { authenticate } from '$dbutils/authenticate.js';
+import { createVerificationToken } from '$auth/verify';
+import { sendVerificationEmail } from '$auth/mailer';
+import { verifyCaptchaFromFormData } from '$utils/captchaUtil';
+import { authenticate } from '$utils/authenticate.js';
 
 export function load({ cookies }) {
   const auth = authenticate(cookies.get('auth-token'));

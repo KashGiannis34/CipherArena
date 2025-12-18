@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = process.cwd();
-const SCRIPT_DIR = path.resolve(ROOT_DIR, 'db');
+const SCRIPT_DIR = path.resolve(ROOT_DIR, 'shared-server/bots');
 
 let pythonShell = null;
 let isInitializing = false;
@@ -58,7 +58,7 @@ async function initPythonShell() {
 	initPromise = new Promise((resolve, reject) => {
 		const scriptFile = path.join(SCRIPT_DIR, 'codebusters_bot_server.py');
 		if (!fs.existsSync(scriptFile)) {
-			const msg = `[Bot Service] Python server script not found at ${scriptFile}. Check that the 'db' folder is included in the image and scriptPath is correct.`;
+			const msg = `[Bot Service] Python server script not found at ${scriptFile}. Check that the 'shared-server/bots' folder is included in the image and scriptPath is correct.`;
 			console.error(msg);
 			isInitializing = false;
 			return reject(new Error(msg));

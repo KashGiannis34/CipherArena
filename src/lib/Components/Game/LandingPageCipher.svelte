@@ -1,8 +1,8 @@
 <script>
 	import Letter from './Letter.svelte';
 	import FreqTable from './FreqTable.svelte';
-	import { ENGLISH_ALPHABET, isSolvableChunk, SPANISH_ALPHABET } from '$db/shared-utils/CipherUtil';
-	import { cipherTypes } from '$db/shared-utils/CipherTypes';
+	import { ENGLISH_ALPHABET, isSolvableChunk, SPANISH_ALPHABET } from '$shared/CipherUtil';
+	import { cipherTypes } from '$shared/CipherTypes';
 	import { onMount } from 'svelte';
 	import { debounce } from '$lib/util/helpers.js';
 	import { initQuote, initLetterInputs, initLetterFocus, paramToString, getInputText } from '$lib/util/cipherUtils.js';

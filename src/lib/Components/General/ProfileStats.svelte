@@ -1,5 +1,5 @@
 <script>
-  import { cipherTypes } from '$db/shared-utils/CipherTypes.js';
+  import { cipherTypes } from '$shared/CipherTypes.js';
   let { stats, singleStats, simple = false } = $props();
 
   const orderedStatKeys = ['All', ...Object.keys(cipherTypes)];

@@ -1,4 +1,4 @@
-import { start_mongo } from "$db/mongo.js";
+import { start_mongo } from "$services/mongo.js";
 
 
 /** @type {import('@sveltejs/kit').ServerInit} */

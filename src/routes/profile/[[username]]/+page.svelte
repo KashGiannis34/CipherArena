@@ -4,7 +4,7 @@
   import BadgeDisplay from '$lib/Components/Game/BadgeDisplay.svelte';
   import { getUnlockedBadges } from '$lib/util/badgeConfig.js';
   import "$lib/css/Button.css";
-  import { cipherTypes } from '$db/shared-utils/CipherTypes.js';
+  import { cipherTypes } from '$shared/CipherTypes.js';
   import SolveTimeHistogram from '$lib/Components/Game/SolveTimeHistogram.svelte';
   import ConfirmDeleteModal from '$lib/Components/General/ConfirmDeleteModal.svelte';
 

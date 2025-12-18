@@ -1,14 +1,14 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { UserGame } from '$dbutils/UserGame';
-import { authenticate } from '$dbutils/authenticate.js';
-import { UserAuth } from '$db/models/UserAuth';
-import { createVerificationToken } from '$db/auth/verify';
-import { sendVerificationEmail } from '$db/auth/mailer';
-import { cookie_options } from '$dbutils/dbUtil';
-import { VerificationToken } from '$db/models/VerificationToken';
-import { decrementUserCount } from '$db/backend-utils/userCount.js';
-import { removeUserFromLeaderboards } from '$db/backend-utils/leaderboard.js';
-import redis from '$db/redis.js';
+import { UserGame } from '$game/UserGame';
+import { authenticate } from '$utils/authenticate.js';
+import { UserAuth } from '$models/UserAuth';
+import { createVerificationToken } from '$auth/verify';
+import { sendVerificationEmail } from '$auth/mailer';
+import { cookie_options } from '$utils/dbUtil';
+import { VerificationToken } from '$models/VerificationToken';
+import { decrementUserCount } from '$utils/userCount.js';
+import { removeUserFromLeaderboards } from '$utils/leaderboard.js';
+import redis from '$services/redis.js';
 
 export async function load({ params, cookies }) {
   const auth = authenticate(cookies.get('auth-token'));

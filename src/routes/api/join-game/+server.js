@@ -1,6 +1,6 @@
-import { joinGame } from '$db/joinGame';
+import { joinGame } from '$game/joinGame';
 import { json } from '@sveltejs/kit';
-import { authenticate } from '$dbutils/authenticate';
+import { authenticate } from '$utils/authenticate';
 
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function POST({ request, cookies }) {

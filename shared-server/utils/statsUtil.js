@@ -1,4 +1,4 @@
-import { UserGame } from './UserGame.js';
+import { UserGame } from '../game/UserGame.js';
 
 export async function incrementTotal(userId, cipherType, returnUser = false) {
     const user = await UserGame.findById(userId);

@@ -2,7 +2,7 @@
  * Shared input handling logic for cipher letter inputs (Letter.svelte, Replacement.svelte).
  */
 
-import { isLetter } from '$db/shared-utils/CipherUtil';
+import { isLetter } from '$shared/CipherUtil';
 
 /** Handles keyboard navigation and input for cipher letter inputs. */
 export function createInputHandler({

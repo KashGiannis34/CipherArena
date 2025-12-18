@@ -9,18 +9,18 @@ import { handler } from '../build/handler.js';
 
 // socket.io
 import { Server } from 'socket.io';
-import { Game } from '../db/backend-utils/Game.js';
+import { Game } from '../shared-server/game/Game.js';
 import { ObjectId } from 'mongodb';
-import { authenticate } from '../db/backend-utils/authenticate.js';
-import { UserGame } from '../db/backend-utils/UserGame.js';
-import { leaveGameCleanup } from '../db/backend-utils/leaveGameCleanup.js';
+import { authenticate } from '../shared-server/utils/authenticate.js';
+import { UserGame } from '../shared-server/game/UserGame.js';
+import { leaveGameCleanup } from '../shared-server/game/leaveGameCleanup.js';
 import socketIORateLimiter from '@d3vision/socket.io-rate-limiter';
 import * as wsUtil from '../ws/wsUtil.js';
-import { generateQuote } from '../db/backend-utils/GenerateQuote.js';
-import { incrementTotal, incrementWin } from '../db/backend-utils/statsUtil.js';
+import { generateQuote } from '../shared-server/game/generateQuote.js';
+import { incrementTotal, incrementWin } from '../shared-server/utils/statsUtil.js';
 
 // cron scheduler
-import '../db/cron/handleInactiveGames.js';
+import '../shared-server/cron/handleInactiveGames.js';
 
 // redis caching
 import Redis from 'ioredis';

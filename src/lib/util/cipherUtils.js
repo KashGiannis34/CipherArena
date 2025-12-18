@@ -2,8 +2,8 @@
  * Shared cipher component utilities - extracted from Cipher.svelte and LandingPageCipher.svelte.
  */
 
-import { ENGLISH_ALPHABET, SPANISH_ALPHABET, isSolvableChunk } from '$db/shared-utils/CipherUtil';
-import { cipherTypes } from '$db/shared-utils/CipherTypes';
+import { ENGLISH_ALPHABET, SPANISH_ALPHABET, isSolvableChunk } from '$shared/CipherUtil';
+import { cipherTypes } from '$shared/CipherTypes';
 
 /** Initializes the cipher quote array with proper spacing based on cipher type. */
 export function initQuote(quoteArr, spacing, cipherType) {

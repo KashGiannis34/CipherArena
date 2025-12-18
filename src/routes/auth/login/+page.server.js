@@ -1,11 +1,11 @@
-import { UserAuth } from '$db/models/UserAuth';
-import {login_user} from '$db/auth/login';
+import { UserAuth } from '$models/UserAuth';
+import {login_user} from '$auth/login';
 import { fail, error } from '@sveltejs/kit';
-import { cookie_options } from '$dbutils/dbUtil';
-import { joinGame } from '$db/joinGame';
+import { cookie_options } from '$utils/dbUtil';
+import { joinGame } from '$game/joinGame';
 
 import { redirect } from '@sveltejs/kit';
-import { authenticate } from '$dbutils/authenticate.js';
+import { authenticate } from '$utils/authenticate.js';
 
 export function load({ cookies }) {
   const auth = authenticate(cookies.get('auth-token'));
