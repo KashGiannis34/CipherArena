@@ -1,229 +1,110 @@
+/**
+ * Bot Service - Communicates with Python code bot server
+ */
+
 import { PythonShell } from 'python-shell';
 import path from 'path';
-import fs from 'fs';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const ROOT_DIR = process.cwd();
-const SCRIPT_DIR = path.resolve(ROOT_DIR, 'shared-server/bots');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const SCRIPT_DIR = path.resolve(process.cwd(), 'shared-server/bots');
 
-let pythonShell = null;
-let isInitializing = false;
+// State
+let shell = null;
 let initPromise = null;
-let requestId = 0;
-let pendingRequests = new Map();
-let requestCount = 0;
-let startTime = Date.now();
-let lastActivityTime = Date.now();
+let reqId = 0;
+const pending = new Map();
+let stats = { requests: 0, startTime: Date.now(), lastActive: Date.now(), poolSize: 4 };
 
-const INACTIVITY_TIMEOUT = 30 * 60 * 1000;
-
-function checkInactivity() {
-	if (pythonShell && Date.now() - lastActivityTime > INACTIVITY_TIMEOUT) {
-		console.log('[Bot Service] Shutting down due to inactivity');
-		shutdownPythonShell();
-	}
-}
-
-setInterval(checkInactivity, 5 * 60 * 1000);
-
-function shutdownPythonShell() {
-	if (pythonShell) {
-		try {
-			pythonShell.end();
-		} catch (error) {
-			console.error('[Bot Service] Error ending Python shell:', error);
-		}
-		pythonShell = null;
-		isInitializing = false;
-		initPromise = null;
-		pendingRequests.clear();
-	}
-}
-
-async function initPythonShell() {
-	if (pythonShell) {
-		return pythonShell;
-	}
-
-	if (isInitializing && initPromise) {
-		return initPromise;
-	}
-
-	isInitializing = true;
-	console.log('[Bot Service] Initializing Python shell...');
-	console.log(`[Bot Service] JS __dirname=${__dirname}, CWD=${ROOT_DIR}, scriptDir=${SCRIPT_DIR}`);
+/**
+ * Get or create the Python process
+ */
+function getShell() {
+	if (shell) return Promise.resolve(shell);
+	if (initPromise) return initPromise;
 
 	initPromise = new Promise((resolve, reject) => {
-		const scriptFile = path.join(SCRIPT_DIR, 'codebusters_bot_server.py');
-		if (!fs.existsSync(scriptFile)) {
-			const msg = `[Bot Service] Python server script not found at ${scriptFile}. Check that the 'shared-server/bots' folder is included in the image and scriptPath is correct.`;
-			console.error(msg);
-			isInitializing = false;
-			return reject(new Error(msg));
-		}
-		const options = {
+		const py = new PythonShell('codebusters_bot_server.py', {
 			mode: 'text',
 			pythonPath: process.env.PYTHON_PATH || (process.env.NODE_ENV === 'production' ? 'python3' : 'python'),
-			pythonOptions: ['-u'],
-			scriptPath: SCRIPT_DIR
-		};
+			pythonOptions: ['-u', '-O'],
+			scriptPath: SCRIPT_DIR,
+			env: { ...process.env, BOT_POOL_SIZE: process.env.BOT_POOL_SIZE || '4' }
+		});
 
-		try {
-			console.log(`[Bot Service] Spawning Python: ${options.pythonPath} scriptPath=${options.scriptPath}`);
-			pythonShell = new PythonShell('codebusters_bot_server.py', options);
-
-			pythonShell.on('message', (message) => {
-				try {
-					const response = JSON.parse(message);
-
-					if (response.type === 'ready') {
-						console.log('[Bot Service] Python process ready');
-						isInitializing = false;
-						resolve(pythonShell);
-						return;
-					}
-
-					const requestId = response.id;
-					if (requestId && pendingRequests.has(requestId)) {
-						const { resolve: resolveRequest } = pendingRequests.get(requestId);
-						pendingRequests.delete(requestId);
-						resolveRequest(response.data);
-					}
-				} catch (error) {
-					console.error('[Bot Service] Error parsing message from Python:', error?.message || error, '\nRaw:', message);
+		py.on('message', (msg) => {
+			try {
+				const res = JSON.parse(msg);
+				if (res.type === 'ready') {
+					stats.poolSize = res.data?.poolSize || 4;
+					shell = py;
+					initPromise = null;
+					resolve(py);
+				} else if (res.id && pending.has(res.id)) {
+					pending.get(res.id).resolve(res.data);
+					pending.delete(res.id);
 				}
-			});
+			} catch (e) { console.error('[Bot] Parse error:', e.message); }
+		});
 
-			pythonShell.on('stderr', (data) => {
-				console.error('[Bot Service][stderr]', data);
-			});
+		py.on('stderr', (d) => console.error('[Bot][py]', d));
+		py.on('error', (e) => { cleanup(); reject(e); });
+		py.on('close', () => cleanup());
 
-			pythonShell.on('error', (error) => {
-				console.error('[Bot Service] Python shell error:', error);
-
-				pendingRequests.forEach(({ reject }) => {
-					reject(new Error('Python process error: ' + error.message));
-				});
-				pendingRequests.clear();
-
-				shutdownPythonShell();
-
-				if (isInitializing) {
-					isInitializing = false;
-					reject(error);
-				}
-			});
-
-			pythonShell.on('close', (code, signal) => {
-				console.log(`[Bot Service] Python process closed (code=${code}, signal=${signal})`);
-				shutdownPythonShell();
-			});
-
-			setTimeout(() => {
-				if (isInitializing) {
-					isInitializing = false;
-					const error = new Error('Python initialization timeout');
-					shutdownPythonShell();
-					reject(error);
-				}
-			}, 15000);
-
-		} catch (error) {
-			isInitializing = false;
-			shutdownPythonShell();
-			reject(error);
-		}
+		setTimeout(() => { if (!shell) { cleanup(); reject(new Error('Init timeout')); } }, 15000);
 	});
 
 	return initPromise;
 }
 
-async function sendRequest(action, data) {
-	lastActivityTime = Date.now();
-	requestCount++;
+function cleanup() {
+	if (shell) try { shell.end(); } catch {}
+	shell = null;
+	initPromise = null;
+	pending.forEach(p => p.reject(new Error('Process closed')));
+	pending.clear();
+}
 
-	const shell = await initPythonShell();
-	const id = ++requestId;
+async function send(action, data) {
+	stats.lastActive = Date.now();
+	stats.requests++;
+
+	const py = await getShell();
+	const id = ++reqId;
 
 	return new Promise((resolve, reject) => {
-		pendingRequests.set(id, { resolve, reject });
+		const timer = setTimeout(() => {
+			pending.delete(id);
+			reject(new Error('Timeout'));
+		}, 10000);
 
-		const timeout = setTimeout(() => {
-			if (pendingRequests.has(id)) {
-				pendingRequests.delete(id);
-				reject(new Error('Request timeout'));
-			}
-		}, 8000);
+		pending.set(id, {
+			resolve: (v) => { clearTimeout(timer); resolve(v); },
+			reject: (e) => { clearTimeout(timer); reject(e); }
+		});
 
-		const originalResolve = resolve;
-		const wrappedResolve = (value) => {
-			clearTimeout(timeout);
-			originalResolve(value);
-		};
-
-		const originalReject = reject;
-		const wrappedReject = (error) => {
-			clearTimeout(timeout);
-			originalReject(error);
-		};
-
-		pendingRequests.set(id, { resolve: wrappedResolve, reject: wrappedReject });
-
-		const request = JSON.stringify({ action, id, ...data });
-		try {
-			shell.send(request);
-		} catch (error) {
-			pendingRequests.delete(id);
-			clearTimeout(timeout);
-			reject(error);
-		}
+		py.send(JSON.stringify({ action, id, ...data }));
 	});
 }
 
-export async function generateProblem(problemType, decimals) {
-	try {
-		const result = await sendRequest('generate', { problemType, decimals });
-		return result;
-	} catch (error) {
-		console.error('[Bot Service] Generate error:', error);
-		throw error;
+// Auto shutdown after 30 min inactivity
+setInterval(() => {
+	if (shell && Date.now() - stats.lastActive > 30 * 60 * 1000) {
+		console.log('[Bot] Shutting down (inactive)');
+		cleanup();
 	}
-}
+}, 5 * 60 * 1000);
 
-export async function checkAnswer(problemType, problemData, userAnswer) {
-	try {
-		const result = await sendRequest('check', { problemType, problemData, userAnswer });
-		return result;
-	} catch (error) {
-		console.error('[Bot Service] Check error:', error);
-		throw error;
-	}
-}
-
-export function getStats() {
-	const uptime = Math.floor((Date.now() - startTime) / 1000);
-	const inactiveFor = Math.floor((Date.now() - lastActivityTime) / 1000);
-
-	return {
-		uptime,
-		requests: requestCount,
-		requestsPerSecond: requestCount / uptime,
-		isActive: !!pythonShell,
-		isInitializing,
-		pendingRequests: pendingRequests.size,
-		inactiveFor
-	};
-}
-
-process.on('SIGTERM', () => {
-	console.log('[Bot Service] Shutting down...');
-	shutdownPythonShell();
+// Public API
+export const generateProblem = (problemType, decimals) => send('generate', { problemType, decimals });
+export const checkAnswer = (problemType, problemData, userAnswer) => send('check', { problemType, problemData, userAnswer });
+export const getStats = () => ({
+	uptime: Math.floor((Date.now() - stats.startTime) / 1000),
+	requests: stats.requests,
+	poolSize: stats.poolSize,
+	isActive: !!shell,
+	pending: pending.size
 });
 
-process.on('SIGINT', () => {
-	console.log('[Bot Service] Shutting down...');
-	shutdownPythonShell();
-	process.exit(0);
-});
+process.on('SIGTERM', cleanup);
+process.on('SIGINT', () => { cleanup(); process.exit(0); });
