@@ -268,7 +268,7 @@
 				<div class="controls-footer">
 					<div class="selected-summary">
 						<span>Selected:</span>
-						<strong>Type {selectedSummaryNumber} — {selectedSummaryName}</strong>
+						<strong>Type {selectedSummaryNumber}: {selectedSummaryName}</strong>
 					</div>
 
 					<div class="playback-controls" role="group" aria-label="Practice playback controls">

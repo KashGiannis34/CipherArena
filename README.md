@@ -10,18 +10,19 @@ Cipher Arena is a fast-paced multiplayer web app where players compete in real-t
 
 - **Multiplayer Battles** – Go head-to-head solving ciphers with real-time progress tracking.
 - **Ranked Elo System** – Per-cipher ELO ratings with dynamic updates after every match.
-- **Achievements & Badges** – Unlock unique badges based on obscure solve conditions and personal milestones (including nods to #34).
-- **Secure Auth** – JWT-based login with email-first autofill, profile picture cropping, and reCAPTCHA protection.
+- **Achievements and Badges** – Unlock unique badges based on obscure solve conditions and personal milestones (including nods to #34).
+- **Secure Auth** – JWT-based login with email-first autofill and reCAPTCHA protection.
 - **Live Lobby System** – Discover and join public lobbies with real-time player lists and cipher metadata.
 - **Leaderboards** – Filter by cipher type and performance metric (Elo, win %, best time, avg time per char, etc.).
-- **Glassmorphic UI** – Responsive and animated UI built with Svelte 5 and runes.
+- **Codebusters Bot** – Practice mode with a Python-powered bot for Science Olympiad Codebusters training.
+- **Glassmorphic UI** – Responsive and animated UI built with Svelte 5.
 
 ## Tech Stack
 
 - **Frontend**: SvelteKit
 - **Backend**: Node.js, Socket.IO, MongoDB (via Mongoose)
 - **Deployment**: Fly.io (with custom EC2 proxy to access MongoDB Atlas)
-- **Auth & Storage**: JWT, AWS S3 for profile pictures
+- **Auth and Storage**: JWT, AWS S3 for profile pictures
 
 ## Cipher Types Supported
 
@@ -41,7 +42,7 @@ Cipher Arena is a fast-paced multiplayer web app where players compete in real-t
 
 ## Game Mechanics
 
-- Rematches require **unanimous consent** — the game won't restart unless all players agree.
+- Rematches require **unanimous consent**. the game won't restart unless all players agree.
 - **Live progress mapping** shows how much of the cipher each player has solved.
 - Hosts can kick inactive players before the game starts.
 - Socket reconnection is handled cleanly with session preservation and stale socket cleanup.

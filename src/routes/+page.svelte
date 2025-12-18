@@ -177,7 +177,7 @@
 							<p>From Aristocrats to Porta, new types added regularly.</p>
 						</li>
 						<li>
-							<h3>Stats & Profiles</h3>
+							<h3>Stats and Profiles</h3>
 							<p>Unlock badges, visualize times, and personalize your profile.</p>
 						</li>
 					</ul>

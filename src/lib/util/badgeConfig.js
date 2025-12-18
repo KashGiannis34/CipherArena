@@ -80,7 +80,7 @@ export const badgeCriteria = [
   {
     id: 'elo_aristocrat_1340',
     label: 'Aristocrat Freak',
-    description: 'Reach 1340 Elo in Aristocrat — no backing down.',
+    description: 'Reach 1340 Elo in Aristocrat. No backing down.',
     progress: stats => {
       const elo = stats?.Aristocrat?.elo ?? 1000;
       return elo >= 1340 ? undefined : `${elo}/1340 elo`;
