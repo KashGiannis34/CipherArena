@@ -10,7 +10,7 @@ from concurrent.futures import ProcessPoolExecutor, TimeoutError as FuturesTimeo
 
 # Pool config
 POOL_SIZE = int(os.environ.get('BOT_POOL_SIZE', 4))
-REQUEST_TIMEOUT = 8  # seconds
+REQUEST_TIMEOUT = 8  # sec
 
 # Global pool (initialized lazily)
 _pool = None
