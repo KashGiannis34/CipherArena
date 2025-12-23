@@ -93,7 +93,9 @@
     }
 
     function onChange(letter, newValue, index) {
-        if (debouncedProgressUpdate && mode === GAME_MODES.MULTIPLAYER && info.inputs[index].value != newValue && (newValue === '' || info.inputs[index].value === '')) {
+        if (debouncedProgressUpdate && mode === GAME_MODES.MULTIPLAYER
+        && info.inputs[index].value != newValue
+        && (newValue === '' || info.inputs[index].value === '')) {
             debouncedProgressUpdate();
         }
 

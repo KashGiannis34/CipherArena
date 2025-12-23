@@ -20,7 +20,7 @@
             "Delete",
         ];
 
-        if (event.key == ',' && spanish) {
+        if (event.key == ',' && spanish && cipherLetter != "Ñ") {
             onChange(cipherLetter, 'Ñ', index);
             event.preventDefault();
             return;

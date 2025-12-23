@@ -104,6 +104,7 @@ function encodeHill(plaintext, key) {
     return res;
 }
 
+/** Encodes plaintext using a random shift for the Caesar cipher. */
 function encodeCaesar(plaintext) {
     const shift = Math.floor(Math.random() * 25) + 1;
     const res = [];
@@ -119,6 +120,7 @@ function encodeCaesar(plaintext) {
     return res;
 }
 
+/** Encodes plaintext using the atbash cipher. */
 function encodeAtbash(plaintext) {
     const res = [];
 
@@ -133,6 +135,7 @@ function encodeAtbash(plaintext) {
     return res;
 }
 
+/** Encodes aristocrat using a generated frequency table. */
 function encodeAristocrat(plaintext, k, key) {
     const freqTable = freqTableInit(k || '0', key, false);
     const useInverseMapping = k === '1' || k === '3';
@@ -152,6 +155,7 @@ function encodeAristocrat(plaintext, k, key) {
     return ciphertext;
 }
 
+/** Encodes xenocrypt using a generated frequency table. */
 function encodeXenocrypt(plaintext, k, key) {
     const freqTable = freqTableInit(k || '0', key, true);
     const useInverseMapping = k === '1' || k === '3';
@@ -174,6 +178,7 @@ function encodeXenocrypt(plaintext, k, key) {
     return ciphertext;
 }
 
+/** Encodes plaintext using the porta cipher. */
 function encodePorta(plaintext, key) {
     const ciphertext = [];
     let count = 0;
@@ -195,6 +200,7 @@ function encodePorta(plaintext, key) {
     return ciphertext;
 }
 
+/** Generates the array used for the frequency table. */
 function setArray(key, alphabet) {
     let freqTable = [];
     let count = 0;
@@ -217,6 +223,7 @@ function setArray(key, alphabet) {
     return freqTable;
 }
 
+/** Generates the frequency table for aristocrats and xenocrypts. */
 function freqTableInit(k, key, isSpanish = false) {
     const baseAlphabet = isSpanish
         ? "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("")
@@ -306,6 +313,7 @@ const baconianSymbolSets = [
   { aSet: new Set(['C','D','F','H','L','N','R','T','X']), bSet: new Set(['A','B','E','G','I','J','K','M','O','P','Q','S','U','V','W','Y','Z']) },
 ];
 
+/** Encodes plaintext using the baconian cipher (various types of baconians were hard coded). */
 function encodeBaconian(plaintext) {
     const encodingType = Math.random();
 
@@ -371,6 +379,7 @@ function encodeBaconian(plaintext) {
     return ciphertext;
 }
 
+/** Encodes plaintext using the checkerboard cipher. */
 function encodeCheckerboard(plaintext, rowKey, colKey, polybiusKey) {
     const square = generateCheckerboardSquare(rowKey, colKey, polybiusKey);
     const stripped = stripQuote(plaintext, false);
@@ -385,6 +394,7 @@ function encodeCheckerboard(plaintext, rowKey, colKey, polybiusKey) {
     return coords;
 }
 
+/** Generates the polybius square for the checkerboard cipher given a row and column key. */
 function generateCheckerboardSquare(rowKey, colKey, key) {
     const alphabet = 'ABCDEFGHIKLMNOPQRSTUVWXYZ'; // I/J combined
     key = key.toUpperCase().replace(/[^A-Z]/g, '').replace(/J/g, 'I');
@@ -410,6 +420,7 @@ function generateCheckerboardSquare(rowKey, colKey, key) {
     return coordsMap;
 }
 
+/** Generates a word with accented letters for a specific type of baconian cipher. */
 function generateDecoratedWordSet(baseWord) {
     const combiningMarks = [
     '\u0300', // grave `
@@ -454,6 +465,7 @@ function generateDecoratedWordSet(baseWord) {
     return { aSet: new Set(aSet), bSet: new Set(bSet) };
 }
 
+/** Converts baconian "A" and "B" to custom mapping. */
 function baconianMapToSymbols(baconianText, aGroup, bGroup) {
     const aChars = Array.from(aGroup);
     const bChars = Array.from(bGroup);
@@ -469,6 +481,7 @@ function baconianMapToSymbols(baconianText, aGroup, bGroup) {
     return ciphertext;
 }
 
+/** Encodes plaintext using the nihilist cipher, generating the correspending polybius table given keys. */
 function encodeNihilist(plaintext, keyword, polybiusKey) {
     const square = generatePolybiusSquare(polybiusKey);
     const stripped = stripQuote(plaintext, false); // remove spaces, punctuation, lowercase
@@ -490,6 +503,7 @@ function encodeNihilist(plaintext, keyword, polybiusKey) {
     return ciphertext.map(n => n.toString().padStart(2, '0'));
 }
 
+/** Encodes plaintext using the affine cipher. */
 function encodeAffine(plaintext, a, b) {
     const ciphertext = [];
 
@@ -504,6 +518,7 @@ function encodeAffine(plaintext, a, b) {
     return ciphertext;
 }
 
+/** Generates a polybius square for the nihilist cipher. */
 function generatePolybiusSquare(key) {
     const alphabet = 'ABCDEFGHIKLMNOPQRSTUVWXYZ'; // I/J combined
     key = key.toUpperCase().replace(/[^A-Z]/g, '').replace(/J/g, 'I');
@@ -529,6 +544,7 @@ function generatePolybiusSquare(key) {
     return coordsMap;
 }
 
+/** Returns coordinates for each character in the keyword for the nihilist cipher. */
 function getCoordsFromKeyword(keyword, square) {
     const stripped = keyword.toUpperCase().replace(/J/g, 'I');
     const coords = [];
@@ -542,6 +558,7 @@ function getCoordsFromKeyword(keyword, square) {
     return coords;
 }
 
+/** Strips non-alpha characters from the plaintext of a quote. */
 export function stripQuote(text, isSpanish) {
     const graphemes = getSplitter().splitGraphemes(text);
     let stripped = '';
@@ -553,6 +570,7 @@ export function stripQuote(text, isSpanish) {
     return stripped;
 }
 
+/** Determines if a given string is a single alpha character. */
 export function isSolvableChunk(chunk, cipherType) {
     if (!cipherTypes[cipherType].bypassCheck) {
         if (chunk && chunk.length == 1 && isLetter(chunk[0], cipherType == 'Xenocrypt')) {
