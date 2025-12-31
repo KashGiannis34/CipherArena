@@ -36,7 +36,6 @@ export function verify_password(password, confirmPass) {
 	if (password.length < 8)
 		return "Password must be at least 8 characters.";
 
-	// check for symbols etc. if you wish
     // Check for at least one uppercase letter
     const hasUppercase = /[A-Z]/.test(password);
     if (!hasUppercase) {

@@ -14,7 +14,6 @@ Cipher Arena is a fast-paced multiplayer web app where players compete in real-t
 - **Secure Auth** – JWT-based login with email-first autofill and reCAPTCHA protection.
 - **Live Lobby System** – Discover and join public lobbies with real-time player lists and cipher metadata.
 - **Leaderboards** – Filter by cipher type and performance metric (Elo, win %, best time, avg time per char, etc.).
-- **Codebusters Bot** – Practice mode with a Python-powered bot for Science Olympiad Codebusters training.
 - **Glassmorphic UI** – Responsive and animated UI built with Svelte 5.
 
 ## Tech Stack

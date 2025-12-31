@@ -4,6 +4,7 @@ gracefulFs.gracefulify(fs);
 
 import http from 'http';
 import express from 'express';
+import helmet from 'helmet';
 import 'dotenv/config';
 import { handler } from '../build/handler.js';
 
@@ -26,6 +27,10 @@ import '../shared-server/cron/handleInactiveGames.js';
 import Redis from 'ioredis';
 
 const app = express();
+app.use(helmet({
+    contentSecurityPolicy: false,
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" }
+}));
 const server = http.createServer(app);
 
 console.log(`[server] ENV PORT = ${process.env.PORT}`);

@@ -15,7 +15,7 @@ async function get_user(email, password) {
     }
 
     const user = await UserAuth.findOne({
-    email: { $regex: `^${email}$`, $options: 'i' }
+        email: { $regex: `^${email}$`, $options: 'i' }
     });
 
     if (!password) {
@@ -47,6 +47,6 @@ export async function login_user(email, password) {
 		return { error: info.error };
 	}
 
-    const token = jwt.sign({ id: info.user.id }, SECRET_JWT_KEY);
+    const token = jwt.sign({ id: info.user.id }, SECRET_JWT_KEY, { expiresIn: '1d' });
 	return { token, user: info.user };
 }

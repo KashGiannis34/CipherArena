@@ -36,6 +36,7 @@
 		"fast-json-parse": "^1.0.3",
 		"graceful-fs": "^4.2.11",
 		"grapheme-splitter": "^1.0.4",
+		"helmet": "^8.1.0",
 		"ioredis": "^5.7.0",
 		"jsonwebtoken": "^9.0.2",
 		"mongodb": "^6.12.0",
