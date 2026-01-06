@@ -16,8 +16,13 @@ export async function POST({ request, cookies }) {
 
         if (!auth) return json({success: false, message: "Unauthorized"});
 
-        const userGame = await UserGame.findById(new ObjectId(auth['id']));
-        const userAuth = await UserAuth.findById(new ObjectId(auth['id']));
+        const userId = new ObjectId(auth.id);
+
+        const [userGame, userAuth] = await Promise.all([
+        UserGame.findById(userId),
+        UserAuth.findById(userId)
+        ]);
+
         if (!userGame || !userAuth) return json({success: false, message: "Unauthorized"});
 
         if (userGame.currentGame) return json({success: false, message: "You are already in a game. Leave the current game before creating or joining another.", leaveGame: userGame.currentGame});
@@ -37,37 +42,39 @@ export async function POST({ request, cookies }) {
 
         const quote = await generateQuote(params);
 
-        let shortCode;
-        let isTaken = true;
-
-        while (isTaken) {
-            shortCode = generateShortCode();
-            isTaken = await Game.exists({ shortCode });
+        let game;
+        for (let attempt = 0; attempt < 5; attempt++) {
+            try {
+                game = await Game.create({
+                    _id: generateShortCode(),
+                    params: params,
+                    autoFocus: req.options.AutoFocus,
+                    playerLimit,
+                    quote: {
+                        id: quote.id,
+                        encodedText: quote.quote,
+                        keys: quote.keys
+                    },
+                    mode: req.mode,
+                    users: [userGame._id],
+                    host: userGame._id
+                });
+                break;
+            } catch (err) {
+                if (err.code !== 11000) throw err;
+            }
         }
 
-        const newGame = new Game({
-            _id: shortCode,
-            params: params,
-            autoFocus: req.options.AutoFocus,
-            playerLimit: playerLimit,
-            quote: {
-                id: quote.id,
-                encodedText: quote.quote,
-                keys: quote.keys
-            },
-            mode: req.mode,
-            users: [userGame._id],
-            host: userGame._id
-        });
+        if (!game) {
+            throw new Error("Failed to generate unique game code");
+        }
 
-        await newGame.save();
-
-        userGame.currentGame = newGame._id;
+        userGame.currentGame = game._id;
         await userGame.save();
 
         return json({
             success: true,
-            gameId: newGame._id,
+            gameId: game._id,
             message: "Game created successfully"
         });
     } catch (error) {
