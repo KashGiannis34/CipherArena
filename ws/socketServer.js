@@ -133,7 +133,7 @@ export function setupSocketServer(httpServer) {
                     }
 
                     if (!game.users.some(u => u._id.equals(user._id))) {
-                        return socket.emit('error', 'You are not allowed to join this game.');
+                        socket.emit('error', 'You are not allowed to join this game.');
                     }
 
                     socket.join(game._id);

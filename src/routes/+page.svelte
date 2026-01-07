@@ -111,7 +111,7 @@
 						</li>
 						<li>
 							<h3>Practice for Codebusters</h3>
-							<p>Sharpen speed and accuracy with targeted drills.</p>
+							<p>Sharpen speed and accuracy with drills for every cipher type.</p>
 						</li>
 						<li>
 							<h3>Multiplayer battles</h3>
@@ -144,11 +144,11 @@
 					</div>
 				</div>
 				<div class="copy">
-					<h2>Compete and Climb</h2>
+					<h2>Climb The Ranks</h2>
 					<ul class="feature-list">
 						<li>
 							<h3>Cipher Battles</h3>
-							<p>Live, real-time matches with transparent progress.</p>
+							<p>Live matches with progress bars and confetti at the end!</p>
 						</li>
 						<li>
 							<h3>Matchmaking</h3>
@@ -156,7 +156,7 @@
 						</li>
 						<li>
 							<h3>Leaderboards</h3>
-							<p>Climb by cipher type and track improvement over time.</p>
+							<p>Search by cipher type and track different stats.</p>
 						</li>
 					</ul>
 				</div>
@@ -166,19 +166,19 @@
 		<section class="section showcase animatable" use:animateOnScroll>
 			<div class="showcase-inner">
 				<div class="copy">
-					<h2>Master the Craft</h2>
+					<h2>Master The Craft</h2>
 					<ul class="feature-list">
 						<li>
 							<h3>Practice Mode</h3>
-							<p>Endless solo drills with built-in tools and tables.</p>
+							<p>Endless solo problems with tools and tables built in.</p>
 						</li>
 						<li>
 							<h3>Cipher Variety</h3>
-							<p>From Aristocrats to Porta, new types added regularly.</p>
+							<p>From Aristocrats to Portas, new types added regularly.</p>
 						</li>
 						<li>
 							<h3>Stats and Profiles</h3>
-							<p>Unlock badges, visualize times, and personalize your profile.</p>
+							<p>Unlock badges, visualize stats, and personalize your profile.</p>
 						</li>
 					</ul>
 				</div>
@@ -196,7 +196,7 @@
 		</section>
 
 		<section class="section register-section animatable" use:animateOnScroll>
-			<h2>Join the Arena</h2>
+			<h2>Join The Arena</h2>
 			<div class="logo-container">
 				<img src="/logo.png" alt="Cipher Arena Logo" class="animated-logo" />
 			</div>
