@@ -11,7 +11,6 @@ import { leaveGameCleanup } from '../shared-server/game/leaveGameCleanup.js';
 import { generateQuote } from '../shared-server/game/generateQuote.js';
 import { incrementTotal, incrementWin } from '../shared-server/utils/statsUtil.js';
 import * as wsUtil from './wsUtil.js';
-import '../shared-server/cron/handleInactiveGames.js';
 
 // State maps
 const activeSockets = new Map();

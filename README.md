@@ -20,7 +20,7 @@ Cipher Arena is a fast-paced multiplayer web app where players compete in real-t
 
 - **Frontend**: SvelteKit
 - **Backend**: Node.js, Socket.IO, MongoDB (via Mongoose)
-- **Deployment**: Fly.io (with custom EC2 proxy to access MongoDB Atlas)
+- **Deployment**: Fly.io
 - **Auth and Storage**: JWT, AWS S3 for profile pictures
 
 ## Cipher Types Supported
