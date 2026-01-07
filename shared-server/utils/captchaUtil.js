@@ -1,14 +1,3 @@
-/**
- * Captcha verification utility for server-side validation
- * Verifies Google reCAPTCHA v2 tokens
- */
-
-/**
- * Verifies a reCAPTCHA token with Google's verification API
- * @param {string} token - The reCAPTCHA token from the client
- * @param {string} remoteip - Optional: The user's IP address
- * @returns {Promise<{success: boolean, error?: string}>}
- */
 export async function verifyCaptcha(token, remoteip = null) {
     if (!token) {
         return {
@@ -18,13 +7,6 @@ export async function verifyCaptcha(token, remoteip = null) {
     }
 
     const secretKey = process.env.RECAPTCHA_SECRET_KEY;
-    if (!secretKey) {
-        console.error('RECAPTCHA_SECRET_KEY is not configured in environment variables');
-        return {
-            success: false,
-            error: 'Captcha verification is not properly configured'
-        };
-    }
 
     try {
         const params = new URLSearchParams();
@@ -43,7 +25,7 @@ export async function verifyCaptcha(token, remoteip = null) {
         });
 
         if (!response.ok) {
-            console.error('reCAPTCHA API returned non-OK status:', response.status);
+            console.error('reCAPTCHA API returned non-ok status:', response.status);
             return {
                 success: false,
                 error: 'Failed to verify captcha with Google'
@@ -85,12 +67,6 @@ export async function verifyCaptcha(token, remoteip = null) {
     }
 }
 
-/**
- * Middleware-style function to verify captcha from form data
- * @param {FormData} formData - The form data containing the captcha token
- * @param {string} clientIP - Optional: The client's IP address
- * @returns {Promise<{success: boolean, error?: string}>}
- */
 export async function verifyCaptchaFromFormData(formData, clientIP = null) {
     const captchaToken = formData.get('captchaToken');
     return await verifyCaptcha(captchaToken, clientIP);

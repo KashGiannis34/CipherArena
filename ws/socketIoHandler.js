@@ -17,7 +17,7 @@ export default async function injectSocketIO(server) {
 
     const io = new Server(server.httpServer, {
         cors: {
-            origin: "http://localhost:3000",
+            origin: process.env.APP_URL,
             credentials: true
         }
     });
