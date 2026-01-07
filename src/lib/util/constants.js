@@ -1,7 +1,3 @@
-/**
- * Application-wide constants for type safety and consistency.
- */
-
 export const GAME_MODES = {
     PRIVATE: 'private',
     PUBLIC: 'public',

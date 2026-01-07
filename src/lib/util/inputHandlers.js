@@ -1,7 +1,3 @@
-/**
- * Shared input handling logic for cipher letter inputs (Letter.svelte, Replacement.svelte).
- */
-
 import { isLetter } from '$shared/CipherUtil';
 
 /** Handles keyboard navigation and input for cipher letter inputs. */
@@ -28,39 +24,33 @@ export function createInputHandler({
         const index = getIndex();
         const directMap = getDirectMap();
 
-        // Spanish Ñ shortcut
         if (event.key === ',' && isSpanish) {
             onChange(cipherLetter, 'Ñ', index);
             event.preventDefault();
             return;
         }
 
-        // Arrow navigation
         if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === ' ' || event.key === 'Tab') {
             onArrow(event.key, index);
             event.preventDefault();
             return;
         }
 
-        // Submit on Enter
         if (event.key === 'Enter' && checkQuote) {
             checkQuote();
             return;
         }
 
-        // Delete handling
         if (deleteKeys.includes(event.key)) {
             onChange(cipherLetter, '', index);
             return;
         }
 
-        // Prevent same-letter mapping in direct map mode
         if (!isLetter(event.key) || (event.key.toUpperCase() === cipherLetter && directMap)) {
             event.preventDefault();
             return;
         }
 
-        // Valid letter input
         if (event.key !== undefined && isLetter(event.key) && event.key.length === 1) {
             onChange(cipherLetter, event.key.toUpperCase(), index);
             event.preventDefault();

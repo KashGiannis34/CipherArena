@@ -1,7 +1,3 @@
-/**
- * Shared API utilities for game-related operations.
- */
-
 import { goto } from '$app/navigation';
 import { broadcastTabEvent } from '$lib/util/crossTabEvents.js';
 

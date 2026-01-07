@@ -106,15 +106,15 @@
 					<h2>Why Cipher Arena?</h2>
 					<ul class="feature-cards">
 						<li>
-							<h3>Learn by playing</h3>
+							<h3>Learn by Playing</h3>
 							<p>Master classic ciphers with fast, rewarding feedback.</p>
 						</li>
 						<li>
 							<h3>Practice for Codebusters</h3>
-							<p>Sharpen speed and accuracy with drills for every cipher type.</p>
+							<p>Imrpove speed and accuracy with drills for every cipher type.</p>
 						</li>
 						<li>
-							<h3>Multiplayer battles</h3>
+							<h3>Multiplayer Battles</h3>
 							<p>Race real opponents in live matches with ranked stats.</p>
 						</li>
 					</ul>
@@ -144,7 +144,7 @@
 					</div>
 				</div>
 				<div class="copy">
-					<h2>Climb The Ranks</h2>
+					<h2>Climb the Ranks</h2>
 					<ul class="feature-list">
 						<li>
 							<h3>Cipher Battles</h3>
@@ -166,7 +166,7 @@
 		<section class="section showcase animatable" use:animateOnScroll>
 			<div class="showcase-inner">
 				<div class="copy">
-					<h2>Master The Craft</h2>
+					<h2>Master the Craft</h2>
 					<ul class="feature-list">
 						<li>
 							<h3>Practice Mode</h3>
@@ -196,7 +196,7 @@
 		</section>
 
 		<section class="section register-section animatable" use:animateOnScroll>
-			<h2>Join The Arena</h2>
+			<h2>Join the Arena</h2>
 			<div class="logo-container">
 				<img src="/logo.png" alt="Cipher Arena Logo" class="animated-logo" />
 			</div>

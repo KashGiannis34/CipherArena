@@ -1,7 +1,3 @@
-/**
- * Shared cipher component utilities - extracted from Cipher.svelte and LandingPageCipher.svelte.
- */
-
 import { ENGLISH_ALPHABET, SPANISH_ALPHABET, isSolvableChunk } from '$shared/CipherUtil';
 import { cipherTypes } from '$shared/CipherTypes';
 

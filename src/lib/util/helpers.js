@@ -1,7 +1,3 @@
-/**
- * Utility functions shared across the application.
- */
-
 /** Creates a debounced version of a function that delays execution until after `delay` ms of inactivity. */
 export function debounce(func, delay) {
     let timeout;
