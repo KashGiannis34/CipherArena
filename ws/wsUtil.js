@@ -95,10 +95,7 @@ export async function checkAnswerCorrectness(ans, quoteToken, gameQuoteToken, ci
 }
 
 export async function getQuote(quoteToken, cipherType, keys, solve) {
-  // Decrypt the token to get the actual quote ID
-  console.log("test");
   const quoteId = decryptQuoteToken(quoteToken);
-  console.log(quoteId);
   if (!quoteId) return '';
 
   const QuoteModel = getQuoteModel(cipherType);

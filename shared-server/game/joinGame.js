@@ -13,12 +13,12 @@ import { ObjectId } from 'mongodb';
  */
 export async function joinGame(roomCode, userGameId, { userGame = null, game = null } = {}) {
 	try {
-		// Use provided documents or fetch
 		if (!userGame) {
 			userGame = await UserGame.findById(new ObjectId(userGameId));
 			if (!userGame) return { success: false, message: 'Unauthorized' };
 		}
 
+		// Already in game
 		if (userGame.currentGame && userGame.currentGame !== roomCode) {
 			return {
 				success: false,
@@ -32,7 +32,7 @@ export async function joinGame(roomCode, userGameId, { userGame = null, game = n
 			if (!game) return { success: false, message: 'Game not found' };
 		}
 
-		// Already in game
+		// Game already started
 		if (game.users.some(id => id.equals(userGame._id))) {
 			if (!userGame.currentGame) {
 				userGame.currentGame = game._id;

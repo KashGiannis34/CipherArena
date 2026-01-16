@@ -9,10 +9,28 @@ import { incrementTotal, incrementWin } from '../shared-server/utils/statsUtil.j
 import * as wsUtil from './wsUtil.js';
 
 // State maps
-const activeSockets = new Map();
-const lobbySockets = new Map();
-const rematchVotesMap = new Map();
-const forfeitVotesMap = new Map();
+const activeSockets = new Map(); // userId -> socketId (for games)
+const lobbySockets = new Map(); // userId -> socketId (for public lobby)
+const rematchVotesMap = new Map(); // gameId -> set of users who want rematch
+const forfeitVotesMap = new Map(); // gameId -> set of users who forfeited
+const gameLocks = new Map(); // gameId -> Promise chain (lock queue)
+
+async function withGameLock(gameId, fn) {
+    const key = gameId.toString();
+
+    const prev = gameLocks.get(key) || Promise.resolve();
+    const next = prev.then(() => fn());
+
+    gameLocks.set(key, next.catch(() => {}));
+
+    next.finally(() => {
+        if (gameLocks.get(key) === next.catch(() => {})) {
+            gameLocks.delete(key);
+        }
+    });
+
+    return next;
+}
 
 export function setupConnectionHandler(io, redis) {
     io.on('connection', async (socket) => {
@@ -136,28 +154,35 @@ export function setupConnectionHandler(io, redis) {
 
             socket.on('kick-player', async ({ username }) => {
                 try {
-                    game = await Game.findById(user.currentGame).populate('users').exec();
-                    if (!game.host.equals(user._id)) {
-                        socket.emit('error', 'Only the host can kick players');
-                    }
+                    await withGameLock(user.currentGame, async () => {
+                        game = await Game.findById(user.currentGame).populate('users').exec();
+                        if (!game.host.equals(user._id)) {
+                            socket.emit('error', 'Only the host can kick players');
+                            return;
+                        }
 
-                    const targetUser = game.users.find(user => user.username == username);
-                    if (!targetUser) {
-                        socket.emit('error', 'That player is not in your game');
-                    }
-                    if (targetUser._id.equals(user._id)) socket.emit('error', 'You cannot kick yourself');
+                        const targetUser = game.users.find(user => user.username == username);
+                        if (!targetUser) {
+                            socket.emit('error', 'That player is not in your game');
+                            return;
+                        }
+                        if (targetUser._id.equals(user._id)) {
+                            socket.emit('error', 'You cannot kick yourself');
+                            return;
+                        }
 
-                    await leaveGameCleanup(targetUser._id, game._id);
+                        await leaveGameCleanup(targetUser._id, game._id);
 
-                    const targetSocket = io.sockets.sockets.get(activeSockets.get(targetUser._id.toString()));
-                    if (targetSocket) {
-                        targetSocket.disconnectReason = 'kicked';
-                        targetSocket.emit('kicked');
-                        targetSocket.disconnect();
-                    }
+                        const targetSocket = io.sockets.sockets.get(activeSockets.get(targetUser._id.toString()));
+                        if (targetSocket) {
+                            targetSocket.disconnectReason = 'kicked';
+                            targetSocket.emit('kicked');
+                            targetSocket.disconnect();
+                        }
 
-                    io.to(socket.currentRoom).emit('players-changed');
-                    io.to('public-lobby').emit('lobbies-updated');
+                        io.to(socket.currentRoom).emit('players-changed');
+                        io.to('public-lobby').emit('lobbies-updated');
+                    });
                 } catch (err) {
                     socket.emit('error', 'Internal error during kick.');
                 }
@@ -165,43 +190,45 @@ export function setupConnectionHandler(io, redis) {
 
             socket.on('start-game', async () => {
                 try {
-                    game = await Game.findById(user.currentGame).populate('users').exec();
+                    await withGameLock(user.currentGame, async () => {
+                        game = await Game.findById(user.currentGame).populate('users').exec();
 
-                    if (game.state != 'waiting') {
-                        socket.emit('error', 'The game is not in the waiting state, please refresh the page');
-                        return;
-                    }
+                        if (game.state != 'waiting') {
+                            socket.emit('error', 'The game is not in the waiting state, please refresh the page');
+                            return;
+                        }
 
-                    if (!game.host.equals(user._id)) {
-                        socket.emit('error', 'Only the host can start the game');
-                        return;
-                    }
+                        if (!game.host.equals(user._id)) {
+                            socket.emit('error', 'Only the host can start the game');
+                            return;
+                        }
 
-                    const toRemove = game.users.filter(u => !u.currentSocketId);
-                    for (const user of toRemove) {
-                        await leaveGameCleanup(user._id, game._id);
-                    }
+                        const toRemove = game.users.filter(u => !u.currentSocketId);
+                        for (const u of toRemove) {
+                            await leaveGameCleanup(u._id, game._id);
+                        }
 
-                    if (toRemove.length > 0) {
-                        game = await Game.findById(game._id).populate('users').exec();
-                    }
+                        if (toRemove.length > 0) {
+                            game = await Game.findById(game._id).populate('users').exec();
+                        }
 
-                    // If it's really just a singleplayer game, count it toward singleplayer total
-                    if (game.mode === 'ranked' && game.users.length === 1 && user._id.equals(game.users[0]._id)) {
-                        const cipherType = game.params.cipherType;
-                        user = await incrementTotal(user._id, cipherType, true);
-                    }
+                        // If it's really just a singleplayer game, count it toward singleplayer total
+                        if (game.mode === 'ranked' && game.users.length === 1 && user._id.equals(game.users[0]._id)) {
+                            const cipherType = game.params.cipherType;
+                            user = await incrementTotal(user._id, cipherType, true);
+                        }
 
-                    game.state = 'started';
-                    game.metadata = {
-                        initialUserIds: game.users,
-                        startedAt: new Date()
-                    };
+                        game.state = 'started';
+                        game.metadata = {
+                            initialUserIds: game.users,
+                            startedAt: new Date()
+                        };
 
-                    await game.save();
+                        await game.save();
 
-                    io.to(socket.currentRoom).emit('start-game', game.params, game.autoFocus, game.quote);
-                    io.to('public-lobby').emit('lobbies-updated');
+                        io.to(socket.currentRoom).emit('start-game', game.params, game.autoFocus, game.quote);
+                        io.to('public-lobby').emit('lobbies-updated');
+                    });
                 } catch (err) {
                     socket.emit('error', 'Internal error during start game.');
                 }
@@ -251,45 +278,49 @@ export function setupConnectionHandler(io, redis) {
 
                     if (!isCorrect) return;
 
-                    if (game.state != 'started') {
-                        socket.emit('error', 'The game is not in the game started state, please refresh the page');
-                        return;
-                    }
+                    await withGameLock(user.currentGame, async () => {
+                        game = await Game.findById(user.currentGame).populate('users').exec();
 
-                    if (!game || !game.users || game.users.length === 0) return;
-                    const solveTime = (Date.now() - game.metadata.startedAt.getTime()) / 1000;
-                    const length = ans.length;
+                        if (game.state != 'started') {
+                            socket.emit('error', 'The game is not in the game started state, please refresh the page');
+                            return;
+                        }
 
-                    let eloChanges = null;
-                    if (game.mode === 'ranked' && game.metadata?.initialUserIds?.length > 1) {
+                        if (!game || !game.users || game.users.length === 0) return;
+                        const solveTime = (Date.now() - game.metadata.startedAt.getTime()) / 1000;
+                        const length = ans.length;
+
+                        let eloChanges = null;
+                        if (game.mode === 'ranked' && game.metadata?.initialUserIds?.length > 1) {
+                            const initialPlayers = await UserGame.find({ _id: { $in: game.metadata.initialUserIds } });
+                            eloChanges = await wsUtil.updateStatsAfterWin(redis, initialPlayers, user, cipherType, solveTime, length);
+                        }
+
                         const initialPlayers = await UserGame.find({ _id: { $in: game.metadata.initialUserIds } });
-                        eloChanges = await wsUtil.updateStatsAfterWin(redis, initialPlayers, user, cipherType, solveTime, length);
-                    }
 
-                    const initialPlayers = await UserGame.find({ _id: { $in: game.metadata.initialUserIds } });
+                        if (game.mode === 'ranked' && game.metadata?.initialUserIds?.length === 1 && game.metadata.initialUserIds[0].equals(user._id)) {
+                            user = await incrementWin(user._id, cipherType, solveTime, length, true);
+                        }
 
-                    if (game.mode === 'ranked' && game.metadata?.initialUserIds?.length === 1 && game.metadata.initialUserIds[0].equals(user._id)) {
-                        user = await incrementWin(user._id, cipherType, solveTime, length, true);
-                    }
+                        const matchResult = {
+                            winner: user.username,
+                            players: initialPlayers.map(u => ({
+                                username: u.username,
+                                host: game.host.equals(u._id),
+                                elo: u.stats?.[game.params.cipherType]?.elo ?? 1000,
+                                profilePicture: u.profilePicture,
+                            })),
+                            eloChanges: eloChanges ?? {},
+                            solveTime: solveTime,
+                            plainText: res.text
+                        };
 
-                    const matchResult = {
-                        winner: user.username,
-                        players: initialPlayers.map(u => ({
-                            username: u.username,
-                            host: game.host.equals(u._id),
-                            elo: u.stats?.[game.params.cipherType]?.elo ?? 1000,
-                            profilePicture: u.profilePicture,
-                        })),
-                        eloChanges: eloChanges ?? {},
-                        solveTime: solveTime,
-                        plainText: res.text
-                    };
+                        game.state = 'finished';
+                        game.lastMatchResult = matchResult;
+                        await game.save();
 
-                    game.state = 'finished';
-                    game.lastMatchResult = matchResult;
-                    await game.save();
-
-                    io.to(game._id).emit('cipher-solved', matchResult);
+                        io.to(game._id).emit('cipher-solved', matchResult);
+                    });
                 } catch (err) {
                     console.log(err);
                     socket.emit('error', 'Error validating quote.');
@@ -297,15 +328,18 @@ export function setupConnectionHandler(io, redis) {
             });
 
             socket.on('forfeit-request', async (shouldForfeit) => {
-                game = await Game.findById(user.currentGame).populate('users').exec();
-                if (!game) return;
+                if (!user.currentGame) return;
+                await withGameLock(user.currentGame, async () => {
+                    game = await Game.findById(user.currentGame).populate('users').exec();
+                    if (!game) return;
 
-                if (game.state != 'started') {
-                    socket.emit('error', 'The game is not in the game started state, please refresh the page');
-                    return;
-                }
+                    if (game.state != 'started') {
+                        socket.emit('error', 'The game is not in the game started state, please refresh the page');
+                        return;
+                    }
 
-                await handleForfeitRequest(game, shouldForfeit, io, forfeitVotesMap, rematchVotesMap, user);
+                    await handleForfeitRequest(game, shouldForfeit, io, forfeitVotesMap, rematchVotesMap, user);
+                });
             });
 
             socket.on('progress-update', ({ username, progress }) => {
@@ -328,15 +362,18 @@ export function setupConnectionHandler(io, redis) {
             });
 
             socket.on('rematch-request', async () => {
-                game = await Game.findById(user.currentGame).populate('users').exec();
-                if (!game) return;
+                if (!user.currentGame) return;
+                await withGameLock(user.currentGame, async () => {
+                    game = await Game.findById(user.currentGame).populate('users').exec();
+                    if (!game) return;
 
-                if (game.state != 'finished') {
-                    socket.emit('error', 'The game is not in a finished state, please refresh the page');
-                    return;
-                }
+                    if (game.state != 'finished') {
+                        socket.emit('error', 'The game is not in a finished state, please refresh the page');
+                        return;
+                    }
 
-                await handleRematchRequest(game, io, rematchVotesMap, forfeitVotesMap, user);
+                    await handleRematchRequest(game, io, rematchVotesMap, forfeitVotesMap, user);
+                });
             });
 
             socket.on('disconnect', async () => {
@@ -361,13 +398,13 @@ export function setupConnectionHandler(io, redis) {
                             if (socket.disconnectReason != 'leftGame') {
                                 // Do not auto forfeit on disconnect for singleplayer games
                                 if (latestGame.state == 'started' && latestGame.users.length > 1) {
-                                    forfeitVotesMap.delete(game._id);
+                                    forfeitVotesMap.delete(latestGame._id);
                                     await handleForfeitRequest(latestGame, true, io, forfeitVotesMap, rematchVotesMap, latestUser);
                                 }
 
                                 // Do not auto rematch on disconnect for singleplayer games
                                 if (latestGame.state == 'finished' && latestGame.users.length > 1) {
-                                    rematchVotesMap.delete(game._id);
+                                    rematchVotesMap.delete(latestGame._id);
                                     await handleRematchRequest(latestGame, io, rematchVotesMap, forfeitVotesMap, latestUser);
                                 }
                             }
