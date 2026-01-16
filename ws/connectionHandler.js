@@ -220,7 +220,7 @@ export function setupConnectionHandler(io, redis) {
                 }
             });
 
-            socket.on('get-initial-players', async cb => {
+            socket.on('get-initial-players', async (cb) => {
                 try {
                     game = await Game.findById(user.currentGame).populate('users').exec();
                     if (!game?.metadata?.initialUserIds) return cb([]);
@@ -291,6 +291,7 @@ export function setupConnectionHandler(io, redis) {
 
                     io.to(game._id).emit('cipher-solved', matchResult);
                 } catch (err) {
+                    console.log(err);
                     socket.emit('error', 'Error validating quote.');
                 }
             });
@@ -311,7 +312,7 @@ export function setupConnectionHandler(io, redis) {
                 io.to(socket.currentRoom).emit('progress-map-update', { username, progress });
             });
 
-            socket.on('get-match-result', async cb => {
+            socket.on('get-match-result', async (cb) => {
                 try {
                     game = await Game.findById(user.currentGame);
                     if (game?.state === 'finished' && game.lastMatchResult) {

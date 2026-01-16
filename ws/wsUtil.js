@@ -4,6 +4,7 @@ import { encodeQuote, stripQuote } from '../shared-server/shared/CipherUtil.js';
 import { UserGame } from '../shared-server/game/UserGame.js';
 import { cipherTypes } from '../shared-server/shared/CipherTypes.js';
 import { updateUserInLeaderboards } from '../shared-server/utils/leaderboard.js';
+import { decryptQuoteToken } from '../shared-server/utils/quoteToken.js';
 
 export function calculateElo(players, winnerUsername, cipherType, K = 32, eloFloor = 100) {
   const eloChanges = {};
@@ -68,13 +69,16 @@ function updateTotalStats(user, solveTime, length) {
   user.stats.All = allStats;
 }
 
-export async function checkAnswerCorrectness(ans, quoteId, gameQuoteId, cipherType, keys, solve) {
-  if (ans.includes(' ') || gameQuoteId?.toString() != quoteId) return false;
+export async function checkAnswerCorrectness(ans, quoteToken, gameQuoteToken, cipherType, keys, solve) {
+  if (ans.includes(' ') || gameQuoteToken !== quoteToken) return { correct: false };
+
+  const quoteId = decryptQuoteToken(quoteToken);
+  if (!quoteId) return { correct: false };
 
   const QuoteModel = getQuoteModel(cipherType);
 
   const quote = await QuoteModel.findById(new ObjectId(quoteId));
-  if (!quote) return false;
+  if (!quote) return { correct: false };
   let displayText = quote.text;
 
   let ansText = stripQuote(quote.text, cipherType == 'Xenocrypt');
@@ -90,7 +94,13 @@ export async function checkAnswerCorrectness(ans, quoteId, gameQuoteId, cipherTy
   }
 }
 
-export async function getQuote(quoteId, cipherType, keys, solve) {
+export async function getQuote(quoteToken, cipherType, keys, solve) {
+  // Decrypt the token to get the actual quote ID
+  console.log("test");
+  const quoteId = decryptQuoteToken(quoteToken);
+  console.log(quoteId);
+  if (!quoteId) return '';
+
   const QuoteModel = getQuoteModel(cipherType);
   const quote = await QuoteModel.findById(new ObjectId(quoteId));
   if (!quote) return '';

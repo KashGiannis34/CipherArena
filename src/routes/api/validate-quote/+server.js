@@ -5,6 +5,7 @@ import { stripQuote, encodeQuote } from '$shared/CipherUtil';
 import { authenticate } from '$utils/authenticate';
 import { cipherTypes } from '$shared/CipherTypes';
 import { incrementWin } from '$utils/statsUtil.js';
+import { decryptQuoteToken } from '$utils/quoteToken.js';
 
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export async function POST({ request, cookies }) {
@@ -13,8 +14,11 @@ export async function POST({ request, cookies }) {
 
         if (req['input'].includes(' ')) return json(false);
 
+        const quoteId = decryptQuoteToken(req['id']);
+        if (!quoteId) return json(false);
+
         const QuoteModel = getQuoteModel(req['cipherType']);
-        const quote = await QuoteModel.findOne({ _id: new ObjectId(req['id']) });
+        const quote = await QuoteModel.findOne({ _id: new ObjectId(quoteId) });
         if (!quote) return json(false);
 
         let ansText = stripQuote(quote["text"], req['cipherType'] === 'Xenocrypt');

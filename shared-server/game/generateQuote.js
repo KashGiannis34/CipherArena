@@ -3,6 +3,7 @@ import { getQuoteModel } from "./getQuoteModel.js";
 import { Word } from "../models/Word.js";
 import { cipherTypes } from "../shared/CipherTypes.js";
 import { encodeQuote, findDeterminant } from "../shared/CipherUtil.js";
+import { encryptQuoteId } from "../utils/quoteToken.js";
 
 export async function generateQuote(p) {
     const randomQuote = await findRandomEntry(getQuoteModel(p['cipherType']), {length: {$gte: cipherTypes[p['cipherType']]['length'][0], $lte: cipherTypes[p['cipherType']]['length'][1]}});
@@ -39,5 +40,7 @@ export async function generateQuote(p) {
         encodeQuote(randomQuote["text"], (p['cipherType'] == 'Patristocrat' ? 'Aristocrat':p['cipherType']), keys, p)
         : randomQuote["text"].split('').map(c => c.toUpperCase());
 
-    return {"id": randomQuote["_id"].toString(), "quote": encodedQuote, "keys": keys};
+    const encryptedId = encryptQuoteId(randomQuote["_id"].toString());
+
+    return {"id": encryptedId, "quote": encodedQuote, "keys": keys};
 }
