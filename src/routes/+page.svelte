@@ -1,6 +1,7 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { generateSeo } from '$lib/util/generateSEO';
+	import { PUBLIC_APP_URL } from '$env/static/public';
+	import Seo from '$lib/Components/General/Seo.svelte';
 	import Leaderboard from '$lib/Components/General/Leaderboard.svelte';
 	import ProfileStats from '$lib/Components/General/ProfileStats.svelte';
 	import { onMount } from 'svelte';
@@ -38,14 +39,6 @@
 		progressMap[username] = percent;
 	}
 
-	const seo = generateSeo({
-		title: 'Cipher Arena: Multiplayer Cryptogram Battles',
-		description:
-			'Battle opponents solving classic cryptograms in real-time. Compete across multiple cipher types, climb the leaderboard, and unlock badges.',
-		url: 'https://cipher-arena.fly.dev/',
-		image: 'https://cipher-arena.fly.dev/landing-page/hero-mock.webp'
-	});
-
 	const unlockedBadges = [
 		'elo_aristocrat_1500', 'elo_caesar_1400', 'wins_total_50', 'wins_aristocrat_50',
 		'elo_total_1300', 'games_played_100', 'games_played_34', 'wins_total_34',
@@ -75,8 +68,14 @@
 
 <svelte:head>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	{@html seo}
 </svelte:head>
+
+<Seo
+	title="Cipher Arena: Multiplayer Cryptogram Battles"
+	description="Battle opponents solving classic cryptograms in real-time. Compete across multiple cipher types, climb the leaderboard, and unlock badges."
+	url={PUBLIC_APP_URL}
+	image={`${PUBLIC_APP_URL}/landing-page/hero-mock.webp`}
+/>
 
 <div class="landing">
 	<div class="container">

@@ -1,19 +1,17 @@
 <script>
     import Auth from '$lib/Components/General/Auth.svelte';
-    import { generateSeo } from '$lib/util/generateSEO.js';
-    import { onMount } from 'svelte';
+    import { PUBLIC_APP_URL } from '$env/static/public';
+    import Seo from '$lib/Components/General/Seo.svelte';
 
     let {form} = $props();
-
-    const seo = generateSeo({
-    title: 'Login: Cipher Arena',
-    description: 'Log in to your Cipher Arena account to join multiplayer battles, track stats, and unlock new badges.',
-    url: 'https://cipher-arena.fly.dev/account/login',
-    image: 'https://cipher-arena.fly.dev/landing-page/pfp-badges.webp'
-    });
 </script>
 
-<svelte:head>{@html seo}</svelte:head>
+<Seo
+    title="Login: Cipher Arena"
+    description="Log in to your Cipher Arena account to join multiplayer battles, track stats, and unlock new badges."
+    url={`${PUBLIC_APP_URL}/account/login`}
+    image={`${PUBLIC_APP_URL}/landing-page/pfp-badges.webp`}
+/>
 
 <div style="all:inherit; padding:0 !important;">
     <Auth login={true} toggleAvailable={true} form={form}/>
