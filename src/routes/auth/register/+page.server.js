@@ -6,12 +6,15 @@ import { createVerificationToken } from '$auth/verify';
 import { sendVerificationEmail } from '$auth/mailer';
 import { verifyCaptchaFromFormData } from '$utils/captchaUtil';
 import { authenticate } from '$utils/authenticate.js';
+import { authLimiter } from '$lib/server/rateLimiter.js';
 
-export function load({ cookies }) {
-  const auth = authenticate(cookies.get('auth-token'));
+export async function load(event) {
+  const auth = authenticate(event.cookies.get('auth-token'));
   if (auth) {
     throw redirect(303, '/profile');
   }
+
+  await authLimiter.cookieLimiter?.preflight(event);
 }
 
 /** @satisfies {import('./$types').Actions} */
