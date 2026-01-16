@@ -279,14 +279,15 @@ export function setupSocketServer(httpServer) {
                 }
             });
 
-            socket.on('check-quote', async (ans, hash, cipherType, keys, solve, cb) => {
+            socket.on('check-quote', async (ans, quoteId, cipherType, keys, solve, cb) => {
                 try {
-                    const res = await wsUtil.checkAnswerCorrectness(ans, hash, cipherType, keys, solve);
+                    game = await Game.findById(user.currentGame).populate('users').exec();
+                    const res = await wsUtil.checkAnswerCorrectness(ans, quoteId, game.quote?.id, cipherType, keys, solve);
                     const isCorrect = res.correct;
                     cb(isCorrect);
+
                     if (!isCorrect) return;
 
-                    game = await Game.findById(user.currentGame).populate('users').exec();
                     if (game.state != 'started') {
                         socket.emit('error', 'The game is not in the game started state, please refresh the page');
                         return;
@@ -500,9 +501,6 @@ export function setupSocketServer(httpServer) {
                             }
                             return true;
                         });
-                    } else if (Object.keys(searchTerms).length == 0) {
-                        cb([]);
-                        return;
                     }
 
                     const formatted = games.map(g => ({

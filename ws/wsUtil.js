@@ -68,8 +68,8 @@ function updateTotalStats(user, solveTime, length) {
   user.stats.All = allStats;
 }
 
-export async function checkAnswerCorrectness(ans, quoteId, cipherType, keys, solve) {
-  if (ans.includes(' ')) return false;
+export async function checkAnswerCorrectness(ans, quoteId, gameQuoteId, cipherType, keys, solve) {
+  if (ans.includes(' ') || gameQuoteId?.toString() != quoteId) return false;
 
   const QuoteModel = getQuoteModel(cipherType);
 
