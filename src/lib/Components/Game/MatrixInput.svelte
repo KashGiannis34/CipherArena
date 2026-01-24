@@ -60,7 +60,7 @@
     }
   }
 
-  function sanitizeScalar(e) {
+  function sanitizeScalar(e, firstInput) {
     let v = e.target.value;
     if (v === "-" || /^-?\d{1,2}$/.test(v)) {
       if (/^-?0\d/.test(v)) {
@@ -68,9 +68,14 @@
           ? "-" + String(parseInt(v.slice(1),10))
           : String(parseInt(v,10));
       }
-      detInv = v;
+
+      if (firstInput) {
+        detInv = v;
+      } else {
+        detInv2 = v;
+      }
     } else {
-      e.target.value = detInv;
+      e.target.value = firstInput ? detInv:detInv2;
     }
   }
 
@@ -150,7 +155,7 @@
       type="text"
       bind:value={detInv}
       onkeydown={handleKeydown}
-      oninput={sanitizeScalar}
+      oninput={(e) => sanitizeScalar(e, true)}
 
     /><sup>⁻¹</sup>
 
@@ -183,7 +188,7 @@
       type="text"
       bind:value={detInv2}
       onkeydown={handleKeydown}
-      oninput={sanitizeScalar}
+      oninput={(e) => sanitizeScalar(e, false)}
 
     />
     <span>×</span>
