@@ -148,16 +148,30 @@
       .join("");
 
     const slots = [];
-    const validCharRegex = /[●–]+/g;
+    const validCharRegex = /([●–]+)|(×(?:\s*×)+)/g;
     let match;
 
     while ((match = validCharRegex.exec(stream)) !== null) {
-      slots.push({
-        id: slots.length,
-        start: match.index,
-        end: match.index + match[0].length,
-        content: match[0],
-      });
+      if (match[1]) {
+        slots.push({
+          id: slots.length,
+          start: match.index,
+          end: match.index + match[0].length,
+          content: match[0],
+          type: "input",
+        });
+      } else if (match[2]) {
+        const content = match[0];
+        const xCount = content.replace(/\s/g, "").length;
+        slots.push({
+          id: slots.length,
+          start: match.index,
+          end: match.index + content.length,
+          content: content,
+          type: "separator",
+          isError: xCount >= 3,
+        });
+      }
     }
 
     const dist = {};

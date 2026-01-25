@@ -119,18 +119,22 @@
           width: calc({slot.content.length} * 33.33%);
         "
       >
-        <input
-          bind:this={inputs[slot.id]}
-          class:focus={focusState[slot.id] && !solved}
-          type="text"
-          placeholder="="
-          maxlength="1"
-          oninput={(e) => handleInput(e, slot)}
-          onkeydown={(e) => handleKeyDown(e, slot.id)}
-          onfocus={() => handleFocus(slot.id)}
-          onblur={() => handleBlur(slot.id)}
-          readonly={solved}
-        />
+        {#if slot.type === "separator"}
+          <div class="separator" class:error={slot.isError}>/</div>
+        {:else}
+          <input
+            bind:this={inputs[slot.id]}
+            class:focus={focusState[slot.id] && !solved}
+            type="text"
+            placeholder="="
+            maxlength="1"
+            oninput={(e) => handleInput(e, slot)}
+            onkeydown={(e) => handleKeyDown(e, slot.id)}
+            onfocus={() => handleFocus(slot.id)}
+            onblur={() => handleBlur(slot.id)}
+            readonly={solved}
+          />
+        {/if}
       </div>
     {/each}
   </div>
@@ -171,7 +175,7 @@
     justify-content: center;
     align-items: center;
     font-size: 0.85rem;
-    color: var(--color-accent);
+    color: var(--color-primary-light);
     min-height: 1.5em;
     margin-bottom: 3px;
     width: 100%;
@@ -239,5 +243,24 @@
 
   input::placeholder {
     color: var(--text-muted);
+  }
+
+  .separator {
+    font-family: "Source Code Pro", monospace !important;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 500;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-muted);
+  }
+
+  .separator.error {
+    color: var(--color-error);
+    font-weight: bold;
+    font-size: 1.4rem;
   }
 </style>
