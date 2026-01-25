@@ -1,7 +1,14 @@
 export const announcements = [
   {
     id: "welcome-v1",
-    text: "Welcome to Cipher Arena! Check out our [Discord](https://discord.gg/ybhdyEnjZP) for updates.",
+    text: "Welcome to Cipher Arena! Check out our new [Discord](https://discord.gg/WhmQEHM5ja) server to find other users, suggest new features, report bugs, and more!",
+    active: true,
+    dismissible: true,
+    type: "info", // info, warning, success
+  },
+  {
+    id: "update-v1",
+    text: "UPDATE: I finally added the Fractionated Morse cipher! [Check it out!](https://cipher-arena.fly.dev/singleplayer/Fractionated%20Morse)",
     active: true,
     dismissible: true,
     type: "info", // info, warning, success

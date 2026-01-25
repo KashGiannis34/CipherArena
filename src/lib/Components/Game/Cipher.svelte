@@ -565,7 +565,7 @@
     align-self: flex-start;
     font-size: 1.2rem;
     font-weight: bold;
-    margin-bottom: 30px;
+    margin: 10px 10px 30px 10px;
     width: 100%;
   }
 
@@ -596,7 +596,7 @@
     justify-content: flex-start;
     align-items: flex-start;
     flex-wrap: wrap;
-    margin: 0 10px 30px 0px;
+    margin: 0 10px 30px 10px;
     max-width: 100%;
     row-gap: 30px;
   }
