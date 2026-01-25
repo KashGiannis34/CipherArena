@@ -56,6 +56,12 @@
       event.preventDefault();
       return;
     }
+
+    if (event.key.length === 1 && isLetter(event.key)) {
+      onChange(cipherLetter, event.key.toUpperCase(), slotId);
+      event.preventDefault();
+      return;
+    }
   }
 
   function handleInput(event, slot) {
