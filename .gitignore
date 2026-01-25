@@ -29,6 +29,7 @@ vite.config.ts.timestamp-*
 /node_modules
 .dockerignore
 .env
+.husky/
 Dockerfile
 fly.toml
 src/app.html
