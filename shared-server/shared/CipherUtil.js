@@ -399,12 +399,21 @@ function generateKeyedAlphabet(keyword) {
 
 function encodeFractionatedMorse(plaintext, keyword) {
   const keyedAlphabet = generateKeyedAlphabet(keyword);
-  const stripped = stripQuote(plaintext, false);
+
+  const words = plaintext
+    .toUpperCase()
+    .split(/[^A-Z]+/g)
+    .filter((w) => w.length > 0);
+  const stripped = words.join("");
 
   let morseStream = "";
-  for (let i = 0; i < stripped.length; i++) {
-    if (i > 0) morseStream += "x";
-    morseStream += morseCodeMap[stripped[i].toUpperCase()] || "";
+  for (let i = 0; i < words.length; i++) {
+    if (i > 0) morseStream += "xx"; // Word separator
+    const word = words[i];
+    for (let j = 0; j < word.length; j++) {
+      if (j > 0) morseStream += "x"; // Letter separator
+      morseStream += morseCodeMap[word[j]] || "";
+    }
   }
 
   while (morseStream.length % 3 !== 0) {
@@ -431,19 +440,32 @@ function encodeFractionatedMorse(plaintext, keyword) {
   let cribPlaintext = "";
   let morseIndex = 0;
 
-  for (let i = 0; i < stripped.length && uniqueMappings.size < 12; i++) {
-    cribPlaintext += stripped[i].toUpperCase();
-    const letterMorse = morseCodeMap[stripped[i].toUpperCase()] || "";
-    const morseEnd = morseIndex + letterMorse.length + (i > 0 ? 1 : 0);
+  let globalCharIndex = 0;
+  for (let i = 0; i < words.length; i++) {
+    if (i > 0) morseIndex += 2;
+    const word = words[i];
 
-    const startTrigram = Math.floor((i > 0 ? morseIndex + 1 : 0) / 3);
-    const endTrigram = Math.ceil(morseEnd / 3);
-    for (let t = startTrigram; t < endTrigram && t < ciphertext.length; t++) {
-      uniqueMappings.add(ciphertext[t]);
+    for (let j = 0; j < word.length; j++) {
+      if (j > 0) morseIndex += 1;
+
+      const char = word[j];
+      cribPlaintext += char;
+      const letterMorse = morseCodeMap[char] || "";
+      const morseEnd = morseIndex + letterMorse.length;
+
+      // Find which trigrams cover this letter
+      const startTrigram = Math.floor(morseIndex / 3);
+      const endTrigram = Math.ceil(morseEnd / 3);
+
+      for (let t = startTrigram; t < endTrigram && t < ciphertext.length; t++) {
+        uniqueMappings.add(ciphertext[t]);
+      }
+      morseIndex = morseEnd;
+
+      globalCharIndex++;
+      if (uniqueMappings.size >= 8 && globalCharIndex >= 4) break;
     }
-    morseIndex = morseEnd;
-
-    if (uniqueMappings.size >= 8 && i >= 3) break;
+    if (uniqueMappings.size >= 8 && globalCharIndex >= 4) break;
   }
 
   return {
