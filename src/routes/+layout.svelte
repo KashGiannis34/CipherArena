@@ -46,7 +46,7 @@
   .app-container {
     min-height: 100vh;
     overflow-x: hidden;
-    background: var(--gradient-bg);
+    background-color: var(--color-bg);
   }
 
   .navbar-space {
