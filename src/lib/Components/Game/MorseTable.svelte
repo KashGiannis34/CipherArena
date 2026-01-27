@@ -160,6 +160,9 @@
     flex-direction: column;
     align-items: center;
     gap: 1.5rem;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 10px;
   }
 
   .table-title {
@@ -170,7 +173,9 @@
 
   .trigram-table-wrapper {
     overflow-x: auto;
-    max-width: 100%;
+    max-width: calc(100% - 20px);
+    width: fit-content;
+    margin: 0 auto;
   }
 
   /* Transposed table - rows become columns */
@@ -268,6 +273,13 @@
   }
 
   /* Morse reference - also transposed */
+  .morse-reference {
+    overflow-x: auto;
+    max-width: calc(100% - 20px);
+    width: fit-content;
+    margin: 0 auto;
+  }
+
   .morse-reference table {
     display: table;
     border-collapse: separate;
@@ -291,6 +303,7 @@
     border-right: 1px solid var(--table-border-color);
     text-align: center;
     font-family: "Source Code Pro", monospace;
+    white-space: nowrap;
   }
 
   .morse-reference tr:first-child th,

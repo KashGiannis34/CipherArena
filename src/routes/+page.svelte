@@ -480,7 +480,8 @@
   }
 
   .container {
-    max-width: 1440px;
+    min-width: var(--minWidth, 90vw);
+    max-width: var(--maxWidth, 90vw);
     margin: 0 auto;
     padding: 1.25rem;
     overflow: hidden;
