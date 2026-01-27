@@ -5,7 +5,7 @@
   <!-- Homepage: Landing page with overview and call to action -->
   <url>
     <loc>https://cipher-arena.fly.dev/</loc>
-    <lastmod>2025-06-12</lastmod>
+    <lastmod>2026-01-27</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -13,7 +13,7 @@
   <!-- Login Page: Returning users authenticate here -->
   <url>
     <loc>https://cipher-arena.fly.dev/account/login</loc>
-    <lastmod>2025-06-12</lastmod>
+    <lastmod>2026-01-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -21,7 +21,7 @@
   <!-- Register Page: New users create an account here -->
   <url>
     <loc>https://cipher-arena.fly.dev/account/register</loc>
-    <lastmod>2025-06-12</lastmod>
+    <lastmod>2026-01-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -29,7 +29,7 @@
   <!-- Singleplayer Aristocrat: Practice mode for Aristocrat ciphers -->
   <url>
     <loc>https://cipher-arena.fly.dev/singleplayer/Aristocrat</loc>
-    <lastmod>2025-06-12</lastmod>
+    <lastmod>2026-01-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

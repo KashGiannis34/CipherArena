@@ -9,17 +9,17 @@
   let { data, children } = $props();
 
   let announcementHeight = $state(0);
+
+  const structuredData = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    url: "https://cipher-arena.fly.dev",
+    logo: "https://cipher-arena.fly.dev/logo.png",
+  });
 </script>
 
 <svelte:head>
-  <script type="application/ld+json">
-    {JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "url": "https://cipher-arena.fly.dev",
-      "logo": "https://cipher-arena.fly.dev/logo.png"
-    })}
-  </script>
+  {@html `<script type="application/ld+json">${structuredData}</script>`}
 </svelte:head>
 
 <div id="modals"></div>
