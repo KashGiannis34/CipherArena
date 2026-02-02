@@ -1,7 +1,14 @@
 <script>
   import { onMount } from "svelte";
-  import { PUBLIC_APP_URL } from "$env/static/public";
-  import Seo from "$lib/Components/General/Seo.svelte";
+  import { generateSeo } from "$lib/util/generateSEO";
+
+  const seo = generateSeo({
+    title: "Cipher Arena Tutorials",
+    description:
+      "Learn how to solve ciphers like the Aristocrat, K1/K2, and Porta with step-by-step video guides.",
+    url: "https://cipher-arena.fly.dev/tutorials",
+    image: "https://cipher-arena.fly.dev/landing-page/hero-mock.webp",
+  });
 
   const tutorials = [
     {
@@ -93,12 +100,9 @@
   }
 </script>
 
-<Seo
-  title="Cipher Arena Tutorials"
-  description="Learn how to solve ciphers like the Aristocrat, K1/K2, and Porta with step-by-step video guides."
-  url={`${PUBLIC_APP_URL}/tutorials`}
-  image={`${PUBLIC_APP_URL}/landing-page/hero-mock.webp`}
-/>
+<svelte:head>
+  {@html seo}
+</svelte:head>
 
 <div class="landing">
   <div class="container">
