@@ -10,8 +10,9 @@
 
   let { data } = $props();
 
-  let username = data["username"] || "HelloKitty34";
-  let userCount = data["userCount"] || 0;
+  let username = $state(data.username || "HelloKitty34");
+  let userCount = $state(null); // null indicates not loaded yet
+  let isLoadingUserCount = $state(false);
   let players = $state([{ username, connected: false }]);
   let progressMap = $state({ [username]: 0 });
 
@@ -36,6 +37,42 @@
 
   function onProgressUpdate(percent) {
     progressMap[username] = percent;
+  }
+
+  async function fetchUserCount() {
+    if (userCount !== null || isLoadingUserCount) return; // Already loaded or loading
+
+    isLoadingUserCount = true;
+    try {
+      const response = await fetch("/api/user-count");
+      const data = await response.json();
+      userCount = data.userCount || 0;
+    } catch (error) {
+      console.error("Failed to fetch user count:", error);
+      userCount = 0;
+    } finally {
+      isLoadingUserCount = false;
+    }
+  }
+
+  function observeRegisterSection(node) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            fetchUserCount();
+            observer.unobserve(node); // Only fetch once
+          }
+        });
+      },
+      { threshold: 0.15 },
+    );
+    observer.observe(node);
+    return {
+      destroy() {
+        observer.disconnect();
+      },
+    };
   }
 
   const seo = generateSeo({
@@ -325,7 +362,11 @@
       </div>
     </section>
 
-    <section class="section register-section animatable" use:animateOnScroll>
+    <section
+      class="section register-section animatable"
+      use:animateOnScroll
+      use:observeRegisterSection
+    >
       <h2>Join the Arena</h2>
       <div class="logo-container">
         <img src="/logo.png" alt="Cipher Arena Logo" class="animated-logo" />
@@ -333,12 +374,17 @@
       <p style="font-size: 1.2rem; margin-bottom: 1rem;">
         Become a Cipher Master. Start solving today.
       </p>
-      {#if userCount > 0}
-        <div class="user-count-container">
+      <div class="user-count-container">
+        {#if isLoadingUserCount}
+          <div class="loading-indicator">
+            <div class="loading-spinner"></div>
+            <span>Loading solver count...</span>
+          </div>
+        {:else if userCount !== null && userCount > 0}
           <div class="online-indicator"></div>
           <span>{userCount.toLocaleString()} registered solvers</span>
-        </div>
-      {/if}
+        {/if}
+      </div>
       <div class="cta-buttons">
         <button class="button" onclick={() => goto("/account/register")}
           >Get started</button
@@ -361,6 +407,32 @@
     font-size: 1rem;
     color: var(--text-muted);
     animation: fadeIn 1s ease 0.5s both;
+    min-height: 2rem;
+  }
+
+  .loading-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.8;
+  }
+
+  .loading-spinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid transparent;
+    border-top: 2px solid var(--text-muted);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   .online-indicator {
