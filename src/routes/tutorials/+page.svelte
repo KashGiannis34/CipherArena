@@ -6,8 +6,8 @@
     title: "Cipher Arena Tutorials",
     description:
       "Learn how to solve ciphers like the Aristocrat, K1/K2, and Porta with step-by-step video guides.",
-    url: "https://cipher-arena.fly.dev/tutorials",
-    image: "https://cipher-arena.fly.dev/landing-page/hero-mock.webp",
+    url: "https://cipherarena.com/tutorials",
+    image: "https://cipherarena.com/landing-page/hero-mock.webp",
   });
 
   const tutorials = [

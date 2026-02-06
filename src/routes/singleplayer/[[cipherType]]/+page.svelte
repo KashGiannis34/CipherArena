@@ -119,8 +119,8 @@
   const seo = generateSeo({
     title: `Singleplayer ${params.cipherType}: Cipher Arena`,
     description: `Practice solving ${params.cipherType} cryptograms solo to sharpen your skills before entering multiplayer battles.`,
-    url: `https://cipher-arena.fly.dev/singleplayer/${params.cipherType}`,
-    image: "https://cipher-arena.fly.dev/landing-page/cipher-solved.webp",
+    url: `https://cipherarena.com/singleplayer/${params.cipherType}`,
+    image: "https://cipherarena.com/landing-page/cipher-solved.webp",
   });
 </script>
 

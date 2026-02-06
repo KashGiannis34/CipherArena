@@ -1,10 +1,10 @@
 # Cipher Arena
 
-Visit Site: [https://cipher-arena.fly.dev](https://cipher-arena.fly.dev)
+Visit Site: [https://cipherarena.com](https://cipherarena.com)
 
 Cipher Arena is a fast-paced multiplayer web app where players compete in real-time to solve cryptograms. Built with SvelteKit and Socket.IO, the platform supports classic cipher types like Aristocrat, Patristocrat, Caesar, Affine, Porta, Baconian, etc. The website also tracks rankings, stats, and speed-based achievements.
 
-![Game Preview](https://cipher-arena.fly.dev/landing-page/hero-mock.webp)
+![Game Preview](https://cipherarena.com/landing-page/hero-mock.webp)
 
 ## Features
 
@@ -25,19 +25,19 @@ Cipher Arena is a fast-paced multiplayer web app where players compete in real-t
 
 ## Cipher Types Supported
 
-| Cipher         | Description                        |
-|----------------|------------------------------------|
-| Aristocrat     | Substitution cipher with spaces    |
-| Patristocrat   | Substitution cipher with spacing   |
-| Caesar         | Classic letter-shifting cipher     |
-| Affine         | Linear transformation cipher       |
-| Porta          | Polyalphabetic cipher with table   |
-| Baconian       | Binary-style encoding with rules   |
-| Atbash         | Letter reversal substitution       |
-| Nihilist       | Numeric key cipher                 |
-| Xenocrypt      | Spanish Substitution cipher        |
-| Hill           | Matrix algebra based cipher        |
-| Checkerboard   | Polybius square based cipher       |
+| Cipher       | Description                      |
+| ------------ | -------------------------------- |
+| Aristocrat   | Substitution cipher with spaces  |
+| Patristocrat | Substitution cipher with spacing |
+| Caesar       | Classic letter-shifting cipher   |
+| Affine       | Linear transformation cipher     |
+| Porta        | Polyalphabetic cipher with table |
+| Baconian     | Binary-style encoding with rules |
+| Atbash       | Letter reversal substitution     |
+| Nihilist     | Numeric key cipher               |
+| Xenocrypt    | Spanish Substitution cipher      |
+| Hill         | Matrix algebra based cipher      |
+| Checkerboard | Polybius square based cipher     |
 
 ## Game Mechanics
 

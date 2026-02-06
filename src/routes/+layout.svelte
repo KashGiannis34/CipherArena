@@ -13,8 +13,8 @@
   const structuredData = JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Organization",
-    url: "https://cipher-arena.fly.dev",
-    logo: "https://cipher-arena.fly.dev/logo.png",
+    url: "https://cipherarena.com",
+    logo: "https://cipherarena.com/logo.png",
   });
 </script>
 

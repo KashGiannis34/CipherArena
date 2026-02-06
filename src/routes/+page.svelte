@@ -42,8 +42,8 @@
     title: "Cipher Arena: Multiplayer Cryptogram Battles",
     description:
       "Battle opponents solving classic cryptograms in real-time. Compete across multiple cipher types, climb the leaderboard, and unlock badges.",
-    url: "https://cipher-arena.fly.dev/",
-    image: "https://cipher-arena.fly.dev/landing-page/hero-mock.webp",
+    url: "https://cipherarena.com/",
+    image: "https://cipherarena.com/landing-page/hero-mock.webp",
   });
 
   const unlockedBadges = [
