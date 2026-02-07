@@ -9,11 +9,14 @@ export async function init() {
 
 /** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
-  const { pathname, host } = event.url;
+  const { pathname } = event.url;
+
+  // Get the actual host from the request header (not event.url.host which may be overridden)
+  const requestHost = event.request.headers.get("host") || "";
 
   // 1. PRIMARY DOMAIN REDIRECT
   // This effectively prevents cross-site submissions by forcing everyone to the same origin
-  if (host === "cipher-arena.fly.dev") {
+  if (requestHost.includes("cipher-arena.fly.dev")) {
     return new Response(null, {
       status: 301,
       headers: {
