@@ -22,6 +22,7 @@ export async function handle({ event, resolve }) {
       headers: {
         Location: `https://cipherarena.com${pathname}${event.url.search}`,
         "Cache-Control": "public, max-age=31536000", // Permanent redirect
+        "X-Robots-Tag": "noindex, nofollow",
       },
     });
   }
