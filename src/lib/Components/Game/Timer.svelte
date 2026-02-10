@@ -1,7 +1,7 @@
 <script>
   import { onMount, onDestroy } from "svelte";
 
-  let { startTime, solved } = $props();
+  let { startTime, solved, finalTime = null } = $props();
 
   let now = $state(Date.now() / 1000);
   let interval;
@@ -18,7 +18,9 @@
     if (interval) clearInterval(interval);
   });
 
-  let elapsed = $derived(Math.max(0, Math.floor(now - startTime)));
+  let elapsed = $derived(
+    finalTime !== null ? finalTime : Math.max(0, Math.floor(now - startTime)),
+  );
 
   function formatTime(seconds) {
     const m = Math.floor(seconds / 60)
@@ -42,21 +44,15 @@
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
     border-radius: 12px;
-    backdrop-filter: blur(10px);
-    box-shadow: var(--glass-shadow);
     z-index: 10;
-    pointer-events: none; /* Let clicks pass through if it overlaps something interactive, though it shouldn't */
-    transition: all 0.3s ease;
+    pointer-events: none;
   }
 
   .time {
     color: var(--text-primary);
-    font-family: monospace; /* Monospace is good for timers */
+    font-family: monospace;
     font-size: 1.1rem;
     font-weight: 600;
     letter-spacing: 0.05em;
   }
-
-  /* Optional: Make it pop a bit more when solved */
-  /* We could add a class based on 'solved' prop if desired, but simple is good for now */
 </style>

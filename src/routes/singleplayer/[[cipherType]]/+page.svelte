@@ -26,8 +26,9 @@
 
   async function checkQuote(i, hash, cipherType, keys, solve, startTime) {
     let solved = false;
+    let time = 0;
     try {
-      const time = Number((Date.now() / 1000 - startTime).toFixed(3));
+      time = Number((Date.now() / 1000 - startTime).toFixed(3));
       const response = await fetch("/api/validate-quote", {
         method: "POST",
         body: JSON.stringify({
@@ -60,7 +61,8 @@
     } catch (error) {
       feedbackMessage = "An error occurred while checking the quote.";
     }
-    return { feedbackMessage, solved };
+    time = Math.floor(time);
+    return { feedbackMessage, solved, time };
   }
 
   async function fetchQuote() {

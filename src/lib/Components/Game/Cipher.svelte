@@ -59,6 +59,7 @@
   let isChecking = $state(false);
   let submissionError = $state(false);
   let clearPolybius = $state(false);
+  let finalTime = $state(null);
   let debouncedProgressUpdate;
   let initialQuote = initQuote(
     quote,
@@ -235,6 +236,7 @@
     isChecking = false;
 
     if (solved && mode === GAME_MODES.SINGLEPLAYER) {
+      finalTime = answer.time;
       onSolved(answer);
     } else if (!solved) {
       triggerFailUI();
@@ -385,7 +387,7 @@
 
 <Container>
   <!-- Timer Component -->
-  <Timer {startTime} {solved} />
+  <Timer {startTime} {solved} {finalTime} />
 
   <div class="info">
     <h3>
