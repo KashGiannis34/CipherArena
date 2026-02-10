@@ -35,45 +35,27 @@
     checkQuote,
   }));
 
-  // Grapheme splitter (Intl.Segmenter with a regex fallback)
-  function splitGraphemes(str) {
-    if (!str) return [];
-    // prefer modern Intl.Segmenter when available
-    if (typeof Intl !== "undefined" && Intl.Segmenter) {
-      return Array.from(
-        new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(str),
-        (s) => s.segment,
-      );
-    }
-    // fallback: base character plus any combining marks
-    // includes common combining mark ranges
-    return (
-      str.match(
-        /[\0-\uFFFF](?:[\u0300-\u036f\u1AB0-\u1AFF\u1DC0-\u1DFF\u20D0-\u20FF\uFE20-\uFE2F]*)/gu,
-      ) || []
-    );
-  }
-
-  // Split into grapheme clusters and expose as an array for rendering.
-  // We normalize to NFC so precomposed characters are used where possible.
+  // Split into grapheme clusters using Intl.Segmenter
   let graphemes = $derived(
-    splitGraphemes((cipherLetter || "").normalize("NFC")),
+    cipherLetter
+      ? Array.from(
+          new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(
+            (cipherLetter || "").normalize("NFC"),
+          ),
+          (s) => s.segment,
+        )
+      : [],
   );
 
   // Count grapheme clusters to know how many toggles to show
-  let charCount = $derived((graphemes || []).length);
+  let charCount = $derived(graphemes.length);
 
   // Build a grid template that inserts a small spacer column after every 5 characters.
-  let gridTemplate = $derived(() => {
-    const n = charCount || 0;
-    const parts = [];
-    for (let i = 0; i < n; i++) {
-      parts.push("1fr");
-      // insert spacer after every 5 chars except at the end
-      if ((i + 1) % 5 === 0 && i !== n - 1) parts.push("8px");
-    }
-    return parts.join(" ");
-  });
+  let gridTemplate = $derived(
+    Array.from({ length: charCount }, (_, i) =>
+      (i + 1) % 5 === 0 && i !== charCount - 1 ? "1fr 8px" : "1fr",
+    ).join(" "),
+  );
 </script>
 
 <div
