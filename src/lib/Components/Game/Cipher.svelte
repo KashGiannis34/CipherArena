@@ -1,5 +1,6 @@
 <script>
   import Letter from "./Letter.svelte";
+  import Timer from "./Timer.svelte";
   import BaconianLetter from "./BaconianLetter.svelte";
   import FreqTable from "./FreqTable.svelte";
   import Container from "../General/Container.svelte";
@@ -383,6 +384,9 @@
 {/if}
 
 <Container>
+  <!-- Timer Component -->
+  <Timer {startTime} {solved} />
+
   <div class="info">
     <h3>
       {params["Solve"]} this
