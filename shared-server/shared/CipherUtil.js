@@ -710,8 +710,8 @@ function encodeBaconian(plaintext) {
       fiveLetterWords[Math.floor(Math.random() * fiveLetterWords.length)];
     const { aSet, bSet } = generateDecoratedWordSet(baseWord);
 
-    aGroup = Array.from(aSet);
-    bGroup = Array.from(bSet);
+    aGroup = aSet;
+    bGroup = bSet;
   }
 
   const ciphertext = [];
@@ -823,7 +823,7 @@ function generateDecoratedWordSet(baseWord) {
     bSet.push(bChar);
   }
 
-  return { aSet: new Set(aSet), bSet: new Set(bSet) };
+  return { aSet: aSet, bSet: bSet };
 }
 
 /** Converts baconian "A" and "B" to custom mapping. */
