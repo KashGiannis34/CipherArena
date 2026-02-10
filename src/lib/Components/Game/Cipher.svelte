@@ -1,5 +1,6 @@
 <script>
   import Letter from "./Letter.svelte";
+  import BaconianLetter from "./BaconianLetter.svelte";
   import FreqTable from "./FreqTable.svelte";
   import Container from "../General/Container.svelte";
   import { isSolvableChunk } from "$shared/CipherUtil";
@@ -419,6 +420,20 @@
               {onFocus}
               {onChange}
               {solved}
+            />
+          {:else if cipherType === "Baconian"}
+            <BaconianLetter
+              bind:inputs={info.inputs}
+              cipherLetter={letter}
+              {index}
+              inputValue={info.letterInputs[letter]}
+              selected={info.letterFocus[letter]}
+              {onArrow}
+              {onFocus}
+              {onChange}
+              {solved}
+              {cipherType}
+              {checkQuote}
             />
           {:else}
             <Letter
