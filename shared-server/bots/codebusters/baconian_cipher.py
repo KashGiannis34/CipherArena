@@ -1,6 +1,30 @@
 import random
 from .constants import BACONIAN_CODES
 
+# Groups of visually similar characters - no two from the same group should be paired
+_SIMILAR_GROUPS = [
+    set("Il|1!"),   # vertical strokes
+    set("0OoQ"),    # round shapes
+    set("S5$"),     # S-like
+    set("B8"),      # B-like
+    set("G6"),      # G-like
+    set("Z2"),      # Z-like
+    set("'`"),      # quotes
+    set("({["),     # open brackets
+    set(")}]"),     # close brackets
+    set(";:"),      # dots
+    set(".,"),      # low dots
+    set("-~"),      # dashes
+]
+
+
+def _are_visually_similar(a, b):
+    """Check if two characters could be confused for each other"""
+    for group in _SIMILAR_GROUPS:
+        if a in group and b in group:
+            return True
+    return False
+
 
 def generate_baconian():
     """Generate a Baconian cipher problem"""
@@ -9,6 +33,8 @@ def generate_baconian():
     char = ""
     n1 = chr(int(random.random() * 93) + 33)
     n2 = chr(int(random.random() * 93) + 33)
+    while n2 == n1 or _are_visually_similar(n1, n2):
+        n2 = chr(int(random.random() * 93) + 33)
 
     for n in range(5 - len(temp)):
         char += "0"

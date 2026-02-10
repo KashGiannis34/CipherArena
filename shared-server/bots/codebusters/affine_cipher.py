@@ -4,6 +4,8 @@ import random
 def generate_affine_letter():
     """Generate an affine shift problem for one letter"""
     a = int(random.random() * 60) + 1
+    while a % 2 == 0 or a % 13 == 0:
+        a = int(random.random() * 60) + 1
     b = int(random.random() * 60) + 1
     let = int(random.random() * 26) + 65
     letter = chr(let)

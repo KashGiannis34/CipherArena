@@ -279,7 +279,7 @@ def check_memorize_decimals(decimal_str, user_answer):
     try:
         n = None
         for num in range(1, 26):
-            if decimal_str in str(num / 26.0):
+            if str(num / 26.0).startswith(decimal_str):
                 n = num
                 break
 
