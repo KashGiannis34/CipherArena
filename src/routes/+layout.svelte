@@ -16,9 +16,16 @@
     url: "https://cipherarena.com",
     logo: "https://cipherarena.com/logo.png",
   });
+
+  const canonicalUrl = $derived(
+    page.url.pathname === "/"
+      ? PUBLIC_APP_URL
+      : `${PUBLIC_APP_URL}${page.url.pathname}`,
+  );
 </script>
 
 <svelte:head>
+  <link rel="canonical" href={canonicalUrl} />
   {@html `<script type="application/ld+json">${structuredData}</script>`}
 </svelte:head>
 

@@ -12,9 +12,6 @@ const config = {
       origin: "https://cipherarena.com",
       xff_depth: 1,
     }),
-    // csrf: {
-    // 	checkOrigin: false
-    // },
     alias: {
       $server: "./shared-server",
       $shared: "./shared-server/shared",

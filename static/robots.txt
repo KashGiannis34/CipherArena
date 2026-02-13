@@ -11,4 +11,4 @@ Allow: /
 # Crawl-delay: 2
 
 # Sitemap (add this if you’ve created one)
-Sitemap: https://cipherarena.com/sitemap.xml
+Sitemap: https://cipherarena.com/cipherarena-sitemap.xml
