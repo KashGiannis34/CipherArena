@@ -1,4 +1,4 @@
-import { isLetter } from "$shared/CipherUtil";
+import { isLetter } from '$shared/CipherUtil';
 
 /**
  * Creates shared input handlers for cipher letter components.
@@ -18,47 +18,40 @@ export function createLetterHandlers(getCtx) {
       return;
     }
 
-    const deleteKeys = ["Backspace", "Delete"];
+    const deleteKeys = ['Backspace', 'Delete'];
 
-    if (event.key == "," && ctx.spanish && ctx.cipherLetter != "Ñ") {
-      ctx.onChange(ctx.cipherLetter, "Ñ", ctx.index);
+    if (event.key == ',' && ctx.spanish && ctx.cipherLetter != 'Ñ') {
+      ctx.onChange(ctx.cipherLetter, 'Ñ', ctx.index);
       event.preventDefault();
       return;
     }
 
     if (
-      event.key == "ArrowLeft" ||
-      event.key == "ArrowRight" ||
-      event.key == " " ||
-      event.key == "Tab"
+      event.key == 'ArrowLeft' ||
+      event.key == 'ArrowRight' ||
+      event.key == ' ' ||
+      event.key == 'Tab'
     ) {
       ctx.onArrow(event.key, ctx.index);
       event.preventDefault();
       return;
     }
 
-    if (event.key == "Enter") {
+    if (event.key == 'Enter') {
       ctx.checkQuote();
     }
 
     if (deleteKeys.includes(event.key)) {
-      ctx.onChange(ctx.cipherLetter, "", ctx.index);
+      ctx.onChange(ctx.cipherLetter, '', ctx.index);
       return;
     }
 
-    if (
-      !isLetter(event.key) ||
-      (event.key.toUpperCase() == ctx.cipherLetter && ctx.directMap)
-    ) {
+    if (!isLetter(event.key) || (event.key.toUpperCase() == ctx.cipherLetter && ctx.directMap)) {
       event.preventDefault();
       return;
     }
 
-    if (
-      event.key !== undefined &&
-      isLetter(event.key) &&
-      event.key.length == 1
-    ) {
+    if (event.key !== undefined && isLetter(event.key) && event.key.length == 1) {
       ctx.onChange(ctx.cipherLetter, event.key.toUpperCase(), ctx.index);
       event.preventDefault();
       return;

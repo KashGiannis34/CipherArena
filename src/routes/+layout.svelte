@@ -1,26 +1,24 @@
 <script>
-  import Navbar from "$lib/Components/General/Navbar.svelte";
-  import { PUBLIC_APP_URL } from "$env/static/public";
-  import { page } from "$app/state";
-  import "$lib/css/app.css";
-  import AnnouncementBar from "$lib/Components/General/AnnouncementBar.svelte";
-  import { announcements } from "$lib/config/announcements";
+  import Navbar from '$lib/Components/General/Navbar.svelte';
+  import { PUBLIC_APP_URL } from '$env/static/public';
+  import { page } from '$app/state';
+  import '$lib/css/app.css';
+  import AnnouncementBar from '$lib/Components/General/AnnouncementBar.svelte';
+  import { announcements } from '$lib/config/announcements';
 
   let { data, children } = $props();
 
   let announcementHeight = $state(0);
 
   const structuredData = JSON.stringify({
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    url: "https://cipherarena.com",
-    logo: "https://cipherarena.com/logo.png",
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    url: 'https://cipherarena.com',
+    logo: 'https://cipherarena.com/logo.png',
   });
 
   const canonicalUrl = $derived(
-    page.url.pathname === "/"
-      ? PUBLIC_APP_URL
-      : `${PUBLIC_APP_URL}${page.url.pathname}`,
+    page.url.pathname === '/' ? PUBLIC_APP_URL : `${PUBLIC_APP_URL}${page.url.pathname}`
   );
 </script>
 
@@ -32,13 +30,10 @@
 <div id="modals"></div>
 <div class="app-container">
   <div class="navbar-space">
-    <Navbar
-      authenticated={!!data.username && !!data.email}
-      verified={data.verified}
-    />
+    <Navbar authenticated={!!data.username && !!data.email} verified={data.verified} />
   </div>
 
-  {#if page.url.pathname === "/"}
+  {#if page.url.pathname === '/'}
     <div class="global-announcements" bind:clientHeight={announcementHeight}>
       <AnnouncementBar {announcements} />
     </div>

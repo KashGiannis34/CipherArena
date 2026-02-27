@@ -1,5 +1,5 @@
 <script>
-  let { keyword = "ABCD", encode = true } = $props();
+  let { keyword = 'ABCD', encode = true } = $props();
 
   let letterMatrix = [
     [keyword[0], keyword[1]],
@@ -7,26 +7,40 @@
   ];
 
   let numMatrix = $state([
-    ["",""],
-    ["",""],
+    ['', ''],
+    ['', ''],
   ]);
 
-  let detInv = $state("");
-  let detInv2 = $state("");
+  let detInv = $state('');
+  let detInv2 = $state('');
 
   let adj = $state([
-    ["",""],
-    ["",""],
+    ['', ''],
+    ['', ''],
   ]);
 
   let inverse = $state([
-    ["",""],
-    ["",""],
+    ['', ''],
+    ['', ''],
   ]);
 
   const keyWhitelist = new Set([
-    "0","1","2","3","4","5","6","7","8","9","-",
-    "Backspace","Delete","ArrowLeft","ArrowRight","Tab"
+    '0',
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+    '-',
+    'Backspace',
+    'Delete',
+    'ArrowLeft',
+    'ArrowRight',
+    'Tab',
   ]);
 
   function handleKeydown(e) {
@@ -34,25 +48,23 @@
       e.preventDefault();
     }
 
-    if (e.key === "-" && e.target.selectionStart !== 0) {
+    if (e.key === '-' && e.target.selectionStart !== 0) {
       e.preventDefault();
     }
 
     const val = e.target.value;
     const sel = val.slice(e.target.selectionStart, e.target.selectionEnd);
     const nextLen = val.length - sel.length + 1;
-    if (/\d/.test(e.key) && nextLen > (val.startsWith("-") ? 3 : 2)) {
+    if (/\d/.test(e.key) && nextLen > (val.startsWith('-') ? 3 : 2)) {
       e.preventDefault();
     }
   }
 
   function sanitize(e, i, j, arr) {
     let v = e.target.value;
-    if (v === "-" || /^-?\d{1,2}$/.test(v)) {
+    if (v === '-' || /^-?\d{1,2}$/.test(v)) {
       if (/^-?0\d/.test(v)) {
-        v = v.startsWith("-")
-          ? "-" + String(parseInt(v.slice(1),10))
-          : String(parseInt(v,10));
+        v = v.startsWith('-') ? '-' + String(parseInt(v.slice(1), 10)) : String(parseInt(v, 10));
       }
       arr[i][j] = v;
     } else {
@@ -62,11 +74,9 @@
 
   function sanitizeScalar(e, firstInput) {
     let v = e.target.value;
-    if (v === "-" || /^-?\d{1,2}$/.test(v)) {
+    if (v === '-' || /^-?\d{1,2}$/.test(v)) {
       if (/^-?0\d/.test(v)) {
-        v = v.startsWith("-")
-          ? "-" + String(parseInt(v.slice(1),10))
-          : String(parseInt(v,10));
+        v = v.startsWith('-') ? '-' + String(parseInt(v.slice(1), 10)) : String(parseInt(v, 10));
       }
 
       if (firstInput) {
@@ -75,7 +85,7 @@
         detInv2 = v;
       }
     } else {
-      e.target.value = firstInput ? detInv:detInv2;
+      e.target.value = firstInput ? detInv : detInv2;
     }
   }
 
@@ -115,8 +125,7 @@
               placeholder="="
               bind:value={numMatrix[i][j]}
               onkeydown={handleKeydown}
-              oninput={(e) => sanitize(e,i,j,numMatrix)}
-
+              oninput={(e) => sanitize(e, i, j, numMatrix)}
             />
           {/each}
         </div>
@@ -138,8 +147,7 @@
               placeholder="="
               bind:value={numMatrix[i][j]}
               onkeydown={handleKeydown}
-              oninput={(e) => sanitize(e,i,j,numMatrix)}
-
+              oninput={(e) => sanitize(e, i, j, numMatrix)}
             />
           {/each}
         </div>
@@ -156,7 +164,6 @@
       bind:value={detInv}
       onkeydown={handleKeydown}
       oninput={(e) => sanitizeScalar(e, true)}
-
     /><sup>⁻¹</sup>
 
     <!-- x adjugate -->
@@ -171,8 +178,7 @@
               placeholder="="
               bind:value={adj[i][j]}
               onkeydown={handleKeydown}
-              oninput={(e) => sanitize(e,i,j,adj)}
-
+              oninput={(e) => sanitize(e, i, j, adj)}
             />
           {/each}
         </div>
@@ -189,7 +195,6 @@
       bind:value={detInv2}
       onkeydown={handleKeydown}
       oninput={(e) => sanitizeScalar(e, false)}
-
     />
     <span>×</span>
     <span>(</span>
@@ -202,8 +207,7 @@
               placeholder="="
               bind:value={adj[i][j]}
               onkeydown={handleKeydown}
-              oninput={(e) => sanitize(e,i,j,adj)}
-
+              oninput={(e) => sanitize(e, i, j, adj)}
             />
           {/each}
         </div>
@@ -223,8 +227,7 @@
               placeholder="="
               bind:value={inverse[i][j]}
               onkeydown={handleKeydown}
-              oninput={(e) => sanitize(e,i,j,inverse)}
-
+              oninput={(e) => sanitize(e, i, j, inverse)}
             />
           {/each}
         </div>
@@ -235,112 +238,115 @@
 </div>
 
 <style>
-.equation {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: clamp(0.14rem, 0.4rem, 0.64rem);
-  font-family: 'Times New Roman', serif;
-  line-height: clamp(1.8rem, 2.52rem, 3.15rem);
-  white-space: nowrap;
-}
-
-.equation span{
-  font-size: clamp(1.5rem, 3rem, 4.5rem);
-  line-height: inherit;
-  margin-left: clamp(0.135rem, 0.252rem, 0.36rem);
-  margin-right: clamp(0.135rem, 0.252rem, 0.36rem);
-}
-.equation sup {
-  font-size: clamp(0.9rem, 1.8rem, 2.7rem);
-}
-
-.equation input {
-  font-size: clamp(0.72rem, 0.99rem, 1.26rem);
-  line-height: clamp(1.62rem, 2.25rem, 2.88rem);
-}
-.matrix {
-  display: inline-flex;
-  flex-direction: column;
-  gap: clamp(0.135rem, 0.225rem, 0.315rem);
-  flex-shrink: 0;
-}
-.row {
-  display: flex;
-  gap: clamp(0.225rem, 0.36rem, 0.495rem);
-}
-input, .cell {
-  width: auto;
-  max-width: 3.08rem;
-  height: clamp(1.62rem, 2.25rem, 2.88rem);
-  text-align: center;
-  font-size: clamp(0.72rem, 0.99rem, 1.26rem);
-  border-radius: clamp(1.8px, 3.6px, 5.4px);
-  color: white;
-  background-color: transparent;
-  border: none;
-  outline: none;
-  caret-color: white;
-  font-size: inherit;
-  font-family: 'Source Code Pro', monospace !important;
-  padding: none;
-  margin-left: 0.15rem;
-  margin-right: 0.15rem;
-}
-input:placeholder-shown {
-  caret-color: transparent;
-}
-input:focus {
-  outline: none;
-  background-color: var(--glass-bg-active) !important;
-}
-input:hover {
-  background-color: var(--glass-bg);
-  cursor: pointer;
-}
-
-@media (max-width: 768px) {
   .equation {
-    gap: 0.27rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: clamp(0.14rem, 0.4rem, 0.64rem);
+    font-family: 'Times New Roman', serif;
+    line-height: clamp(1.8rem, 2.52rem, 3.15rem);
+    white-space: nowrap;
   }
+
   .equation span {
-    font-size: 2.25rem;
-    margin-left: 0.18rem;
-    margin-right: 0.18rem;
+    font-size: clamp(1.5rem, 3rem, 4.5rem);
+    line-height: inherit;
+    margin-left: clamp(0.135rem, 0.252rem, 0.36rem);
+    margin-right: clamp(0.135rem, 0.252rem, 0.36rem);
   }
   .equation sup {
-    font-size: 1.125rem;
+    font-size: clamp(0.9rem, 1.8rem, 2.7rem);
   }
+
   .equation input {
-    font-size: 0.81rem;
-    line-height: 1.8rem;
+    font-size: clamp(0.72rem, 0.99rem, 1.26rem);
+    line-height: clamp(1.62rem, 2.25rem, 2.88rem);
   }
-  input, .cell {
-    max-width: 2.52rem;
-    height: 1.8rem;
-    font-size: 0.81rem;
+  .matrix {
+    display: inline-flex;
+    flex-direction: column;
+    gap: clamp(0.135rem, 0.225rem, 0.315rem);
+    flex-shrink: 0;
   }
-}
-@media (max-width: 480px) {
-  .equation {
-    gap: 0.18rem;
+  .row {
+    display: flex;
+    gap: clamp(0.225rem, 0.36rem, 0.495rem);
   }
-  .equation span {
-    font-size: 1.8rem;
-    margin-left: 0.135rem;
-    margin-right: 0.135rem;
+  input,
+  .cell {
+    width: auto;
+    max-width: 3.08rem;
+    height: clamp(1.62rem, 2.25rem, 2.88rem);
+    text-align: center;
+    font-size: clamp(0.72rem, 0.99rem, 1.26rem);
+    border-radius: clamp(1.8px, 3.6px, 5.4px);
+    color: white;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    caret-color: white;
+    font-size: inherit;
+    font-family: 'Source Code Pro', monospace !important;
+    padding: none;
+    margin-left: 0.15rem;
+    margin-right: 0.15rem;
   }
-  .equation sup {
-    font-size: 0.9rem;
+  input:placeholder-shown {
+    caret-color: transparent;
   }
-  .equation input {
-    font-size: 0.72rem;
-    line-height: 1.62rem;
+  input:focus {
+    outline: none;
+    background-color: var(--glass-bg-active) !important;
   }
-  input, .cell {
-    max-width: 2.25rem;
-    height: 1.62rem;
-    font-size: 0.72rem;
+  input:hover {
+    background-color: var(--glass-bg);
+    cursor: pointer;
   }
-}
+
+  @media (max-width: 768px) {
+    .equation {
+      gap: 0.27rem;
+    }
+    .equation span {
+      font-size: 2.25rem;
+      margin-left: 0.18rem;
+      margin-right: 0.18rem;
+    }
+    .equation sup {
+      font-size: 1.125rem;
+    }
+    .equation input {
+      font-size: 0.81rem;
+      line-height: 1.8rem;
+    }
+    input,
+    .cell {
+      max-width: 2.52rem;
+      height: 1.8rem;
+      font-size: 0.81rem;
+    }
+  }
+  @media (max-width: 480px) {
+    .equation {
+      gap: 0.18rem;
+    }
+    .equation span {
+      font-size: 1.8rem;
+      margin-left: 0.135rem;
+      margin-right: 0.135rem;
+    }
+    .equation sup {
+      font-size: 0.9rem;
+    }
+    .equation input {
+      font-size: 0.72rem;
+      line-height: 1.62rem;
+    }
+    input,
+    .cell {
+      max-width: 2.25rem;
+      height: 1.62rem;
+      font-size: 0.72rem;
+    }
+  }
 </style>

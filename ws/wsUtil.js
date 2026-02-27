@@ -1,18 +1,12 @@
-import { getQuoteModel } from "../shared-server/game/getQuoteModel.js";
-import { ObjectId } from "mongodb";
-import { encodeQuote, stripQuote } from "../shared-server/shared/CipherUtil.js";
-import { UserGame } from "../shared-server/game/UserGame.js";
-import { cipherTypes } from "../shared-server/shared/CipherTypes.js";
-import { updateUserInLeaderboards } from "../shared-server/utils/leaderboard.js";
-import { decryptToken } from "../shared-server/utils/textEncode.js";
+import { getQuoteModel } from '../shared-server/game/getQuoteModel.js';
+import { ObjectId } from 'mongodb';
+import { encodeQuote, stripQuote } from '../shared-server/shared/CipherUtil.js';
+import { UserGame } from '../shared-server/game/UserGame.js';
+import { cipherTypes } from '../shared-server/shared/CipherTypes.js';
+import { updateUserInLeaderboards } from '../shared-server/utils/leaderboard.js';
+import { decryptToken } from '../shared-server/utils/textEncode.js';
 
-export function calculateElo(
-  players,
-  winnerUsername,
-  cipherType,
-  K = 32,
-  eloFloor = 100,
-) {
+export function calculateElo(players, winnerUsername, cipherType, K = 32, eloFloor = 100) {
   const eloChanges = {};
 
   const getElo = (player) => player.stats?.[cipherType]?.elo ?? 1000;
@@ -71,8 +65,7 @@ function updateTotalStats(user, solveTime, length) {
     const times = allStats.solveTimes.map((e) => e.time);
     const timesPerLength = allStats.solveTimes.map((e) => e.time / e.length);
     allStats.bestSolveTime = Math.min(...times);
-    allStats.averageSolveTime =
-      timesPerLength.reduce((a, b) => a + b, 0) / timesPerLength.length;
+    allStats.averageSolveTime = timesPerLength.reduce((a, b) => a + b, 0) / timesPerLength.length;
   }
 
   user.stats.All = allStats;
@@ -84,10 +77,9 @@ export async function checkAnswerCorrectness(
   gameQuoteToken,
   cipherType,
   keys,
-  solve,
+  solve
 ) {
-  if (ans.includes(" ") || gameQuoteToken !== quoteToken)
-    return { correct: false };
+  if (ans.includes(' ') || gameQuoteToken !== quoteToken) return { correct: false };
 
   const quoteId = decryptToken(quoteToken);
   if (!quoteId) return { correct: false };
@@ -98,9 +90,9 @@ export async function checkAnswerCorrectness(
   if (!quote) return { correct: false };
   let displayText = quote.text;
 
-  let ansText = stripQuote(quote.text, cipherType == "Xenocrypt");
-  if (solve === "Encode") {
-    ansText = encodeQuote(ansText, cipherType, keys).join("");
+  let ansText = stripQuote(quote.text, cipherType == 'Xenocrypt');
+  if (solve === 'Encode') {
+    ansText = encodeQuote(ansText, cipherType, keys).join('');
     displayText = ansText;
   }
 
@@ -113,29 +105,22 @@ export async function checkAnswerCorrectness(
 
 export async function getQuote(quoteToken, cipherType, keys, solve) {
   const quoteId = decryptToken(quoteToken);
-  if (!quoteId) return "";
+  if (!quoteId) return '';
 
   const QuoteModel = getQuoteModel(cipherType);
   const quote = await QuoteModel.findById(new ObjectId(quoteId));
-  if (!quote) return "";
+  if (!quote) return '';
   let displayText = quote.text;
 
-  if (solve === "Encode") {
-    let ansText = stripQuote(quote.text, cipherType == "Xenocrypt");
-    displayText = encodeQuote(ansText, cipherType, keys).join("");
+  if (solve === 'Encode') {
+    let ansText = stripQuote(quote.text, cipherType == 'Xenocrypt');
+    displayText = encodeQuote(ansText, cipherType, keys).join('');
   }
 
   return displayText;
 }
 
-export async function updateStatsAfterWin(
-  redis,
-  gameUsers,
-  winner,
-  cipherType,
-  solveTime,
-  length,
-) {
+export async function updateStatsAfterWin(redis, gameUsers, winner, cipherType, solveTime, length) {
   const eloChanges = calculateElo(gameUsers, winner.username, cipherType);
 
   for (const player of gameUsers) {
@@ -162,8 +147,7 @@ export async function updateStatsAfterWin(
       const times = stats.solveTimes.map((e) => e.time);
       const timesPerLength = stats.solveTimes.map((e) => e.time / e.length);
       stats.bestSolveTime = Math.min(...times);
-      stats.averageSolveTime =
-        timesPerLength.reduce((a, b) => a + b, 0) / timesPerLength.length;
+      stats.averageSolveTime = timesPerLength.reduce((a, b) => a + b, 0) / timesPerLength.length;
 
       updateTotalStats(player, solveTime, length);
     } else {
@@ -171,31 +155,21 @@ export async function updateStatsAfterWin(
       updateTotalStats(player);
     }
 
-    player.markModified("stats");
-    player.markModified("stats.All");
+    player.markModified('stats');
+    player.markModified('stats.All');
     await player.save();
 
     try {
-      await updateUserInLeaderboards(
-        redis,
-        player.username,
-        cipherType,
-        player.stats[cipherType],
-      );
+      await updateUserInLeaderboards(redis, player.username, cipherType, player.stats[cipherType]);
 
       if (player.stats.All) {
-        await updateUserInLeaderboards(
-          redis,
-          player.username,
-          "All",
-          player.stats.All,
-        );
+        await updateUserInLeaderboards(redis, player.username, 'All', player.stats.All);
       }
     } catch (redisError) {
       console.error(
-        "CRITICAL: Failed to update leaderboards in Redis for user:",
+        'CRITICAL: Failed to update leaderboards in Redis for user:',
         player.username,
-        redisError,
+        redisError
       );
     }
   }

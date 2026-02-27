@@ -1,52 +1,52 @@
-import { UserAuth } from "../models/UserAuth.js";
-import jwt from "jsonwebtoken";
+import { UserAuth } from '../models/UserAuth.js';
+import jwt from 'jsonwebtoken';
 const SECRET_JWT_KEY = process.env.SECRET_JWT_KEY;
 import pkg from 'argon2';
 const argon2 = pkg;
 
 const email_regexp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 async function get_user(email, password) {
-    if (!email) {
-        return { error: "Email is required." };
-    }
+  if (!email) {
+    return { error: 'Email is required.' };
+  }
 
-    if (!email.match(email_regexp)) {
-        return { error: "Please enter a valid email." };
-    }
+  if (!email.match(email_regexp)) {
+    return { error: 'Please enter a valid email.' };
+  }
 
-    const user = await UserAuth.findOne({
-        email: { $regex: `^${email}$`, $options: 'i' }
-    });
+  const user = await UserAuth.findOne({
+    email: { $regex: `^${email}$`, $options: 'i' },
+  });
 
-    if (!password) {
-        return { error: "Password is required." };
-    }
+  if (!password) {
+    return { error: 'Password is required.' };
+  }
 
-    if (!user) {
-        return { error: "Email OR Password is not correct." };
-    }
+  if (!user) {
+    return { error: 'Email OR Password is not correct.' };
+  }
 
-    let password_is_correct = false;
-    try {
-        password_is_correct = await argon2.verify(user.password, password);
-    } catch (err) {
-        return {error: err};
-    }
+  let password_is_correct = false;
+  try {
+    password_is_correct = await argon2.verify(user.password, password);
+  } catch (err) {
+    return { error: err };
+  }
 
-    if (!password_is_correct) {
-        return { error: "Email OR Password is not correct." };
-    }
+  if (!password_is_correct) {
+    return { error: 'Email OR Password is not correct.' };
+  }
 
-    return { user };
+  return { user };
 }
 
 export async function login_user(email, password) {
-    const info = await get_user(email, password);
+  const info = await get_user(email, password);
 
-    if ("error" in info) {
-		return { error: info.error };
-	}
+  if ('error' in info) {
+    return { error: info.error };
+  }
 
-    const token = jwt.sign({ id: info.user.id }, SECRET_JWT_KEY, { expiresIn: '1d' });
-	return { token, user: info.user };
+  const token = jwt.sign({ id: info.user.id }, SECRET_JWT_KEY, { expiresIn: '1d' });
+  return { token, user: info.user };
 }

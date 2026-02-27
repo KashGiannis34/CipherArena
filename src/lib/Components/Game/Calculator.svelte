@@ -1,8 +1,15 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
-  import { cubicOut } from "svelte/easing";
+  import { cubicOut } from 'svelte/easing';
 
-  let { visible = false, onClose, position = { x: 100, y: 100 }, onFocusSwitch, calculatorFocused = $bindable(), toggleCalculator } = $props();
+  let {
+    visible = false,
+    onClose,
+    position = { x: 100, y: 100 },
+    onFocusSwitch,
+    calculatorFocused = $bindable(),
+    toggleCalculator,
+  } = $props();
 
   let calculatorElement = $state();
   let isDragging = $state(false);
@@ -239,13 +246,13 @@
   function zoom(node, { duration = 300 }) {
     return {
       duration,
-      css: t => {
+      css: (t) => {
         const eased = cubicOut(t);
         return `
           transform: scale(${eased});
           opacity: ${eased};
         `;
-      }
+      },
     };
   }
 
@@ -342,7 +349,9 @@
     cursor: move;
     min-width: 280px;
     backdrop-filter: blur(10px);
-    transition: opacity 0.3s ease, border-color 0.3s ease;
+    transition:
+      opacity 0.3s ease,
+      border-color 0.3s ease;
   }
 
   .calculator-container:not(.calculator-focused) {
@@ -353,7 +362,9 @@
   .calculator-container.calculator-focused {
     opacity: 1;
     border-color: var(--color-accent);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 0 3px var(--color-accent-muted);
+    box-shadow:
+      0 20px 40px rgba(0, 0, 0, 0.8),
+      0 0 0 3px var(--color-accent-muted);
   }
 
   .calculator-container.calculator-focused .calculator-title {

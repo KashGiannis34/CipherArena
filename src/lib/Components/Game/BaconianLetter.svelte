@@ -1,7 +1,7 @@
 <script>
-  import { cipherTypes } from "$shared/CipherTypes";
-  import { isSolvableChunk } from "$shared/CipherUtil";
-  import { createLetterHandlers } from "./letterUtils.svelte.js";
+  import { cipherTypes } from '$shared/CipherTypes';
+  import { isSolvableChunk } from '$shared/CipherUtil';
+  import { createLetterHandlers } from './letterUtils.svelte.js';
 
   let {
     inputs = $bindable(),
@@ -17,10 +17,10 @@
     checkQuote,
   } = $props();
 
-  let baconianToggles = $state(["A", "A", "A", "A", "A"]);
+  let baconianToggles = $state(['A', 'A', 'A', 'A', 'A']);
 
   function toggleBaconian(i) {
-    baconianToggles[i] = baconianToggles[i] === "A" ? "B" : "A";
+    baconianToggles[i] = baconianToggles[i] === 'A' ? 'B' : 'A';
   }
 
   const handler = createLetterHandlers(() => ({
@@ -39,12 +39,12 @@
   let graphemes = $derived(
     cipherLetter
       ? Array.from(
-          new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(
-            (cipherLetter || "").normalize("NFC"),
+          new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(
+            (cipherLetter || '').normalize('NFC')
           ),
-          (s) => s.segment,
+          (s) => s.segment
         )
-      : [],
+      : []
   );
 
   // Count grapheme clusters to know how many toggles to show
@@ -53,14 +53,13 @@
   // Build a grid template that inserts a small spacer column after every 5 characters.
   let gridTemplate = $derived(
     Array.from({ length: charCount }, (_, i) =>
-      (i + 1) % 5 === 0 && i !== charCount - 1 ? "1fr 8px" : "1fr",
-    ).join(" "),
+      (i + 1) % 5 === 0 && i !== charCount - 1 ? '1fr 8px' : '1fr'
+    ).join(' ')
   );
 </script>
 
 <div
-  class="letter-container baconian-group unselectable {cipherTypes[cipherType]
-    .letterGap
+  class="letter-container baconian-group unselectable {cipherTypes[cipherType].letterGap
     ? 'letterGap'
     : ''}"
 >
@@ -68,7 +67,7 @@
     {#each baconianToggles.slice(0, charCount) as toggle, i}
       <button
         style="grid-column: {i + Math.floor(i / 5) + 1}; grid-row: 1"
-        class={`baconian-toggle unselectable ${toggle === "A" ? "toggleA" : "toggleB"}`}
+        class={`baconian-toggle unselectable ${toggle === 'A' ? 'toggleA' : 'toggleB'}`}
         onclick={() => toggleBaconian(i)}
       >
         {toggle}
@@ -76,10 +75,7 @@
     {/each}
 
     {#each graphemes as g, i}
-      <div
-        class="grapheme-cell"
-        style="grid-column: {i + Math.floor(i / 5) + 1}; grid-row: 2"
-      >
+      <div class="grapheme-cell" style="grid-column: {i + Math.floor(i / 5) + 1}; grid-row: 2">
         <span class="grapheme unselectable">{g}</span>
       </div>
     {/each}
@@ -138,7 +134,7 @@
 
   .baconian-toggle {
     flex: 1;
-    font-family: "Source Code Pro", monospace !important;
+    font-family: 'Source Code Pro', monospace !important;
     font-size: 0.7rem;
     font-weight: 600;
     background: transparent;
@@ -168,7 +164,7 @@
   }
 
   .cipher-letter {
-    font-family: "Source Code Pro", monospace !important;
+    font-family: 'Source Code Pro', monospace !important;
     font-size: 1.1rem;
     font-weight: 500;
     color: white !important;
@@ -176,7 +172,7 @@
   }
 
   .grapheme-cell {
-    font-family: "Source Code Pro", monospace !important;
+    font-family: 'Source Code Pro', monospace !important;
     overflow: visible;
     line-height: 1.3;
     font-synthesis: none;
@@ -184,7 +180,7 @@
 
   .grapheme {
     display: inline-block;
-    font-family: "Source Code Pro", monospace;
+    font-family: 'Source Code Pro', monospace;
     font-size: 1.4rem;
     font-weight: 500;
     color: white !important;
@@ -192,7 +188,7 @@
   }
 
   input {
-    font-family: "Source Code Pro", monospace !important;
+    font-family: 'Source Code Pro', monospace !important;
     text-align: center;
     font-size: 1.4rem;
     font-weight: 500;

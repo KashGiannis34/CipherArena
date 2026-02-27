@@ -1,6 +1,6 @@
-import { start_mongo } from "$services/mongo.js";
-import { globalLimiter, getLimiterForRoute } from "$lib/server/rateLimiter.js";
-import { error } from "@sveltejs/kit";
+import { start_mongo } from '$services/mongo.js';
+import { globalLimiter, getLimiterForRoute } from '$lib/server/rateLimiter.js';
+import { error } from '@sveltejs/kit';
 
 /** @type {import('@sveltejs/kit').ServerInit} */
 export async function init() {
@@ -12,31 +12,31 @@ export async function handle({ event, resolve }) {
   const { pathname } = event.url;
 
   // Get the actual host from the request header (not event.url.host which may be overridden)
-  const requestHost = event.request.headers.get("host") || "";
+  const requestHost = event.request.headers.get('host') || '';
 
   // 1. PRIMARY DOMAIN REDIRECT
   // This effectively prevents cross-site submissions by forcing everyone to the same origin
-  if (requestHost.includes("cipher-arena.fly.dev")) {
+  if (requestHost.includes('cipher-arena.fly.dev')) {
     return new Response(null, {
       status: 301,
       headers: {
         Location: `https://cipherarena.com${pathname}${event.url.search}`,
-        "Cache-Control": "public, max-age=31536000", // Permanent redirect
-        "X-Robots-Tag": "noindex, nofollow",
+        'Cache-Control': 'public, max-age=31536000', // Permanent redirect
+        'X-Robots-Tag': 'noindex, nofollow',
       },
     });
   }
 
   // 2. STATIC ASSET PASS-THROUGH
   if (
-    pathname.startsWith("/_app") ||
-    pathname.startsWith("/favicon") ||
-    pathname.startsWith("/api/health") ||
-    pathname.endsWith(".svg") ||
-    pathname.endsWith(".png") ||
-    pathname.endsWith(".jpg") ||
-    pathname.endsWith(".css") ||
-    pathname.endsWith(".js")
+    pathname.startsWith('/_app') ||
+    pathname.startsWith('/favicon') ||
+    pathname.startsWith('/api/health') ||
+    pathname.endsWith('.svg') ||
+    pathname.endsWith('.png') ||
+    pathname.endsWith('.jpg') ||
+    pathname.endsWith('.css') ||
+    pathname.endsWith('.js')
   ) {
     return resolve(event);
   }
@@ -48,21 +48,18 @@ export async function handle({ event, resolve }) {
       `Too many requests. Please try again after ${globalStatus.retryAfter} seconds.`,
       {
         status: 429,
-        headers: { "Retry-After": globalStatus.retryAfter.toString() },
-      },
+        headers: { 'Retry-After': globalStatus.retryAfter.toString() },
+      }
     );
   }
 
   // 4. ROUTE-SPECIFIC RATE LIMITING (FOR POST REQUESTS)
-  if (event.request.method === "POST") {
+  if (event.request.method === 'POST') {
     const routeLimiter = getLimiterForRoute(pathname);
     if (routeLimiter) {
       const isLimited = await routeLimiter.limiter.isLimited(event);
       if (isLimited) {
-        throw error(
-          429,
-          `Too many requests to ${routeLimiter.name} endpoint. Please slow down.`,
-        );
+        throw error(429, `Too many requests to ${routeLimiter.name} endpoint. Please slow down.`);
       }
     }
   }

@@ -10,10 +10,12 @@ import { handler } from '../build/handler.js';
 import { setupSocketServer } from '../ws/socketServer.js';
 
 const app = express();
-app.use(helmet({
+app.use(
+  helmet({
     contentSecurityPolicy: false,
-    referrerPolicy: { policy: "strict-origin-when-cross-origin" }
-}));
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  })
+);
 const server = http.createServer(app);
 
 console.log(`[server] ENV PORT = ${process.env.PORT}`);
@@ -25,7 +27,7 @@ const io = setupSocketServer(server);
 app.use(handler);
 
 server.listen(process.env.PORT || 3000, '0.0.0.0', () => {
-    console.log('Server is running');
+  console.log('Server is running');
 });
 
 const gracefulShutdown = async (signal) => {

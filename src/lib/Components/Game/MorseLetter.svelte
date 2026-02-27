@@ -1,5 +1,5 @@
 <script>
-  import { TRIGRAMS, isLetter } from "$shared/CipherUtil";
+  import { TRIGRAMS, isLetter } from '$shared/CipherUtil';
 
   let {
     inputs = $bindable(),
@@ -22,7 +22,7 @@
         return trigram;
       }
     }
-    return "";
+    return '';
   }
 
   let currentTrigram = $derived(getTrigramForLetter(cipherLetter));
@@ -36,19 +36,19 @@
     }
 
     if (
-      event.key == "ArrowLeft" ||
-      event.key == "ArrowRight" ||
-      event.key == " " ||
-      event.key == "Tab"
+      event.key == 'ArrowLeft' ||
+      event.key == 'ArrowRight' ||
+      event.key == ' ' ||
+      event.key == 'Tab'
     ) {
       onArrow(event.key, slotId);
       event.preventDefault();
       return;
     }
 
-    const deleteKeys = ["Backspace", "Delete"];
+    const deleteKeys = ['Backspace', 'Delete'];
     if (deleteKeys.includes(event.key)) {
-      onChange(cipherLetter, "", slotId);
+      onChange(cipherLetter, '', slotId);
       return;
     }
 
@@ -74,7 +74,7 @@
         onChange(cipherLetter, char, slot.id);
       }
     } else {
-      onChange(cipherLetter, "", slot.id);
+      onChange(cipherLetter, '', slot.id);
     }
   }
 
@@ -90,9 +90,9 @@
   }
 
   function formatChar(char) {
-    if (char === ".") return "●";
-    if (char === "-") return "–";
-    if (char === "x") return "×";
+    if (char === '.') return '●';
+    if (char === '-') return '–';
+    if (char === 'x') return '×';
     return char;
   }
 </script>
@@ -119,7 +119,7 @@
           width: calc({slot.content.length} * 33.33%);
         "
       >
-        {#if slot.type === "separator"}
+        {#if slot.type === 'separator'}
           <div class="separator" class:error={slot.isError}>/</div>
         {:else}
           <input
@@ -161,7 +161,7 @@
   }
 
   .cipher-letter {
-    font-family: "Source Code Pro", monospace !important;
+    font-family: 'Source Code Pro', monospace !important;
     font-size: 1.4rem;
     font-weight: 500;
     margin-bottom: 3px;
@@ -169,7 +169,7 @@
   }
 
   .trigram-display {
-    font-family: "Source Code Pro", monospace !important;
+    font-family: 'Source Code Pro', monospace !important;
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -187,7 +187,7 @@
 
   .trigram-char,
   .trigram-placeholder {
-    font-family: "Source Code Pro", monospace !important;
+    font-family: 'Source Code Pro', monospace !important;
     line-height: 1.1;
     width: 33.33%;
     text-align: center;
@@ -216,7 +216,7 @@
   }
 
   input {
-    font-family: "Source Code Pro", monospace !important;
+    font-family: 'Source Code Pro', monospace !important;
     text-align: center;
     font-size: 1.2rem;
     font-weight: 500;
@@ -246,7 +246,7 @@
   }
 
   .separator {
-    font-family: "Source Code Pro", monospace !important;
+    font-family: 'Source Code Pro', monospace !important;
     text-align: center;
     font-size: 1.2rem;
     font-weight: 500;

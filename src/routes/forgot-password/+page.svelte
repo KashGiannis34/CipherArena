@@ -2,9 +2,9 @@
   import Container from '$lib/Components/General/Container.svelte';
   import { fade } from 'svelte/transition';
 
-  let {form} = $props();
+  let { form } = $props();
 
-  let email = $state("");
+  let email = $state('');
   let sending = $state(false);
 </script>
 
@@ -12,7 +12,7 @@
   <title>Forgot Password</title>
 </svelte:head>
 
-<Container --minWidth=none --maxWidth=min(80vw,600px)>
+<Container --minWidth="none" --maxWidth="min(80vw,600px)">
   <form method="POST">
     <h1>Forgot Password</h1>
 
@@ -43,7 +43,7 @@
 </Container>
 
 <style>
-  @import "$lib/css/Button.css";
+  @import '$lib/css/Button.css';
 
   h1 {
     text-align: center;
@@ -124,7 +124,8 @@
     transform: scale(0.97);
   }
 
-  .error, .message {
+  .error,
+  .message {
     text-align: center;
     padding: 8px 12px;
     border-radius: 8px;

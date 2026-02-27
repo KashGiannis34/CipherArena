@@ -1,6 +1,6 @@
-import { json } from "@sveltejs/kit";
-import { generateProblem } from "$bots/botService";
-import { encryptText } from "$server/utils/textEncode";
+import { json } from '@sveltejs/kit';
+import { generateProblem } from '$bots/botService';
+import { encryptText } from '$server/utils/textEncode';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
@@ -8,10 +8,7 @@ export async function POST({ request }) {
     const { problemType, decimals } = await request.json();
 
     if (!problemType || problemType < 1 || problemType > 20) {
-      return json(
-        { error: "Invalid problem type. Must be between 1 and 20." },
-        { status: 400 },
-      );
+      return json({ error: 'Invalid problem type. Must be between 1 and 20.' }, { status: 400 });
     }
 
     const problem = await generateProblem(problemType, decimals);
@@ -53,13 +50,13 @@ export async function POST({ request }) {
       problemType: problemType,
     });
   } catch (error) {
-    console.error("Error generating problem:", error);
+    console.error('Error generating problem:', error);
     return json(
       {
-        error: "Failed to generate problem",
+        error: 'Failed to generate problem',
         details: error.message,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

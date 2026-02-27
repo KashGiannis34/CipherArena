@@ -11,10 +11,7 @@ await esbuild.build({
 
   packages: 'external',
 
-  external: [
-    '../build/handler.js',
-    './build/handler.js'
-  ]
+  external: ['../build/handler.js', './build/handler.js'],
 });
 
 console.log('Server build complete!');

@@ -1,10 +1,4 @@
-export function generateSeo({
-  title,
-  description,
-  url,
-  image,
-  type = "website",
-}) {
+export function generateSeo({ title, description, url, image, type = 'website' }) {
   return `
     <title>${title}</title>
     <meta name="description" content="${description}" />

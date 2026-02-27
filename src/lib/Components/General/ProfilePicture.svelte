@@ -1,13 +1,19 @@
 <script>
-  import { onMount } from "svelte";
+  import { onMount } from 'svelte';
   import ColorThief from 'colorthief';
 
-  let { profilePicture, size = 40, useColorRing = false, preserveSize = false, onColorExtract = null } = $props();
+  let {
+    profilePicture,
+    size = 40,
+    useColorRing = false,
+    preserveSize = false,
+    onColorExtract = null,
+  } = $props();
   let loading = $state(true);
-  let src = $state("");
+  let src = $state('');
   let ringColor = $state('var(--color-ring-default, #bcaeff)');
   let imgRef = $state(null);
-  let lastFetchedProfileId = $state("");
+  let lastFetchedProfileId = $state('');
 
   $effect(() => {
     if (!profilePicture || profilePicture === 'default') {
@@ -56,7 +62,10 @@
 </script>
 
 <div
-  class="avatar-wrapper {useColorRing || preserveSize ? "ring-wrapper": ""} {preserveSize && !useColorRing ? "no-ring": ""}"
+  class="avatar-wrapper {useColorRing || preserveSize ? 'ring-wrapper' : ''} {preserveSize &&
+  !useColorRing
+    ? 'no-ring'
+    : ''}"
   style="
     width: {size}px;
     height: {size}px;
@@ -71,7 +80,7 @@
   {#if src !== '' && (!loading || src !== '/default-avatar.webp')}
     <img
       bind:this={imgRef}
-      src={src}
+      {src}
       alt=""
       class="avatar"
       crossorigin="anonymous"
@@ -141,7 +150,14 @@
   }
 
   @keyframes soft-ring {
-    0%, 100% { transform: scale(0.95); opacity: 0.5; }
-    50%     { transform: scale(1); opacity: 0.3; }
+    0%,
+    100% {
+      transform: scale(0.95);
+      opacity: 0.5;
+    }
+    50% {
+      transform: scale(1);
+      opacity: 0.3;
+    }
   }
 </style>

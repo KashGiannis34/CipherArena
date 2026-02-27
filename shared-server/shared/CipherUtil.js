@@ -1,5 +1,5 @@
-import { cipherTypes } from "./CipherTypes.js";
-import GraphemeSplitter from "grapheme-splitter";
+import { cipherTypes } from './CipherTypes.js';
+import GraphemeSplitter from 'grapheme-splitter';
 
 let splitter;
 function getSplitter() {
@@ -7,22 +7,22 @@ function getSplitter() {
   return splitter;
 }
 
-export const ENGLISH_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-export const SPANISH_ALPHABET = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
+export const ENGLISH_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+export const SPANISH_ALPHABET = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
 
 /** Returns true if character is a valid letter in the specified alphabet. */
 export function isLetter(character, isSpanish = false) {
   const alphabet = isSpanish ? SPANISH_ALPHABET : ENGLISH_ALPHABET;
   return (
     alphabet.includes(character ? character.toUpperCase() : character) &&
-    character !== "" &&
-    character !== " "
+    character !== '' &&
+    character !== ' '
   );
 }
 
 /** Converts a letter to its 0-based index in the alphabet. Returns -1 if invalid. */
 export function letterToNumber(char, isSpanish = false) {
-  if (typeof char !== "string" || char.length !== 1) return -1;
+  if (typeof char !== 'string' || char.length !== 1) return -1;
   const alphabet = isSpanish ? SPANISH_ALPHABET : ENGLISH_ALPHABET;
 
   const index = alphabet.indexOf(char.toUpperCase());
@@ -32,7 +32,7 @@ export function letterToNumber(char, isSpanish = false) {
 /** Converts a 0-based index to its corresponding letter. Returns empty string if out of range. */
 export function numberToLetter(num, isSpanish = false) {
   const alphabet = isSpanish ? SPANISH_ALPHABET : ENGLISH_ALPHABET;
-  return num >= 0 && num < alphabet.length ? alphabet[num] : "";
+  return num >= 0 && num < alphabet.length ? alphabet[num] : '';
 }
 
 function shiftArray(arr, shiftAmount) {
@@ -55,30 +55,20 @@ function checkSelfDecode(arr, isSpanish = false) {
 export function encodeQuote(plaintext, cipherType, keys, params) {
   const encoders = {
     Aristocrat: () =>
-      encodeAristocrat(
-        plaintext,
-        params["K"] === "-1" ? "0" : params["K"],
-        keys[0],
-      ),
+      encodeAristocrat(plaintext, params['K'] === '-1' ? '0' : params['K'], keys[0]),
     Porta: () => encodePorta(plaintext, keys[0]),
     Caesar: () => encodeCaesar(plaintext),
     Atbash: () => encodeAtbash(plaintext),
     Baconian: () => encodeBaconian(plaintext),
     Nihilist: () => encodeNihilist(plaintext, keys[0], keys[1]),
-    Xenocrypt: () =>
-      encodeXenocrypt(
-        plaintext,
-        params["K"] === "-1" ? "0" : params["K"],
-        keys[0],
-      ),
-    Checkerboard: () =>
-      encodeCheckerboard(plaintext, keys[0], keys[1], keys[2]),
+    Xenocrypt: () => encodeXenocrypt(plaintext, params['K'] === '-1' ? '0' : params['K'], keys[0]),
+    Checkerboard: () => encodeCheckerboard(plaintext, keys[0], keys[1], keys[2]),
     Hill: () => encodeHill(plaintext, keys[0]),
     Affine: () => encodeAffine(plaintext, keys[0], keys[1]),
-    "Fractionated Morse": () => encodeFractionatedMorse(plaintext, keys[0]),
+    'Fractionated Morse': () => encodeFractionatedMorse(plaintext, keys[0]),
   };
 
-  return (encoders[cipherType] || (() => encodeAristocrat(plaintext, "0")))();
+  return (encoders[cipherType] || (() => encodeAristocrat(plaintext, '0')))();
 }
 
 /** Calculates the determinant of a 2x2 matrix from a 4-letter key (mod 26). */
@@ -151,8 +141,8 @@ function encodeAtbash(plaintext) {
 
 /** Encodes aristocrat using a generated frequency table. */
 function encodeAristocrat(plaintext, k, key) {
-  const freqTable = freqTableInit(k || "0", key, false);
-  const useInverseMapping = k === "1" || k === "3";
+  const freqTable = freqTableInit(k || '0', key, false);
+  const useInverseMapping = k === '1' || k === '3';
   const ciphertext = [];
 
   for (let letter of plaintext) {
@@ -162,7 +152,7 @@ function encodeAristocrat(plaintext, k, key) {
       ciphertext.push(
         useInverseMapping
           ? numberToLetter(freqTable.indexOf(letter.toUpperCase()))
-          : freqTable[letterToNumber(letter)],
+          : freqTable[letterToNumber(letter)]
       );
     }
   }
@@ -172,8 +162,8 @@ function encodeAristocrat(plaintext, k, key) {
 
 /** Encodes xenocrypt using a generated frequency table. */
 function encodeXenocrypt(plaintext, k, key) {
-  const freqTable = freqTableInit(k || "0", key, true);
-  const useInverseMapping = k === "1" || k === "3";
+  const freqTable = freqTableInit(k || '0', key, true);
+  const useInverseMapping = k === '1' || k === '3';
   const ciphertext = [];
 
   for (let letter of getSplitter().splitGraphemes(plaintext)) {
@@ -204,9 +194,7 @@ function encodePorta(plaintext, key) {
     if (num !== -1) {
       const k = letterToNumber(key[count % length]);
       const res = numberToLetter(
-        num < 13
-          ? ((num + Math.floor(k / 2)) % 13) + 13
-          : (num - Math.floor(k / 2) + 13) % 13,
+        num < 13 ? ((num + Math.floor(k / 2)) % 13) + 13 : (num - Math.floor(k / 2) + 13) % 13
       );
       ciphertext.push(res);
       count++;
@@ -239,10 +227,10 @@ function setArray(key, alphabet) {
 /** Generates the frequency table for aristocrats and xenocrypts. */
 function freqTableInit(k, key, isSpanish = false) {
   const baseAlphabet = isSpanish
-    ? "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("")
-    : "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    ? 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('')
+    : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
-  if (k === "1" || k === "2") {
+  if (k === '1' || k === '2') {
     let freqTable = setArray(key, baseAlphabet);
     let selfDecode = false;
     do {
@@ -253,7 +241,7 @@ function freqTableInit(k, key, isSpanish = false) {
     return freqTable;
   }
 
-  if (k === "3") {
+  if (k === '3') {
     let freqTable = setArray(key, baseAlphabet);
     let freqTable2 = [...freqTable];
     let finalTable = [];
@@ -267,8 +255,7 @@ function freqTableInit(k, key, isSpanish = false) {
       freqTable2 = shiftArray(freqTable2, shift2);
 
       for (let n = 0; n < baseAlphabet.length; n++) {
-        finalTable[n] =
-          freqTable2[freqTable.indexOf(numberToLetter(n, isSpanish))];
+        finalTable[n] = freqTable2[freqTable.indexOf(numberToLetter(n, isSpanish))];
       }
 
       selfDecode = checkSelfDecode(finalTable, isSpanish);
@@ -289,100 +276,100 @@ function freqTableInit(k, key, isSpanish = false) {
 }
 
 export const baconianMap = {
-  A: "AAAAA",
-  B: "AAAAB",
-  C: "AAABA",
-  D: "AAABB",
-  E: "AABAA",
-  F: "AABAB",
-  G: "AABBA",
-  H: "AABBB",
-  I: "ABAAA",
-  J: "ABAAA",
-  K: "ABAAB",
-  L: "ABABA",
-  M: "ABABB",
-  N: "ABBAA",
-  O: "ABBAB",
-  P: "ABBBA",
-  Q: "ABBBB",
-  R: "BAAAA",
-  S: "BAAAB",
-  T: "BAABA",
-  U: "BAABB",
-  V: "BAABB",
-  W: "BABAA",
-  X: "BABAB",
-  Y: "BABBA",
-  Z: "BABBB",
+  A: 'AAAAA',
+  B: 'AAAAB',
+  C: 'AAABA',
+  D: 'AAABB',
+  E: 'AABAA',
+  F: 'AABAB',
+  G: 'AABBA',
+  H: 'AABBB',
+  I: 'ABAAA',
+  J: 'ABAAA',
+  K: 'ABAAB',
+  L: 'ABABA',
+  M: 'ABABB',
+  N: 'ABBAA',
+  O: 'ABBAB',
+  P: 'ABBBA',
+  Q: 'ABBBB',
+  R: 'BAAAA',
+  S: 'BAAAB',
+  T: 'BAABA',
+  U: 'BAABB',
+  V: 'BAABB',
+  W: 'BABAA',
+  X: 'BABAB',
+  Y: 'BABBA',
+  Z: 'BABBB',
 };
 
 export const morseCodeMap = {
-  A: ".-",
-  B: "-...",
-  C: "-.-.",
-  D: "-..",
-  E: ".",
-  F: "..-.",
-  G: "--.",
-  H: "....",
-  I: "..",
-  J: ".---",
-  K: "-.-",
-  L: ".-..",
-  M: "--",
-  N: "-.",
-  O: "---",
-  P: ".--.",
-  Q: "--.-",
-  R: ".-.",
-  S: "...",
-  T: "-",
-  U: "..-",
-  V: "...-",
-  W: ".--",
-  X: "-..-",
-  Y: "-.--",
-  Z: "--..",
+  A: '.-',
+  B: '-...',
+  C: '-.-.',
+  D: '-..',
+  E: '.',
+  F: '..-.',
+  G: '--.',
+  H: '....',
+  I: '..',
+  J: '.---',
+  K: '-.-',
+  L: '.-..',
+  M: '--',
+  N: '-.',
+  O: '---',
+  P: '.--.',
+  Q: '--.-',
+  R: '.-.',
+  S: '...',
+  T: '-',
+  U: '..-',
+  V: '...-',
+  W: '.--',
+  X: '-..-',
+  Y: '-.--',
+  Z: '--..',
 };
 
 export const reverseMorseMap = Object.fromEntries(
-  Object.entries(morseCodeMap).map(([k, v]) => [v, k]),
+  Object.entries(morseCodeMap).map(([k, v]) => [v, k])
 );
 
 export const TRIGRAMS = [
-  "...",
-  "..-",
-  "..x",
-  ".-.",
-  ".--",
-  ".-x",
-  ".x.",
-  ".x-",
-  ".xx",
-  "-..",
-  "-.-",
-  "-.x",
-  "--.",
-  "---",
-  "--x",
-  "-x.",
-  "-x-",
-  "-xx",
-  "x..",
-  "x.-",
-  "x.x",
-  "x-.",
-  "x--",
-  "x-x",
-  "xx.",
-  "xx-",
+  '...',
+  '..-',
+  '..x',
+  '.-.',
+  '.--',
+  '.-x',
+  '.x.',
+  '.x-',
+  '.xx',
+  '-..',
+  '-.-',
+  '-.x',
+  '--.',
+  '---',
+  '--x',
+  '-x.',
+  '-x-',
+  '-xx',
+  'x..',
+  'x.-',
+  'x.x',
+  'x-.',
+  'x--',
+  'x-x',
+  'xx.',
+  'xx-',
 ];
 
 function generateKeyedAlphabet(keyword) {
   const seen = new Set();
   const result = [];
-  for (const c of keyword.toUpperCase().replace(/[^A-Z]/g, "")) {
+  for (const c of keyword.toUpperCase().replace(/[^A-Z]/g, '')) {
     if (!seen.has(c)) {
       seen.add(c);
       result.push(c);
@@ -404,20 +391,20 @@ function encodeFractionatedMorse(plaintext, keyword) {
     .toUpperCase()
     .split(/[^A-Z]+/g)
     .filter((w) => w.length > 0);
-  const stripped = words.join("");
+  const stripped = words.join('');
 
-  let morseStream = "";
+  let morseStream = '';
   for (let i = 0; i < words.length; i++) {
-    if (i > 0) morseStream += "xx"; // Word separator
+    if (i > 0) morseStream += 'xx'; // Word separator
     const word = words[i];
     for (let j = 0; j < word.length; j++) {
-      if (j > 0) morseStream += "x"; // Letter separator
-      morseStream += morseCodeMap[word[j]] || "";
+      if (j > 0) morseStream += 'x'; // Letter separator
+      morseStream += morseCodeMap[word[j]] || '';
     }
   }
 
   while (morseStream.length % 3 !== 0) {
-    morseStream += "x";
+    morseStream += 'x';
   }
 
   const ciphertext = [];
@@ -426,7 +413,7 @@ function encodeFractionatedMorse(plaintext, keyword) {
     const trigram = morseStream.substring(i, i + 3);
     trigramList.push(trigram);
     const idx = TRIGRAMS.indexOf(trigram);
-    ciphertext.push(idx >= 0 ? keyedAlphabet[idx] : "?");
+    ciphertext.push(idx >= 0 ? keyedAlphabet[idx] : '?');
   }
 
   const letterToTrigram = {};
@@ -437,7 +424,7 @@ function encodeFractionatedMorse(plaintext, keyword) {
   }
 
   let uniqueMappings = new Set();
-  let cribPlaintext = "";
+  let cribPlaintext = '';
   let morseIndex = 0;
 
   let globalCharIndex = 0;
@@ -450,7 +437,7 @@ function encodeFractionatedMorse(plaintext, keyword) {
 
       const char = word[j];
       cribPlaintext += char;
-      const letterMorse = morseCodeMap[char] || "";
+      const letterMorse = morseCodeMap[char] || '';
       const morseEnd = morseIndex + letterMorse.length;
 
       // Find which trigrams cover this letter
@@ -476,163 +463,105 @@ function encodeFractionatedMorse(plaintext, keyword) {
 }
 
 const baconianSymbolSets = [
-  { aSet: new Set([".", "·"]), bSet: new Set(["-", "—"]) },
-  { aSet: new Set(["0"]), bSet: new Set(["1"]) },
+  { aSet: new Set(['.', '·']), bSet: new Set(['-', '—']) },
+  { aSet: new Set(['0']), bSet: new Set(['1']) },
 
   // Number-based sets
   {
-    aSet: new Set(["1", "3", "5", "7", "9"]),
-    bSet: new Set(["2", "4", "6", "8", "0"]),
+    aSet: new Set(['1', '3', '5', '7', '9']),
+    bSet: new Set(['2', '4', '6', '8', '0']),
   },
   {
-    aSet: new Set(["2", "3", "5", "7"]),
-    bSet: new Set(["1", "4", "6", "8", "9", "0"]),
+    aSet: new Set(['2', '3', '5', '7']),
+    bSet: new Set(['1', '4', '6', '8', '9', '0']),
   },
 
   // Symbol sets
   {
-    aSet: new Set(["@", "$", "^", "*", ")"]),
-    bSet: new Set(["!", "#", "%", "&", "("]),
+    aSet: new Set(['@', '$', '^', '*', ')']),
+    bSet: new Set(['!', '#', '%', '&', '(']),
   },
 
   // Alphabet position sets (0-based indexing: A=0, B=1, ...)
   {
-    aSet: new Set([
-      "A",
-      "C",
-      "E",
-      "G",
-      "I",
-      "K",
-      "M",
-      "O",
-      "Q",
-      "S",
-      "U",
-      "W",
-      "Y",
-    ]),
-    bSet: new Set([
-      "B",
-      "D",
-      "F",
-      "H",
-      "J",
-      "L",
-      "N",
-      "P",
-      "R",
-      "T",
-      "V",
-      "X",
-      "Z",
-    ]),
+    aSet: new Set(['A', 'C', 'E', 'G', 'I', 'K', 'M', 'O', 'Q', 'S', 'U', 'W', 'Y']),
+    bSet: new Set(['B', 'D', 'F', 'H', 'J', 'L', 'N', 'P', 'R', 'T', 'V', 'X', 'Z']),
   },
   {
-    aSet: new Set([
-      "A",
-      "B",
-      "E",
-      "F",
-      "I",
-      "J",
-      "M",
-      "N",
-      "Q",
-      "R",
-      "U",
-      "V",
-      "Y",
-      "Z",
-    ]),
-    bSet: new Set(["C", "D", "G", "H", "K", "L", "O", "P", "S", "T", "W", "X"]),
+    aSet: new Set(['A', 'B', 'E', 'F', 'I', 'J', 'M', 'N', 'Q', 'R', 'U', 'V', 'Y', 'Z']),
+    bSet: new Set(['C', 'D', 'G', 'H', 'K', 'L', 'O', 'P', 'S', 'T', 'W', 'X']),
   },
   {
-    aSet: new Set([
-      "A",
-      "B",
-      "C",
-      "G",
-      "H",
-      "I",
-      "M",
-      "N",
-      "O",
-      "S",
-      "T",
-      "U",
-      "Y",
-      "Z",
-    ]),
-    bSet: new Set(["D", "E", "F", "J", "K", "L", "P", "Q", "R", "V", "W", "X"]),
+    aSet: new Set(['A', 'B', 'C', 'G', 'H', 'I', 'M', 'N', 'O', 'S', 'T', 'U', 'Y', 'Z']),
+    bSet: new Set(['D', 'E', 'F', 'J', 'K', 'L', 'P', 'Q', 'R', 'V', 'W', 'X']),
   },
 
   // emojis
   {
-    aSet: new Set(["😄", "😊", "😂", "😎", "😁"]),
-    bSet: new Set(["😢", "😞", "😭", "😔", "😩"]),
+    aSet: new Set(['😄', '😊', '😂', '😎', '😁']),
+    bSet: new Set(['😢', '😞', '😭', '😔', '😩']),
   },
   {
-    aSet: new Set(["🔵", "🌀", "💎", "🐳", "🧊"]),
-    bSet: new Set(["🔴", "🍓", "🌹", "🔥", "🧨"]),
+    aSet: new Set(['🔵', '🌀', '💎', '🐳', '🧊']),
+    bSet: new Set(['🔴', '🍓', '🌹', '🔥', '🧨']),
   },
   {
-    aSet: new Set(["🪐", "🌌", "🚀", "👽", "🌠"]),
-    bSet: new Set(["🧬", "🦠", "🧫", "🧪", "🧠"]),
+    aSet: new Set(['🪐', '🌌', '🚀', '👽', '🌠']),
+    bSet: new Set(['🧬', '🦠', '🧫', '🧪', '🧠']),
   },
   {
-    aSet: new Set(["🏀", "⚽", "🏈", "🎾", "🏅"]),
-    bSet: new Set(["🎨", "🎭", "🎼", "🖌️", "🎬"]),
+    aSet: new Set(['🏀', '⚽', '🏈', '🎾', '🏅']),
+    bSet: new Set(['🎨', '🎭', '🎼', '🖌️', '🎬']),
   },
 
   {
-    aSet: new Set(["A", "E", "I", "O", "U"]),
+    aSet: new Set(['A', 'E', 'I', 'O', 'U']),
     bSet: new Set([
-      "B",
-      "C",
-      "D",
-      "F",
-      "G",
-      "H",
-      "J",
-      "K",
-      "L",
-      "M",
-      "N",
-      "P",
-      "Q",
-      "R",
-      "S",
-      "T",
-      "V",
-      "W",
-      "X",
-      "Y",
-      "Z",
+      'B',
+      'C',
+      'D',
+      'F',
+      'G',
+      'H',
+      'J',
+      'K',
+      'L',
+      'M',
+      'N',
+      'P',
+      'Q',
+      'R',
+      'S',
+      'T',
+      'V',
+      'W',
+      'X',
+      'Y',
+      'Z',
     ]),
   },
 
   // Prime vs composite alphabet indices
   {
-    aSet: new Set(["C", "D", "F", "H", "L", "N", "R", "T", "X"]),
+    aSet: new Set(['C', 'D', 'F', 'H', 'L', 'N', 'R', 'T', 'X']),
     bSet: new Set([
-      "A",
-      "B",
-      "E",
-      "G",
-      "I",
-      "J",
-      "K",
-      "M",
-      "O",
-      "P",
-      "Q",
-      "S",
-      "U",
-      "V",
-      "W",
-      "Y",
-      "Z",
+      'A',
+      'B',
+      'E',
+      'G',
+      'I',
+      'J',
+      'K',
+      'M',
+      'O',
+      'P',
+      'Q',
+      'S',
+      'U',
+      'V',
+      'W',
+      'Y',
+      'Z',
     ]),
   },
 ];
@@ -656,21 +585,15 @@ function encodeBaconian(plaintext) {
     }
   } else if (encodingType < 0.6) {
     const symbols =
-      "qwertyuiopasdfghjklzxcvbnm!@#$%^&*()_+[]{}|;:,.<>?1234567890QWERTYUIOPASDFGHJKLZXCVBNM".split(
-        "",
+      'qwertyuiopasdfghjklzxcvbnm!@#$%^&*()_+[]{}|;:,.<>?1234567890QWERTYUIOPASDFGHJKLZXCVBNM'.split(
+        ''
       );
-    const aChar = symbols.splice(
-      Math.floor(Math.random() * symbols.length),
-      1,
-    )[0];
-    const bChar = symbols.splice(
-      Math.floor(Math.random() * symbols.length),
-      1,
-    )[0];
+    const aChar = symbols.splice(Math.floor(Math.random() * symbols.length), 1)[0];
+    const bChar = symbols.splice(Math.floor(Math.random() * symbols.length), 1)[0];
     aGroup = new Set([aChar]);
     bGroup = new Set([bChar]);
   } else if (encodingType < 0.85) {
-    const symbols = "!@#$%^&*()_+[]{}|;:,.<>?".split("");
+    const symbols = '!@#$%^&*()_+[]{}|;:,.<>?'.split('');
     const picked = [];
     while (picked.length < 4) {
       const idx = Math.floor(Math.random() * symbols.length);
@@ -684,30 +607,29 @@ function encodeBaconian(plaintext) {
     useDecoratedWordMode = true;
 
     const fiveLetterWords = [
-      "Globe",
-      "Funky",
-      "Crazy",
-      "Sharp",
-      "Waves",
-      "Trick",
-      "Jelly",
-      "Flame",
-      "Dream",
-      "Bliss",
-      "Magic",
-      "Quest",
-      "Vivid",
-      "Zesty",
-      "Frost",
-      "Grove",
-      "Haven",
-      "Jolly",
-      "Kooky",
-      "Lunar",
-      "Pizza",
+      'Globe',
+      'Funky',
+      'Crazy',
+      'Sharp',
+      'Waves',
+      'Trick',
+      'Jelly',
+      'Flame',
+      'Dream',
+      'Bliss',
+      'Magic',
+      'Quest',
+      'Vivid',
+      'Zesty',
+      'Frost',
+      'Grove',
+      'Haven',
+      'Jolly',
+      'Kooky',
+      'Lunar',
+      'Pizza',
     ];
-    baseWord =
-      fiveLetterWords[Math.floor(Math.random() * fiveLetterWords.length)];
+    baseWord = fiveLetterWords[Math.floor(Math.random() * fiveLetterWords.length)];
     const { aSet, bSet } = generateDecoratedWordSet(baseWord);
 
     aGroup = aSet;
@@ -718,12 +640,12 @@ function encodeBaconian(plaintext) {
 
   for (let letter of plaintext) {
     if (isLetter(letter)) {
-      const code = baconianMap[letter.toUpperCase()] || "AAAAA";
+      const code = baconianMap[letter.toUpperCase()] || 'AAAAA';
 
       if (useDecoratedWordMode) {
-        let decoratedWord = "";
+        let decoratedWord = '';
         for (let i = 0; i < 5; i++) {
-          const accent = code[i] === "A" ? aGroup[i] : bGroup[i];
+          const accent = code[i] === 'A' ? aGroup[i] : bGroup[i];
           decoratedWord += accent;
         }
         ciphertext.push(decoratedWord);
@@ -744,7 +666,7 @@ function encodeCheckerboard(plaintext, rowKey, colKey, polybiusKey) {
   const coords = [];
   for (let char of stripped) {
     if (isLetter(char)) {
-      coords.push(square[char == "J" ? "I" : char]);
+      coords.push(square[char == 'J' ? 'I' : char]);
     }
   }
 
@@ -753,11 +675,11 @@ function encodeCheckerboard(plaintext, rowKey, colKey, polybiusKey) {
 
 /** Generates the polybius square for the checkerboard cipher given a row and column key. */
 function generateCheckerboardSquare(rowKey, colKey, key) {
-  const alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"; // I/J combined
+  const alphabet = 'ABCDEFGHIKLMNOPQRSTUVWXYZ'; // I/J combined
   key = key
     .toUpperCase()
-    .replace(/[^A-Z]/g, "")
-    .replace(/J/g, "I");
+    .replace(/[^A-Z]/g, '')
+    .replace(/J/g, 'I');
   const seen = new Set();
   const square = [];
   const coordsMap = {};
@@ -783,31 +705,31 @@ function generateCheckerboardSquare(rowKey, colKey, key) {
 /** Generates a word with accented letters for a specific type of baconian cipher. */
 function generateDecoratedWordSet(baseWord) {
   const combiningMarks = [
-    "\u0300", // grave `
-    "\u0301", // acute ´
-    "\u0302", // circumflex ^
-    "\u0303", // tilde ~
-    "\u0304", // macron ¯
-    "\u0307", // dot above
-    "\u0308", // diaeresis ¨
-    "\u030C", // caron ˇ
-    "\u0323", // dot below
-    "\u0332", // low line (underline)
+    '\u0300', // grave `
+    '\u0301', // acute ´
+    '\u0302', // circumflex ^
+    '\u0303', // tilde ~
+    '\u0304', // macron ¯
+    '\u0307', // dot above
+    '\u0308', // diaeresis ¨
+    '\u030C', // caron ˇ
+    '\u0323', // dot below
+    '\u0332', // low line (underline)
   ];
 
   function getRandomMarks(count, excludeSet = new Set()) {
     const available = combiningMarks.filter((mark) => !excludeSet.has(mark));
     return Array.from(
       { length: count },
-      () => available[Math.floor(Math.random() * available.length)],
+      () => available[Math.floor(Math.random() * available.length)]
     );
   }
 
   const aSet = [];
   const bSet = [];
 
-  let aWord = "";
-  let bWord = "";
+  let aWord = '';
+  let bWord = '';
   const usedPairs = new Set();
 
   for (let i = 0; i < 5; i++) {
@@ -830,12 +752,12 @@ function generateDecoratedWordSet(baseWord) {
 function baconianMapToSymbols(baconianText, aGroup, bGroup) {
   const aChars = Array.from(aGroup);
   const bChars = Array.from(bGroup);
-  let ciphertext = "";
+  let ciphertext = '';
 
   for (let letter of baconianText) {
-    if (letter === "A") {
+    if (letter === 'A') {
       ciphertext += aChars[Math.floor(Math.random() * aChars.length)];
-    } else if (letter === "B") {
+    } else if (letter === 'B') {
       ciphertext += bChars[Math.floor(Math.random() * bChars.length)];
     }
   }
@@ -851,7 +773,7 @@ function encodeNihilist(plaintext, keyword, polybiusKey) {
   const coords = [];
   for (let char of stripped) {
     if (isLetter(char)) {
-      coords.push(square[char == "J" ? "I" : char]);
+      coords.push(square[char == 'J' ? 'I' : char]);
     }
   }
 
@@ -861,7 +783,7 @@ function encodeNihilist(plaintext, keyword, polybiusKey) {
     ciphertext.push(value);
   }
 
-  return ciphertext.map((n) => n.toString().padStart(2, "0"));
+  return ciphertext.map((n) => n.toString().padStart(2, '0'));
 }
 
 /** Encodes plaintext using the affine cipher. */
@@ -881,11 +803,11 @@ function encodeAffine(plaintext, a, b) {
 
 /** Generates a polybius square for the nihilist cipher. */
 function generatePolybiusSquare(key) {
-  const alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"; // I/J combined
+  const alphabet = 'ABCDEFGHIKLMNOPQRSTUVWXYZ'; // I/J combined
   key = key
     .toUpperCase()
-    .replace(/[^A-Z]/g, "")
-    .replace(/J/g, "I");
+    .replace(/[^A-Z]/g, '')
+    .replace(/J/g, 'I');
   const seen = new Set();
   const square = [];
   const coordsMap = {};
@@ -910,12 +832,12 @@ function generatePolybiusSquare(key) {
 
 /** Returns coordinates for each character in the keyword for the nihilist cipher. */
 function getCoordsFromKeyword(keyword, square) {
-  const stripped = keyword.toUpperCase().replace(/J/g, "I");
+  const stripped = keyword.toUpperCase().replace(/J/g, 'I');
   const coords = [];
 
   for (let char of stripped) {
     if (isLetter(char)) {
-      coords.push(square[char == "J" ? "I" : char]);
+      coords.push(square[char == 'J' ? 'I' : char]);
     }
   }
 
@@ -925,7 +847,7 @@ function getCoordsFromKeyword(keyword, square) {
 /** Strips non-alpha characters from the plaintext of a quote. */
 export function stripQuote(text, isSpanish) {
   const graphemes = getSplitter().splitGraphemes(text);
-  let stripped = "";
+  let stripped = '';
   for (let letter of graphemes) {
     if (isLetter(letter, isSpanish)) {
       stripped += letter.toUpperCase();
@@ -937,16 +859,12 @@ export function stripQuote(text, isSpanish) {
 /** Determines if a given string is a single alpha character. */
 export function isSolvableChunk(chunk, cipherType) {
   if (!cipherTypes[cipherType].bypassCheck) {
-    if (
-      chunk &&
-      chunk.length == 1 &&
-      isLetter(chunk[0], cipherType == "Xenocrypt")
-    ) {
+    if (chunk && chunk.length == 1 && isLetter(chunk[0], cipherType == 'Xenocrypt')) {
       return true;
     } else {
       return false;
     }
   } else {
-    return chunk !== "";
+    return chunk !== '';
   }
 }

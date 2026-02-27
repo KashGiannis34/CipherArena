@@ -1,67 +1,67 @@
 <script>
-  import Container from "$lib/Components/General/Container.svelte";
-  import { onDestroy } from "svelte";
+  import Container from '$lib/Components/General/Container.svelte';
+  import { onDestroy } from 'svelte';
 
   const problemTypes = [
     {
       value: 1,
-      label: "1. Two-digit Multiplication",
-      ciphers: ["hill", "affine"],
+      label: '1. Two-digit Multiplication',
+      ciphers: ['hill', 'affine'],
     },
     {
       value: 2,
-      label: "2. Letter to Value",
-      ciphers: ["caesar", "atbash", "affine", "hill"],
+      label: '2. Letter to Value',
+      ciphers: ['caesar', 'atbash', 'affine', 'hill'],
     },
-    { value: 3, label: "3. Three-digit Subtraction", ciphers: ["nihilist"] },
+    { value: 3, label: '3. Three-digit Subtraction', ciphers: ['nihilist'] },
     {
       value: 4,
-      label: "4. Shift Letter",
-      ciphers: ["caesar", "porta", "atbash"],
+      label: '4. Shift Letter',
+      ciphers: ['caesar', 'porta', 'atbash'],
     },
     {
       value: 5,
-      label: "5. Shift Word",
-      ciphers: ["caesar", "porta", "atbash"],
+      label: '5. Shift Word',
+      ciphers: ['caesar', 'porta', 'atbash'],
     },
-    { value: 6, label: "6. Inverse Matrix", ciphers: ["hill"] },
-    { value: 7, label: "7. Mod 26", ciphers: ["caesar", "affine", "hill"] },
-    { value: 8, label: "8. Modular Inverse", ciphers: ["affine"] },
-    { value: 9, label: "9. Affine Letter", ciphers: ["affine"] },
-    { value: 10, label: "10. Affine Word", ciphers: ["affine"] },
-    { value: 11, label: "11. Hill Word", ciphers: ["hill"] },
-    { value: 12, label: "12. Baconian", ciphers: ["baconian"] },
-    { value: 13, label: "13. Binary to Decimal", ciphers: ["baconian"] },
-    { value: 14, label: "14. Remainder Cheese", ciphers: ["affine", "hill"] },
-    { value: 15, label: "15. Memorize Decimals", ciphers: ["affine", "hill"] },
-    { value: 16, label: "16. Atbash Letter", ciphers: ["atbash"] },
-    { value: 17, label: "17. Atbash Word", ciphers: ["atbash"] },
-    { value: 18, label: "18. Nihilist Encode", ciphers: ["nihilist"] },
-    { value: 19, label: "19. Nihilist Decode", ciphers: ["nihilist"] },
+    { value: 6, label: '6. Inverse Matrix', ciphers: ['hill'] },
+    { value: 7, label: '7. Mod 26', ciphers: ['caesar', 'affine', 'hill'] },
+    { value: 8, label: '8. Modular Inverse', ciphers: ['affine'] },
+    { value: 9, label: '9. Affine Letter', ciphers: ['affine'] },
+    { value: 10, label: '10. Affine Word', ciphers: ['affine'] },
+    { value: 11, label: '11. Hill Word', ciphers: ['hill'] },
+    { value: 12, label: '12. Baconian', ciphers: ['baconian'] },
+    { value: 13, label: '13. Binary to Decimal', ciphers: ['baconian'] },
+    { value: 14, label: '14. Remainder Cheese', ciphers: ['affine', 'hill'] },
+    { value: 15, label: '15. Memorize Decimals', ciphers: ['affine', 'hill'] },
+    { value: 16, label: '16. Atbash Letter', ciphers: ['atbash'] },
+    { value: 17, label: '17. Atbash Word', ciphers: ['atbash'] },
+    { value: 18, label: '18. Nihilist Encode', ciphers: ['nihilist'] },
+    { value: 19, label: '19. Nihilist Decode', ciphers: ['nihilist'] },
     {
       value: 20,
-      label: "20. Nihilist Decode (with key letter)",
-      ciphers: ["nihilist"],
+      label: '20. Nihilist Decode (with key letter)',
+      ciphers: ['nihilist'],
     },
   ];
 
   const displayTypes = problemTypes.map(({ value, label, ciphers }) => {
-    const [, ...rest] = label.split(". ");
+    const [, ...rest] = label.split('. ');
     return {
       value,
       label,
-      number: value.toString().padStart(2, "0"),
-      name: rest.join(". ") || label,
+      number: value.toString().padStart(2, '0'),
+      name: rest.join('. ') || label,
       ciphers: ciphers || [],
     };
   });
 
   let currentProblem = $state(null);
-  let userAnswer = $state("");
+  let userAnswer = $state('');
   let result = $state(null);
   let loading = $state(false);
   let selectedType = $state(displayTypes[0]?.value ?? 1);
-  let searchTerm = $state("");
+  let searchTerm = $state('');
   let loopEnabled = $state(false);
   let shuffleEnabled = $state(false);
   let answerLocked = $state(false);
@@ -73,20 +73,14 @@
     normalizedSearch.length === 0
       ? displayTypes
       : displayTypes.filter((type) =>
-          `${type.number} ${type.name}`
-            .toLowerCase()
-            .includes(normalizedSearch),
-        ),
+          `${type.number} ${type.name}`.toLowerCase().includes(normalizedSearch)
+        )
   );
-  let selectedDescriptor = $derived(
-    displayTypes.find((type) => type.value === selectedType),
-  );
+  let selectedDescriptor = $derived(displayTypes.find((type) => type.value === selectedType));
   let selectedSummaryNumber = $derived(
-    selectedDescriptor?.number ?? selectedType.toString().padStart(2, "0"),
+    selectedDescriptor?.number ?? selectedType.toString().padStart(2, '0')
   );
-  let selectedSummaryName = $derived(
-    selectedDescriptor?.name ?? "Unknown mode",
-  );
+  let selectedSummaryName = $derived(selectedDescriptor?.name ?? 'Unknown mode');
 
   onDestroy(() => {
     if (autoAdvanceTimeout) {
@@ -124,14 +118,14 @@
     clearAutoAdvance();
     loading = true;
     result = null;
-    userAnswer = "";
+    userAnswer = '';
     answerLocked = false;
     errorMessage = null;
 
     try {
-      const response = await fetch("/api/bot/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/bot/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           problemType: selectedType,
           ...(selectedType === 15 ? { decimals: 3 } : {}),
@@ -145,8 +139,8 @@
         currentProblem = null;
       }
     } catch (error) {
-      console.error("Error generating problem:", error);
-      errorMessage = "Failed to generate problem. Please try again.";
+      console.error('Error generating problem:', error);
+      errorMessage = 'Failed to generate problem. Please try again.';
     } finally {
       loading = false;
     }
@@ -154,7 +148,7 @@
 
   async function checkAnswer() {
     if (!userAnswer.trim()) {
-      errorMessage = "Please enter an answer";
+      errorMessage = 'Please enter an answer';
       return;
     }
 
@@ -162,9 +156,9 @@
     errorMessage = null;
 
     try {
-      const response = await fetch("/api/bot/check", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/bot/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           encryptedAnswer: currentProblem.encryptedAnswer,
           problemData: currentProblem,
@@ -186,15 +180,15 @@
         scheduleAutoAdvance(delay);
       }
     } catch (error) {
-      console.error("Error checking answer:", error);
-      errorMessage = "Failed to check answer. Please try again.";
+      console.error('Error checking answer:', error);
+      errorMessage = 'Failed to check answer. Please try again.';
     } finally {
       loading = false;
     }
   }
 
   function handleKeyPress(event) {
-    if (event.key === "Enter" && userAnswer.trim()) {
+    if (event.key === 'Enter' && userAnswer.trim()) {
       checkAnswer();
     }
   }
@@ -203,7 +197,7 @@
     if (selectedType !== typeValue) {
       selectedType = typeValue;
       result = null;
-      userAnswer = "";
+      userAnswer = '';
       errorMessage = null;
     }
   }
@@ -220,8 +214,7 @@
     let nextType = selectedType;
     let attempts = 0;
     while (nextType === selectedType && attempts < 10) {
-      nextType =
-        displayTypes[Math.floor(Math.random() * displayTypes.length)].value;
+      nextType = displayTypes[Math.floor(Math.random() * displayTypes.length)].value;
       attempts += 1;
     }
 
@@ -238,7 +231,7 @@
     const nextType = chooseNextType();
     selectedType = nextType;
     result = null;
-    userAnswer = "";
+    userAnswer = '';
     answerLocked = false;
     errorMessage = null;
 
@@ -256,9 +249,7 @@
   >
     <div class="bot-practice">
       <h1>Codebusters Practice Bot</h1>
-      <p class="subtitle">
-        Master the basics for math based and repetition based ciphers.
-      </p>
+      <p class="subtitle">Master the basics for math based and repetition based ciphers.</p>
 
       <div class="controls">
         <div class="mode-picker">
@@ -277,11 +268,7 @@
             </div>
           </div>
 
-          <div
-            class="mode-grid"
-            role="radiogroup"
-            aria-label="Problem mode selection"
-          >
+          <div class="mode-grid" role="radiogroup" aria-label="Problem mode selection">
             {#each filteredTypes as type (type.value)}
               <button
                 type="button"
@@ -299,9 +286,7 @@
           </div>
 
           {#if filteredTypes.length === 0}
-            <p class="no-results">
-              No modes match that search. Try another keyword.
-            </p>
+            <p class="no-results">No modes match that search. Try another keyword.</p>
           {/if}
         </div>
 
@@ -311,19 +296,15 @@
             <strong>Type {selectedSummaryNumber}: {selectedSummaryName}</strong>
           </div>
 
-          <div
-            class="playback-controls"
-            role="group"
-            aria-label="Practice playback controls"
-          >
+          <div class="playback-controls" role="group" aria-label="Practice playback controls">
             <button
               type="button"
               class="playback-btn"
               class:active={shuffleEnabled}
               onclick={toggleShuffle}
               aria-pressed={shuffleEnabled}
-              aria-label={shuffleEnabled ? "Disable shuffle" : "Enable shuffle"}
-              title={shuffleEnabled ? "Shuffle on" : "Shuffle off"}
+              aria-label={shuffleEnabled ? 'Disable shuffle' : 'Enable shuffle'}
+              title={shuffleEnabled ? 'Shuffle on' : 'Shuffle off'}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -347,9 +328,7 @@
               type="button"
               class="playback-btn primary"
               onclick={() => goToNextProblem()}
-              disabled={loading ||
-                !selectedDescriptor ||
-                (loopEnabled && answerLocked)}
+              disabled={loading || !selectedDescriptor || (loopEnabled && answerLocked)}
               aria-label="Next problem"
               title="Next problem"
             >
@@ -367,8 +346,8 @@
               class:active={loopEnabled}
               onclick={toggleLoop}
               aria-pressed={loopEnabled}
-              aria-label={loopEnabled ? "Disable loop" : "Enable loop"}
-              title={loopEnabled ? "Loop on" : "Loop off"}
+              aria-label={loopEnabled ? 'Disable loop' : 'Enable loop'}
+              title={loopEnabled ? 'Loop on' : 'Loop off'}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -469,9 +448,7 @@
             />
             <button
               onclick={checkAnswer}
-              disabled={loading ||
-                !userAnswer.trim() ||
-                (loopEnabled && answerLocked)}
+              disabled={loading || !userAnswer.trim() || (loopEnabled && answerLocked)}
             >
               Check Answer
             </button>
@@ -495,11 +472,7 @@
           {/if}
 
           {#if result}
-            <div
-              class="result"
-              class:correct={result.correct}
-              class:incorrect={!result.correct}
-            >
+            <div class="result" class:correct={result.correct} class:incorrect={!result.correct}>
               {#if result.correct}
                 <p class="success">✓ Correct!</p>
               {:else}
@@ -531,9 +504,7 @@
         </div>
       {:else if !loading}
         <div class="empty-state">
-          <p>
-            Select a problem mode and press "Next Problem" to start practicing!
-          </p>
+          <p>Select a problem mode and press "Next Problem" to start practicing!</p>
         </div>
       {/if}
     </div>
@@ -544,8 +515,7 @@
   :global(body) {
     margin: 0;
     font-family:
-      -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
-      Cantarell, sans-serif;
+      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     color: #f4f7ff;
     min-height: 100vh;
   }
@@ -886,11 +856,7 @@
   }
 
   .cipher-tag {
-    background: linear-gradient(
-      135deg,
-      rgba(17, 82, 203, 0.35),
-      rgba(31, 92, 198, 0.35)
-    );
+    background: linear-gradient(135deg, rgba(17, 82, 203, 0.35), rgba(31, 92, 198, 0.35));
     color: #d4e3ff;
     padding: 0.25rem 0.75rem;
     border-radius: 999px;
@@ -936,7 +902,7 @@
 
   .matrix {
     margin: 0;
-    font-family: "Courier New", monospace;
+    font-family: 'Courier New', monospace;
     font-size: 1.2rem;
     line-height: 1.8;
     color: #f8fbff;
@@ -970,7 +936,7 @@
   }
 
   .param-value {
-    font-family: "Courier New", monospace;
+    font-family: 'Courier New', monospace;
     font-size: 1.1rem;
     color: #f8fbff;
     font-weight: 600;
@@ -987,7 +953,7 @@
     margin: 1rem 0;
     font-size: 0.95rem;
     color: #e9d5ff;
-    font-family: "Courier New", monospace;
+    font-family: 'Courier New', monospace;
   }
 
   .legend {

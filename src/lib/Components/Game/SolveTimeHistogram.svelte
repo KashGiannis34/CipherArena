@@ -27,7 +27,7 @@
         const end = (min + (i + 1) * binSize).toFixed(2);
         return `${start}s–${end}s`;
       }),
-      data: buckets
+      data: buckets,
     };
   }
 
@@ -40,16 +40,18 @@
       type: 'bar',
       data: {
         labels,
-        datasets: [{
-          label: `Solve Time Per Character Distribution`,
-          data,
-          backgroundColor: 'rgba(188, 174, 255, 0.7)',
-          borderColor: 'rgba(188, 174, 255, 1)',
-          borderWidth: 1,
-          borderRadius: 8,
-          barPercentage: 1.0,
-          categoryPercentage: 1.0
-        }]
+        datasets: [
+          {
+            label: `Solve Time Per Character Distribution`,
+            data,
+            backgroundColor: 'rgba(188, 174, 255, 0.7)',
+            borderColor: 'rgba(188, 174, 255, 1)',
+            borderWidth: 1,
+            borderRadius: 8,
+            barPercentage: 1.0,
+            categoryPercentage: 1.0,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -60,12 +62,12 @@
             enabled: true,
             callbacks: {
               title: () => '',
-              label: context => {
+              label: (context) => {
                 const count = context.raw;
                 const range = context.label;
                 const noun = count === 1 ? 'Cipher' : 'Ciphers';
                 return `${count} ${noun} Solved in ${range}`;
-              }
+              },
             },
             backgroundColor: '#1e1e2f',
             borderColor: '#bcaeff',
@@ -80,7 +82,7 @@
             yAlign: 'top',
             xAlign: 'center',
             caretSize: 0,
-            caretPadding: 0
+            caretPadding: 0,
           },
           title: {
             display: true,
@@ -89,10 +91,10 @@
             font: {
               family: 'Rubik',
               size: 16,
-              weight: 'bold'
+              weight: 'bold',
             },
-            padding: { top: 10, bottom: 10 }
-          }
+            padding: { top: 10, bottom: 10 },
+          },
         },
         scales: {
           x: {
@@ -100,35 +102,35 @@
               display: true,
               text: 'Solve Time Per Character Range (s)',
               color: '#ccccff',
-              font: { family: 'Rubik', size: 13, weight: '500' }
+              font: { family: 'Rubik', size: 13, weight: '500' },
             },
             ticks: {
               color: '#d0d0ff',
-              font: { family: 'Rubik', size: 12 }
+              font: { family: 'Rubik', size: 12 },
             },
             grid: {
-              color: 'rgba(255,255,255,0.05)'
-            }
+              color: 'rgba(255,255,255,0.05)',
+            },
           },
           y: {
             title: {
               display: true,
               text: 'Frequency',
               color: '#ccccff',
-              font: { family: 'Rubik', size: 13, weight: '500' }
+              font: { family: 'Rubik', size: 13, weight: '500' },
             },
             beginAtZero: true,
             ticks: {
               color: '#d0d0ff',
               font: { family: 'Rubik', size: 12 },
-              stepSize: 1
+              stepSize: 1,
             },
             grid: {
-              color: 'rgba(255,255,255,0.05)'
-            }
-          }
-        }
-      }
+              color: 'rgba(255,255,255,0.05)',
+            },
+          },
+        },
+      },
     });
   }
 

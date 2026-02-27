@@ -1,5 +1,5 @@
 <script>
-  import { TRIGRAMS, morseCodeMap, isLetter } from "$shared/CipherUtil";
+  import { TRIGRAMS, morseCodeMap, isLetter } from '$shared/CipherUtil';
 
   let { info = $bindable(), solved, autoFocus, crib = {} } = $props();
 
@@ -11,11 +11,7 @@
     }
     if (crib && Object.keys(crib).length > 0) {
       for (const [letter, trigram] of Object.entries(crib)) {
-        if (
-          trigram &&
-          TRIGRAMS.includes(trigram) &&
-          !info.trigramInputs[trigram]
-        ) {
+        if (trigram && TRIGRAMS.includes(trigram) && !info.trigramInputs[trigram]) {
           info.trigramInputs[trigram] = letter;
         }
       }
@@ -24,14 +20,11 @@
 
   function onChange(trigram, value, index) {
     const upperValue = value.toUpperCase();
-    if (
-      upperValue === "" ||
-      (upperValue.length === 1 && isLetter(upperValue))
-    ) {
+    if (upperValue === '' || (upperValue.length === 1 && isLetter(upperValue))) {
       info.trigramInputs[trigram] = upperValue;
     }
 
-    if (autoFocus && upperValue !== "") {
+    if (autoFocus && upperValue !== '') {
       let currIndex = index;
       while (currIndex + 1 < inputs.length) {
         currIndex++;
@@ -44,7 +37,7 @@
   }
 
   function onArrow(key, index) {
-    let inc = key === "ArrowRight" || key === " " || key === "Tab" ? 1 : -1;
+    let inc = key === 'ArrowRight' || key === ' ' || key === 'Tab' ? 1 : -1;
     const length = inputs.length;
     let currIndex = (index + inc + length) % length;
     inputs[currIndex]?.focus();
@@ -53,18 +46,14 @@
   function handleKeyDown(event, trigram, index) {
     if (solved) return;
 
-    if (
-      event.key === "ArrowLeft" ||
-      event.key === "ArrowRight" ||
-      event.key === "Tab"
-    ) {
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'Tab') {
       onArrow(event.key, index);
       event.preventDefault();
       return;
     }
 
-    if (event.key === "Backspace" || event.key === "Delete") {
-      onChange(trigram, "", index);
+    if (event.key === 'Backspace' || event.key === 'Delete') {
+      onChange(trigram, '', index);
       return;
     }
 
@@ -88,9 +77,7 @@
   function hasError(trigram) {
     const val = info.trigramInputs?.[trigram];
     if (!val) return false;
-    const vals = Object.values(info.trigramInputs || {}).filter(
-      (v) => v === val,
-    );
+    const vals = Object.values(info.trigramInputs || {}).filter((v) => v === val);
     return vals.length > 1;
   }
 
@@ -100,9 +87,9 @@
   }));
 
   function formatChar(char) {
-    if (char === ".") return "●";
-    if (char === "-") return "–";
-    if (char === "x") return "×";
+    if (char === '.') return '●';
+    if (char === '-') return '–';
+    if (char === 'x') return '×';
     return char;
   }
 </script>
@@ -127,7 +114,7 @@
                 class:error={hasError(trigram)}
                 placeholder="="
                 maxlength="1"
-                value={info.trigramInputs?.[trigram] || ""}
+                value={info.trigramInputs?.[trigram] || ''}
                 oninput={(e) => handleInput(e, trigram, index)}
                 onkeydown={(e) => handleKeyDown(e, trigram, index)}
                 readonly={solved}
@@ -201,7 +188,7 @@
     border-bottom: 1px solid var(--table-border-color);
     border-right: 1px solid var(--table-border-color);
     text-align: center;
-    font-family: "Source Code Pro", monospace;
+    font-family: 'Source Code Pro', monospace;
   }
 
   .trigram-table td {
@@ -242,7 +229,7 @@
   .trigram-char {
     display: block;
     line-height: 1.1;
-    font-family: "Source Code Pro", monospace !important;
+    font-family: 'Source Code Pro', monospace !important;
   }
 
   .letter-input {
@@ -251,7 +238,7 @@
     background: transparent;
     border: none;
     text-align: center;
-    font-family: "Source Code Pro", monospace;
+    font-family: 'Source Code Pro', monospace;
     font-size: 1.1rem;
     color: var(--text-primary);
     outline: none;
@@ -302,7 +289,7 @@
     border-bottom: 1px solid var(--table-border-color);
     border-right: 1px solid var(--table-border-color);
     text-align: center;
-    font-family: "Source Code Pro", monospace;
+    font-family: 'Source Code Pro', monospace;
     white-space: nowrap;
   }
 
@@ -331,6 +318,6 @@
 
   .morse-code {
     letter-spacing: 1px;
-    font-family: "Source Code Pro", monospace !important;
+    font-family: 'Source Code Pro', monospace !important;
   }
 </style>

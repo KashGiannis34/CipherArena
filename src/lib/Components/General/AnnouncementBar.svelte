@@ -1,22 +1,20 @@
 <script>
-  import { onMount, tick } from "svelte";
-  import { slide, fade } from "svelte/transition";
+  import { onMount, tick } from 'svelte';
+  import { slide, fade } from 'svelte/transition';
 
   let { announcements = [] } = $props();
 
   let activeAnnouncements = $state([]);
   let currentIndex = $state(0);
   let visible = $state(false);
-  let parsedText = $state("");
+  let parsedText = $state('');
 
   onMount(() => {
     // Filter out announcements that have been dismissed
     activeAnnouncements = announcements.filter((a) => {
       if (!a.active) return false;
       if (a.dismissible) {
-        const dismissed = localStorage.getItem(
-          `announcement_dismissed_${a.id}`,
-        );
+        const dismissed = localStorage.getItem(`announcement_dismissed_${a.id}`);
         return !dismissed;
       }
       return true;
@@ -51,12 +49,10 @@
   function dismissCurrent() {
     const current = activeAnnouncements[currentIndex];
     if (current && current.dismissible) {
-      localStorage.setItem(`announcement_dismissed_${current.id}`, "true");
+      localStorage.setItem(`announcement_dismissed_${current.id}`, 'true');
 
       // Remove from active list
-      activeAnnouncements = activeAnnouncements.filter(
-        (a) => a.id !== current.id,
-      );
+      activeAnnouncements = activeAnnouncements.filter((a) => a.id !== current.id);
 
       if (activeAnnouncements.length === 0) {
         visible = false;
@@ -73,7 +69,7 @@
   function dismissAll() {
     activeAnnouncements.forEach((a) => {
       if (a.dismissible) {
-        localStorage.setItem(`announcement_dismissed_${a.id}`, "true");
+        localStorage.setItem(`announcement_dismissed_${a.id}`, 'true');
       }
     });
     activeAnnouncements = [];
@@ -81,7 +77,7 @@
   }
 
   function parseMarkdownLinks(text) {
-    if (!text) return "";
+    if (!text) return '';
     // Regex to match [text](url)
     const regex = /\[([^\]]+)\]\(([^)]+)\)/g;
     return text.replace(regex, (match, linkText, url) => {
@@ -146,9 +142,7 @@
       <div class="divider"></div>
 
       {#if activeAnnouncements.length > 1}
-        <button class="action-btn dismiss-all" onclick={dismissAll}
-          >Dismiss all</button
-        >
+        <button class="action-btn dismiss-all" onclick={dismissAll}>Dismiss all</button>
       {/if}
 
       <button class="close-btn" onclick={dismissCurrent} aria-label="Dismiss">
@@ -162,11 +156,7 @@
           stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
-          ><line x1="18" y1="6" x2="6" y2="18"></line><line
-            x1="6"
-            y1="6"
-            x2="18"
-            y2="18"
+          ><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"
           ></line></svg
         >
       </button>

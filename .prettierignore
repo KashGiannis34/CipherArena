@@ -1,0 +1,16 @@
+node_modules
+build
+dist
+.env
+.env.*
+.vscode
+.DS_Store
+*.lock
+coverage
+.cache
+public/build
+build/
+**/*.br
+**/*.gz
+
+server/build

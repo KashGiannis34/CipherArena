@@ -4,19 +4,19 @@ import { authenticate } from '$utils/authenticate';
 import { incrementTotal } from '$utils/statsUtil.js';
 
 export async function POST({ request, cookies }) {
-    try {
-        const params = await request.json();
-        const quoteData = await generateQuote(params);
+  try {
+    const params = await request.json();
+    const quoteData = await generateQuote(params);
 
-        const auth = authenticate(cookies.get('auth-token'));
+    const auth = authenticate(cookies.get('auth-token'));
 
-        if (auth?.id) {
-            await incrementTotal(auth.id, params.cipherType);
-        }
-
-        return json(quoteData);
-    } catch (err) {
-        console.error('Error generating quote:', err);
-        return json({ error: 'Failed to generate quote' }, { status: 500 });
+    if (auth?.id) {
+      await incrementTotal(auth.id, params.cipherType);
     }
+
+    return json(quoteData);
+  } catch (err) {
+    console.error('Error generating quote:', err);
+    return json({ error: 'Failed to generate quote' }, { status: 500 });
+  }
 }

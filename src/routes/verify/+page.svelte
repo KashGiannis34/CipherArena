@@ -1,25 +1,25 @@
 <script>
-  import { onMount } from "svelte";
-  import Container from "$lib/Components/General/Container.svelte";
+  import { onMount } from 'svelte';
+  import Container from '$lib/Components/General/Container.svelte';
 
-  let {data} = $props();
+  let { data } = $props();
 </script>
 
 <svelte:head>
-  <title>Verify Account: {data['isSuccess'] ? "Success" : "Error"}</title>
+  <title>Verify Account: {data['isSuccess'] ? 'Success' : 'Error'}</title>
 </svelte:head>
 
 <Container>
-  <h1>{data['isSuccess'] ? "Success!" : "Error"}</h1>
+  <h1>{data['isSuccess'] ? 'Success!' : 'Error'}</h1>
   <p>{data['message']}</p>
   {#if data['isSuccess']}
-    <button class="button" onclick={window.location.href = "/"}>Exit</button>
+    <button class="button" onclick={(window.location.href = '/')}>Exit</button>
   {/if}
 </Container>
 
 <style>
   @import '$lib/css/Button.css';
   .button {
-      text-decoration: none;
+    text-decoration: none;
   }
 </style>

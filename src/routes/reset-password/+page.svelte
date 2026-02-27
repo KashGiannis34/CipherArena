@@ -14,18 +14,31 @@
   <title>Reset Password</title>
 </svelte:head>
 
-<Container --minWidth=none --maxWidth=min(80vw,600px)>
+<Container --minWidth="none" --maxWidth="min(80vw,600px)">
   <form method="POST">
     <h1>Reset Password</h1>
 
     <label>
       <i class="fas fa-unlock"></i>
-      <input name="password" bind:value={password} type="password" placeholder="New password" required minlength="6" />
+      <input
+        name="password"
+        bind:value={password}
+        type="password"
+        placeholder="New password"
+        required
+        minlength="6"
+      />
     </label>
 
     <label>
       <i class="fas fa-lock"></i>
-      <input name="confirmPassword" bind:value={confirmPassword} type="password" placeholder="Confirm password" required />
+      <input
+        name="confirmPassword"
+        bind:value={confirmPassword}
+        type="password"
+        placeholder="Confirm password"
+        required
+      />
     </label>
 
     <input type="hidden" name="token" value={$page.url.searchParams.get('token')} />
@@ -52,18 +65,18 @@
 </Container>
 
 <style>
-  @import "$lib/css/Button.css";
+  @import '$lib/css/Button.css';
 
   input:-webkit-autofill,
-    input:-webkit-autofill:hover,
-    input:-webkit-autofill:focus,
-    input:-webkit-autofill:active{
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: var(--text-primary);
-        transition: background-color 5000s ease-in-out 0s;
-        box-shadow: inset 0 0 20px 20px rgba(83, 78, 133, 0.16);
-        caret-color: var(--text-primary) !important;
-    }
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: var(--text-primary);
+    transition: background-color 5000s ease-in-out 0s;
+    box-shadow: inset 0 0 20px 20px rgba(83, 78, 133, 0.16);
+    caret-color: var(--text-primary) !important;
+  }
 
   h1 {
     text-align: center;
@@ -144,7 +157,8 @@
     transform: scale(0.97);
   }
 
-  .error, .message {
+  .error,
+  .message {
     text-align: center;
     padding: 8px 12px;
     border-radius: 8px;

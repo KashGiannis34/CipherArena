@@ -7,38 +7,38 @@ import { authenticate } from '../shared-server/utils/authenticate.js';
 import { setupConnectionHandler } from './connectionHandler.js';
 
 export default async function injectSocketIO(server) {
-    const io = new Server(server.httpServer, {
-        cors: {
-            origin: process.env.APP_URL,
-            credentials: true
-        }
-    });
+  const io = new Server(server.httpServer, {
+    cors: {
+      origin: process.env.APP_URL,
+      credentials: true,
+    },
+  });
 
-    globalThis.io = io;
+  globalThis.io = io;
 
-    const redis = new Redis(process.env.REDIS_URL);
+  const redis = new Redis(process.env.REDIS_URL);
 
-    io.use(async (socket, next) => {
-        const token = socket.handshake.auth.token;
+  io.use(async (socket, next) => {
+    const token = socket.handshake.auth.token;
 
-        if (!token) {
-            return next(new Error("No token"));
-        }
+    if (!token) {
+      return next(new Error('No token'));
+    }
 
-        const auth = authenticate(token);
-        if (auth == undefined) {
-            console.log("No AUTH");
-            return next(new Error("Invalid token"));
-        }
+    const auth = authenticate(token);
+    if (auth == undefined) {
+      console.log('No AUTH');
+      return next(new Error('Invalid token'));
+    }
 
-        const user = await UserGame.findById(auth.id);
-        if (!user) {
-            return next(new Error('Unauthorized'));
-        }
+    const user = await UserGame.findById(auth.id);
+    if (!user) {
+      return next(new Error('Unauthorized'));
+    }
 
-        socket.userId = auth.id;
-        return next();
-    });
+    socket.userId = auth.id;
+    return next();
+  });
 
-    setupConnectionHandler(io, redis);
+  setupConnectionHandler(io, redis);
 }

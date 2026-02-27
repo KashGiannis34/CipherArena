@@ -2,8 +2,8 @@
   import { io } from 'socket.io-client';
   import { onDestroy, onMount } from 'svelte';
   import { listenForTabEvents } from '$lib/util/crossTabEvents.js';
-  import { goto } from "$app/navigation";
-  import "$lib/css/Button.css";
+  import { goto } from '$app/navigation';
+  import '$lib/css/Button.css';
   import LoadingOverlay from '$lib/Components/General/LoadingOverlay.svelte';
   import { fade } from 'svelte/transition';
   import Cipher from '$lib/Components/Game/Cipher.svelte';
@@ -27,7 +27,7 @@
   let tooltipText = $state('');
   let tooltipTimer;
   let isHost = $derived.by(() => {
-    return players.some(player => player.username === data.username && player.host);
+    return players.some((player) => player.username === data.username && player.host);
   });
   let cipherData = $state({});
   let matchResult = $state({});
@@ -44,12 +44,18 @@
   const statusManager = createStatusManager();
 
   function showStatus(msg, type = STATUS_TYPES.INFO, duration = 3000) {
-    statusManager.show(v => statusMessage = v, v => statusType = v, msg, type, duration);
+    statusManager.show(
+      (v) => (statusMessage = v),
+      (v) => (statusType = v),
+      msg,
+      type,
+      duration
+    );
   }
 
   function checkQuote(quote, hash, cipherType, keys, solve) {
     return new Promise((resolve) => {
-      socket.emit('check-quote', quote, hash, cipherType, keys, solve, result => {
+      socket.emit('check-quote', quote, hash, cipherType, keys, solve, (result) => {
         resolve({ solved: result });
       });
     });
@@ -88,16 +94,16 @@
   }
 
   async function leaveGame() {
-      gameState = GAME_STATES.LEAVING;
-      try {
-        await leaveCurrentGame(data.roomID);
-      } catch (e) {
-        showStatus('Leave game failed.', STATUS_TYPES.ERROR);
-      } finally {
-        socket?.emit('leave-room');
-        socket?.disconnect();
-        navigateToLobby(data.mode);
-      }
+    gameState = GAME_STATES.LEAVING;
+    try {
+      await leaveCurrentGame(data.roomID);
+    } catch (e) {
+      showStatus('Leave game failed.', STATUS_TYPES.ERROR);
+    } finally {
+      socket?.emit('leave-room');
+      socket?.disconnect();
+      navigateToLobby(data.mode);
+    }
   }
 
   function requestForfeit() {
@@ -112,53 +118,52 @@
       historicalPlayers = mergePlayerStatus(historicalPlayers, players);
     }
     if (gameState === GAME_STATES.FINISHED && matchResult.players) {
-      const assignedPlayers = new Map(players.map(p => [p.username, p]));
-      const basePlayers = new Map(historicalPlayers.map(p => [p.username, p]));
+      const assignedPlayers = new Map(players.map((p) => [p.username, p]));
+      const basePlayers = new Map(historicalPlayers.map((p) => [p.username, p]));
 
-      matchResult.players = matchResult.players.map(p => {
+      matchResult.players = matchResult.players.map((p) => {
         const latest = basePlayers.get(p.username);
         const current = assignedPlayers.get(p.username);
         return {
           ...p,
           profilePicture: p.profilePicture ?? current?.profilePicture,
           connected: current?.connected ?? false,
-          left: !current
+          left: !current,
         };
       });
     }
   }
 
   function mergePlayerStatus(initial, current) {
-    const currentMap = new Map(current.map(p => [p.username, p]));
-    return initial.map(p => {
+    const currentMap = new Map(current.map((p) => [p.username, p]));
+    return initial.map((p) => {
       const currentInfo = currentMap.get(p.username);
       return {
         ...p,
         connected: currentInfo?.connected ?? false,
-        left: currentInfo ? currentInfo.left ?? false : true
+        left: currentInfo ? (currentInfo.left ?? false) : true,
       };
     });
   }
 
   function startGame() {
-      socket?.emit('start-game');
+    socket?.emit('start-game');
   }
 
   function handleProgressUpdate(percent) {
     if (socket) {
       socket.emit('progress-update', {
         username: data.username,
-        progress: percent
+        progress: percent,
       });
     }
   }
 
   onMount(() => {
-
     socket = io(PUBLIC_APP_URL, {
       auth: {
         token: decodeURIComponent(data['authToken']),
-        joinLobby: false
+        joinLobby: false,
       },
       transports: ['websocket', 'polling'],
       withCredentials: true,
@@ -170,12 +175,12 @@
 
     socket.on('connect_error', () => {
       showStatus('Connection failed. Try again.', 'error');
-      gameState = "disconnected";
+      gameState = 'disconnected';
     });
 
     socket.on('error', (error) => {
       showStatus(error, 'error');
-    })
+    });
 
     socket.on('ready', (serverGameState) => {
       socket.emit('join-room');
@@ -183,12 +188,12 @@
         gameState = serverGameState;
       }
       if (gameState === GAME_STATES.STARTED) {
-        socket.emit('get-cipher-info', info => {
+        socket.emit('get-cipher-info', (info) => {
           cipherData.params = info.params;
           cipherData.autoFocus = info.autoFocus;
           cipherData.quote = info.quote;
           cipherRetrieved = true;
-        })
+        });
 
         socket.emit('get-initial-players', (initialPlayers) => {
           historicalPlayers = initialPlayers;
@@ -196,7 +201,7 @@
         });
       }
       if (gameState === GAME_STATES.FINISHED) {
-        socket.emit('get-match-result', result => {
+        socket.emit('get-match-result', (result) => {
           if (result) {
             matchResult = {
               won: result.winner === data.username,
@@ -215,19 +220,19 @@
     });
 
     stopListening = listenForTabEvents(['leave-game'], ({ type, payload }) => {
-        if (payload.gameId === data['roomID']) {
-            socket.disconnect();
-            goto('/');
-        }
+      if (payload.gameId === data['roomID']) {
+        socket.disconnect();
+        goto('/');
+      }
     });
 
     socket.on('disconnect', (message) => {
-        socket?.emit('left-room');
-        gameState = "disconnected";
+      socket?.emit('left-room');
+      gameState = 'disconnected';
     });
 
     socket.on('players-changed', () => {
-        fetchPlayers();
+      fetchPlayers();
     });
 
     socket.on('forfeit-votes', (votes) => {
@@ -252,7 +257,7 @@
       cipherData.params = params;
       cipherData.autoFocus = autoFocus;
       cipherData.quote = quote;
-      gameState = "started";
+      gameState = 'started';
       socket.emit('get-initial-players', (initialPlayers) => {
         historicalPlayers = initialPlayers;
       });
@@ -262,8 +267,8 @@
 
     socket.on('progress-map-update', ({ username, progress }) => {
       progressMap = {
-          ...progressMap,
-          [username]: progress
+        ...progressMap,
+        [username]: progress,
       };
     });
 
@@ -274,14 +279,13 @@
         ranked: !!result.eloChanges,
       };
       fetchPlayers();
-      gameState = "finished";
+      gameState = 'finished';
       resultRetrieved = true;
     });
 
     socket.on('rematch-votes', (votes) => {
       rematchVoters = votes;
     });
-
   });
 
   onDestroy(() => {
@@ -314,9 +318,9 @@
           tooltipVisible = 'link';
           tooltipText = 'Copy link to share';
         }}
-        onmouseleave={() => tooltipVisible = null}
+        onmouseleave={() => (tooltipVisible = null)}
         onkeydown={() => {}}
-        tabindex=0
+        tabindex="0"
         role="button"
       >
         🔗 Copy Game Link
@@ -339,21 +343,21 @@
           {data.mode === 'ranked' ? 'Ranked' : 'Casual'}
           {#if data.autoFocus}
             <div
-                class="autofocus-indicator"
-                onmouseenter={() => {
-                    tooltipVisible = 'autofocus';
-                    tooltipText = 'Auto Focus';
-                }}
-                onmouseleave={() => tooltipVisible = null}
-                onkeydown={() => {}}
-                tabindex="0"
-                role="button"
+              class="autofocus-indicator"
+              onmouseenter={() => {
+                tooltipVisible = 'autofocus';
+                tooltipText = 'Auto Focus';
+              }}
+              onmouseleave={() => (tooltipVisible = null)}
+              onkeydown={() => {}}
+              tabindex="0"
+              role="button"
             >
               ⌨️
               {#if tooltipVisible === 'autofocus'}
-                  <div class="tooltip" transition:fade>
-                      {tooltipText}
-                  </div>
+                <div class="tooltip" transition:fade>
+                  {tooltipText}
+                </div>
               {/if}
             </div>
           {/if}
@@ -370,9 +374,9 @@
           tooltipVisible = 'code';
           tooltipText = 'Click to copy';
         }}
-        onmouseleave={() => tooltipVisible = null}
+        onmouseleave={() => (tooltipVisible = null)}
         onkeydown={() => {}}
-        tabindex=0
+        tabindex="0"
         role="button"
       >
         📋 Room Code: {data.roomID}
@@ -390,22 +394,46 @@
       {#each players as player (player.username)}
         <div class="player-card" transition:fade>
           {#if isHost && player.username !== data.username}
-            <div class="kick-left-wrapper" onclick={() => kickPlayer(player.username)} tabindex=0 role="button" onkeydown={() => {}}>
+            <div
+              class="kick-left-wrapper"
+              onclick={() => kickPlayer(player.username)}
+              tabindex="0"
+              role="button"
+              onkeydown={() => {}}
+            >
               <div class="kick-left-icon">✖</div>
               <div class="kick-left-tooltip">Kick Player</div>
             </div>
           {/if}
           <div class="player-info-wrapper">
             <div class="player-left-group">
-              <ProfilePicture profilePicture={player.profilePicture} size={40} useColorRing={player.username == data.username} preserveSize={true}/>
-              <div class="player-name" class:disconnected={!player.connected} class:is-current-user={player.username === data.username}>
-                <a href={`/profile/${player.username}`} target="_blank" rel="noopener noreferrer" class="profile-link">
+              <ProfilePicture
+                profilePicture={player.profilePicture}
+                size={40}
+                useColorRing={player.username == data.username}
+                preserveSize={true}
+              />
+              <div
+                class="player-name"
+                class:disconnected={!player.connected}
+                class:is-current-user={player.username === data.username}
+              >
+                <a
+                  href={`/profile/${player.username}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="profile-link"
+                >
                   {player.username}
                 </a>
-                {(!player.connected ? " (DISCONNECTED)" : "") + (player.host ? " (HOST)" : "")}
+                {(!player.connected ? ' (DISCONNECTED)' : '') + (player.host ? ' (HOST)' : '')}
               </div>
             </div>
-            <div class="player-elo" class:disconnected={!player.connected} class:is-current-user={player.username === data.username}>
+            <div
+              class="player-elo"
+              class:disconnected={!player.connected}
+              class:is-current-user={player.username === data.username}
+            >
               ELO: {player.elo}
             </div>
           </div>
@@ -417,12 +445,17 @@
       {#if isHost}
         <button class="button start-button" onclick={startGame}>Start Game</button>
       {/if}
-        <button class="button leave-button" onclick={leaveGame}>Leave Game</button>
+      <button class="button leave-button" onclick={leaveGame}>Leave Game</button>
     </div>
   </div>
 {:else if gameState === GAME_STATES.STARTED && cipherRetrieved}
   <div transition:fade>
-    <ProgressDisplay username={data.username} players={historicalPlayers} progressMap={progressMap} forfeitVoters={forfeitVoters}/>
+    <ProgressDisplay
+      username={data.username}
+      players={historicalPlayers}
+      {progressMap}
+      {forfeitVoters}
+    />
 
     <Cipher
       quote={cipherData.quote.encodedText}
@@ -440,10 +473,7 @@
       <button class="button leave-button leave-button-game-start" onclick={leaveGame}>
         Leave Game
       </button>
-      <button
-        class="button forfeit-button"
-        onclick={requestForfeit}
-      >
+      <button class="button forfeit-button" onclick={requestForfeit}>
         {hasForfeited ? 'Undo Forfeit' : 'Give Up'}
       </button>
     </div>
@@ -458,7 +488,7 @@
       eloChanges={matchResult.eloChanges}
       onRematch={requestRematch}
       onLeaveGame={leaveGame}
-      rematchVoters={rematchVoters}
+      {rematchVoters}
       username={data.username}
       solveTime={matchResult.solveTime}
       plainText={matchResult.plainText}
@@ -466,7 +496,8 @@
     />
 
     {#if matchResult.won}
-        <div style="
+      <div
+        style="
         position: fixed;
         z-index: 25;
         top: -3vh;
@@ -476,9 +507,17 @@
         display: flex;
         justify-content: center;
         overflow: hidden;
-        pointer-events: none;">
-            <Confetti duration=3000 x={[-5, 5]} delay={[0, 3000]} amount=200 fallDistance="100vh" colorRange={[75, 175]}/>
-        </div>
+        pointer-events: none;"
+      >
+        <Confetti
+          duration="3000"
+          x={[-5, 5]}
+          delay={[0, 3000]}
+          amount="200"
+          fallDistance="100vh"
+          colorRange={[75, 175]}
+        />
+      </div>
     {/if}
   {/if}
 {:else}
@@ -519,7 +558,9 @@
     width: 100%;
     max-width: 1100px;
     color: var(--text-primary);
-    text-shadow: 0 0 20px rgba(255,255,255,0.25), 0 2px 4px rgba(0,0,0,0.35);
+    text-shadow:
+      0 0 20px rgba(255, 255, 255, 0.25),
+      0 2px 4px rgba(0, 0, 0, 0.35);
   }
 
   .player-list {
@@ -535,15 +576,22 @@
     justify-content: flex-start;
     gap: 1rem;
     padding: 1rem 1.25rem;
-    background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
-    border: 1px solid rgba(255,255,255,0.14);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+    border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.08);
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.25),
+      inset 0 1px 1px rgba(255, 255, 255, 0.08);
     position: relative;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
     backdrop-filter: blur(12px);
   }
-  .player-card:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(0,0,0,0.28); }
+  .player-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+  }
 
   .button-row {
     display: flex;
@@ -581,12 +629,17 @@
     color: var(--text-primary);
     border-radius: 10px;
     font-weight: 600;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
     user-select: none;
     font-size: clamp(0.9rem, 1vw + 0.3rem, 1.1rem);
     backdrop-filter: blur(12px);
   }
-  .copy-box:hover { transform: translateY(-1px); box-shadow: 0 10px 28px rgba(0,0,0,0.25); }
+  .copy-box:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
+  }
 
   .top-bar {
     display: flex;
@@ -646,7 +699,9 @@
     opacity: 0;
     transform: translateX(-2rem);
     position: relative;
-    transition: opacity 0.25s ease, transform 0.25s ease;
+    transition:
+      opacity 0.25s ease,
+      transform 0.25s ease;
     cursor: pointer;
     padding: 1.5rem;
     z-index: 1;
@@ -747,8 +802,8 @@
   }
 
   .game-settings-pill {
-    background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
-    border: 1px solid rgba(255,255,255,0.14);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+    border: 1px solid rgba(255, 255, 255, 0.14);
     padding: 0.8rem 1.5rem;
     border-radius: 12px;
     font-weight: 600;
@@ -758,7 +813,9 @@
     flex-direction: column;
     align-items: center;
     margin: 0 1rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.08);
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.25),
+      inset 0 1px 1px rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(12px);
   }
 

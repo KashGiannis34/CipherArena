@@ -1,5 +1,5 @@
 import { UserAuth } from '$models/UserAuth';
-import {login_user} from '$auth/login';
+import { login_user } from '$auth/login';
 import { fail, error } from '@sveltejs/kit';
 import { cookie_options } from '$utils/dbUtil';
 import { joinGame } from '$game/joinGame';
@@ -19,25 +19,25 @@ export async function load(event) {
 
 /** @satisfies {import('./$types').Actions} */
 export const actions = {
-    default: async ({cookies, request}) => {
-        const data = await request.formData();
+  default: async ({ cookies, request }) => {
+    const data = await request.formData();
 
-        const email = data.get("email");
-        const password = data.get("password");
+    const email = data.get('email');
+    const password = data.get('password');
 
-        const user_data = await login_user(email, password);
+    const user_data = await login_user(email, password);
 
-        if ("error" in user_data) {
-            return fail(400, { email, error: user_data.error, roomId: data.get("roomId") });
-        } else {
-            const { token, user } = user_data;
+    if ('error' in user_data) {
+      return fail(400, { email, error: user_data.error, roomId: data.get('roomId') });
+    } else {
+      const { token, user } = user_data;
 
-            cookies.set("auth-token", token, cookie_options);
-            cookies.set("email", user.email, cookie_options);
-            cookies.set("username", user.username, cookie_options);
-            cookies.set("verified", user.verified, cookie_options);
+      cookies.set('auth-token', token, cookie_options);
+      cookies.set('email', user.email, cookie_options);
+      cookies.set('username', user.username, cookie_options);
+      cookies.set('verified', user.verified, cookie_options);
 
-            redirect(303, '/game-lobby/'+data.get("roomId"));
-        }
+      redirect(303, '/game-lobby/' + data.get('roomId'));
     }
+  },
 };

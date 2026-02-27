@@ -1,15 +1,15 @@
 <script>
-  import { fade } from "svelte/transition";
-  import Container from "./Container.svelte";
+  import { fade } from 'svelte/transition';
+  import Container from './Container.svelte';
 
   let { login, roomId, toggleAvailable, form } = $props();
   let authenticating = $state(false);
   let captchaToken = $state(null);
 
-  let email = $state(form?.email || "");
-  let username = $state(form?.username || "");
-  let password = $state(form?.password || "");
-  let confirmPassword = $state(form?.confirmPassword || "");
+  let email = $state(form?.email || '');
+  let username = $state(form?.username || '');
+  let password = $state(form?.password || '');
+  let confirmPassword = $state(form?.confirmPassword || '');
 
   function captchaAction(node) {
     let widgetId = null;
@@ -48,7 +48,7 @@
           },
           'expired-callback': () => {
             captchaToken = null;
-          }
+          },
         });
       } catch (err) {
         console.error('reCAPTCHA render error:', err);
@@ -66,7 +66,7 @@
             console.error('Failed to reset captcha:', err);
           }
         }
-      }
+      },
     };
   }
 
@@ -82,19 +82,13 @@
 
 {#key login}
   <div in:fade out:fade style="all: inherit;">
-    <Container --minWidth=none --maxWidth=min(80vw,600px)>
+    <Container --minWidth="none" --maxWidth="min(80vw,600px)">
       <form method="POST" onsubmit={handleSubmit}>
-        <h1>{login ? "Login" : "Sign Up"}</h1>
+        <h1>{login ? 'Login' : 'Sign Up'}</h1>
 
         <label>
           <i class="fas fa-envelope"></i>
-          <input
-            name="email"
-            type="email"
-            placeholder="Email"
-            bind:value={email}
-            required
-          />
+          <input name="email" type="email" placeholder="Email" bind:value={email} required />
         </label>
 
         {#if !login}
@@ -140,19 +134,20 @@
           <!-- Captcha for registration only -->
           <div class="captcha-wrapper">
             <div use:captchaAction></div>
-            <input type="hidden" name="captchaToken" value={captchaToken || ""} />
+            <input type="hidden" name="captchaToken" value={captchaToken || ''} />
           </div>
         {/if}
 
         {#if form?.error}
-          <p class='error' transition:fade>{form.error}</p>
+          <p class="error" transition:fade>{form.error}</p>
         {:else if form?.message}
-          <p class='message' transition:fade>{form.message}</p>
+          <p class="message" transition:fade>{form.message}</p>
         {/if}
 
         {#if login}
           <div class="forgot-password">
-            <a href="/forgot-password" target="_blank" rel="noopener noreferrer">Forgot Password?</a>
+            <a href="/forgot-password" target="_blank" rel="noopener noreferrer">Forgot Password?</a
+            >
           </div>
         {/if}
 
@@ -188,7 +183,7 @@
 {/key}
 
 <style>
-  @import "$lib/css/Button.css";
+  @import '$lib/css/Button.css';
 
   .forgot-password {
     width: 100%;
@@ -239,7 +234,9 @@
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--glass-border);
-    transition: border 0.3s ease, background 0.3s ease;
+    transition:
+      border 0.3s ease,
+      background 0.3s ease;
   }
 
   form label:focus-within {
@@ -259,15 +256,15 @@
   }
 
   input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active{
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
     -webkit-background-clip: text;
     -webkit-text-fill-color: var(--text-primary);
     transition: background-color 5000s ease-in-out 0s;
     box-shadow: inset 0 0 20px 20px rgba(83, 78, 133, 0.16);
     caret-color: var(--text-primary) !important;
-}
+  }
 
   form label input {
     width: 100%;
@@ -324,7 +321,7 @@ input:-webkit-autofill:active{
   .options > p::after,
   .options > p::before {
     position: absolute;
-    content: "";
+    content: '';
     top: 50%;
     width: 100vw;
     height: 1.5px;

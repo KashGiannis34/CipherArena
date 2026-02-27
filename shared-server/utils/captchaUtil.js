@@ -1,73 +1,72 @@
 export async function verifyCaptcha(token, remoteip = null) {
-    if (!token) {
-        return {
-            success: false,
-            error: 'Captcha token is required'
-        };
+  if (!token) {
+    return {
+      success: false,
+      error: 'Captcha token is required',
+    };
+  }
+
+  const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+
+  try {
+    const params = new URLSearchParams();
+    params.append('secret', secretKey);
+    params.append('response', token);
+    if (remoteip) {
+      params.append('remoteip', remoteip);
     }
 
-    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+    const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
+    });
 
-    try {
-        const params = new URLSearchParams();
-        params.append('secret', secretKey);
-        params.append('response', token);
-        if (remoteip) {
-            params.append('remoteip', remoteip);
-        }
-
-        const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: params.toString()
-        });
-
-        if (!response.ok) {
-            console.error('reCAPTCHA API returned non-ok status:', response.status);
-            return {
-                success: false,
-                error: 'Failed to verify captcha with Google'
-            };
-        }
-
-        const data = await response.json();
-
-        if (!data.success) {
-            console.warn('reCAPTCHA verification failed:', data['error-codes']);
-
-            const errorCodes = data['error-codes'] || [];
-            let errorMessage = 'Captcha verification failed';
-
-            if (errorCodes.includes('timeout-or-duplicate')) {
-                errorMessage = 'Captcha has expired or was already used. Please try again.';
-            } else if (errorCodes.includes('invalid-input-response')) {
-                errorMessage = 'Invalid captcha response. Please refresh and try again.';
-            } else if (errorCodes.includes('missing-input-response')) {
-                errorMessage = 'Please complete the captcha verification.';
-            }
-
-            return {
-                success: false,
-                error: errorMessage
-            };
-        }
-
-        return {
-            success: true
-        };
-
-    } catch (error) {
-        console.error('Error verifying captcha:', error);
-        return {
-            success: false,
-            error: 'An error occurred while verifying captcha. Please try again.'
-        };
+    if (!response.ok) {
+      console.error('reCAPTCHA API returned non-ok status:', response.status);
+      return {
+        success: false,
+        error: 'Failed to verify captcha with Google',
+      };
     }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      console.warn('reCAPTCHA verification failed:', data['error-codes']);
+
+      const errorCodes = data['error-codes'] || [];
+      let errorMessage = 'Captcha verification failed';
+
+      if (errorCodes.includes('timeout-or-duplicate')) {
+        errorMessage = 'Captcha has expired or was already used. Please try again.';
+      } else if (errorCodes.includes('invalid-input-response')) {
+        errorMessage = 'Invalid captcha response. Please refresh and try again.';
+      } else if (errorCodes.includes('missing-input-response')) {
+        errorMessage = 'Please complete the captcha verification.';
+      }
+
+      return {
+        success: false,
+        error: errorMessage,
+      };
+    }
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error('Error verifying captcha:', error);
+    return {
+      success: false,
+      error: 'An error occurred while verifying captcha. Please try again.',
+    };
+  }
 }
 
 export async function verifyCaptchaFromFormData(formData, clientIP = null) {
-    const captchaToken = formData.get('captchaToken');
-    return await verifyCaptcha(captchaToken, clientIP);
+  const captchaToken = formData.get('captchaToken');
+  return await verifyCaptcha(captchaToken, clientIP);
 }

@@ -1,11 +1,11 @@
-import nodemailer from "nodemailer";
+import nodemailer from 'nodemailer';
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD;
 const APP_URL = process.env.APP_URL;
 
 // Create a transporter using Gmail SMTP
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  service: 'gmail',
   auth: {
     user: EMAIL_USER,
     pass: EMAIL_PASSWORD,
@@ -23,7 +23,7 @@ export async function sendVerificationEmail(email, token, limit) {
   const mailOptions = {
     from: EMAIL_USER,
     to: email,
-    subject: "Cipher Arena: Verify Your Email",
+    subject: 'Cipher Arena: Verify Your Email',
     html: `
       <h1>Email Verification</h1>
       <p>Click the link below to verify your email. This link will expire in ${limit} minutes.</p>
@@ -35,8 +35,8 @@ export async function sendVerificationEmail(email, token, limit) {
   try {
     await transporter.sendMail(mailOptions);
   } catch (error) {
-    console.error("Error sending email:", error);
-    throw new Error("Email could not be sent.");
+    console.error('Error sending email:', error);
+    throw new Error('Email could not be sent.');
   }
 }
 
@@ -52,7 +52,7 @@ export async function sendPasswordResetEmail(email, token, limit) {
   const mailOptions = {
     from: EMAIL_USER,
     to: email,
-    subject: "Cipher Arena: Password Reset Request",
+    subject: 'Cipher Arena: Password Reset Request',
     html: `
       <h1>Password Reset</h1>
       <p>Click the link below to reset your password. This link will expire in ${limit} minutes.</p>
@@ -64,7 +64,7 @@ export async function sendPasswordResetEmail(email, token, limit) {
   try {
     await transporter.sendMail(mailOptions);
   } catch (error) {
-    console.error("Error sending reset email:", error);
-    throw new Error("Reset email could not be sent.");
+    console.error('Error sending reset email:', error);
+    throw new Error('Reset email could not be sent.');
   }
 }

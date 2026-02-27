@@ -1,16 +1,16 @@
 <script>
-  import { goto } from "$app/navigation";
-  import { generateSeo } from "$lib/util/generateSEO";
-  import Leaderboard from "$lib/Components/General/Leaderboard.svelte";
-  import ProfileStats from "$lib/Components/General/ProfileStats.svelte";
-  import { onMount } from "svelte";
-  import LandingPageCipher from "$lib/Components/Game/LandingPageCipher.svelte";
-  import BadgeDisplay from "$lib/Components/Game/BadgeDisplay.svelte";
-  import ProgressDisplay from "$lib/Components/Game/ProgressDisplay.svelte";
+  import { goto } from '$app/navigation';
+  import { generateSeo } from '$lib/util/generateSEO';
+  import Leaderboard from '$lib/Components/General/Leaderboard.svelte';
+  import ProfileStats from '$lib/Components/General/ProfileStats.svelte';
+  import { onMount } from 'svelte';
+  import LandingPageCipher from '$lib/Components/Game/LandingPageCipher.svelte';
+  import BadgeDisplay from '$lib/Components/Game/BadgeDisplay.svelte';
+  import ProgressDisplay from '$lib/Components/Game/ProgressDisplay.svelte';
 
   let { data } = $props();
 
-  let username = $state(data.username || "HelloKitty34");
+  let username = $state(data.username || 'HelloKitty34');
   let userCount = $state(null); // null indicates not loaded yet
   let isLoadingUserCount = $state(false);
   let players = $state([{ username, connected: false }]);
@@ -44,11 +44,11 @@
 
     isLoadingUserCount = true;
     try {
-      const response = await fetch("/api/user-count");
+      const response = await fetch('/api/user-count');
       const data = await response.json();
       userCount = data.userCount || 0;
     } catch (error) {
-      console.error("Failed to fetch user count:", error);
+      console.error('Failed to fetch user count:', error);
       userCount = 0;
     } finally {
       isLoadingUserCount = false;
@@ -65,7 +65,7 @@
           }
         });
       },
-      { threshold: 0.15 },
+      { threshold: 0.15 }
     );
     observer.observe(node);
     return {
@@ -76,30 +76,30 @@
   }
 
   const seo = generateSeo({
-    title: "Cipher Arena: Multiplayer Cryptogram Battles",
+    title: 'Cipher Arena: Multiplayer Cryptogram Battles',
     description:
-      "Battle opponents solving classic cryptograms in real-time. Compete across multiple cipher types, climb the leaderboard, and unlock badges.",
-    url: "https://cipherarena.com/",
-    image: "https://cipherarena.com/landing-page/hero-mock.webp",
+      'Battle opponents solving classic cryptograms in real-time. Compete across multiple cipher types, climb the leaderboard, and unlock badges.',
+    url: 'https://cipherarena.com/',
+    image: 'https://cipherarena.com/landing-page/hero-mock.webp',
   });
 
   const unlockedBadges = [
-    "elo_aristocrat_1500",
-    "elo_caesar_1400",
-    "wins_total_50",
-    "wins_aristocrat_50",
-    "elo_total_1300",
-    "games_played_100",
-    "games_played_34",
-    "wins_total_34",
-    "elo_aristocrat_1340",
-    "fast_solver_10s",
-    "under_30s_25x",
-    "under_60s_50x",
-    "under_34s_34x_aristocrat",
-    "close_call_59",
-    "slow_grinder",
-    "prime_times_under_60",
+    'elo_aristocrat_1500',
+    'elo_caesar_1400',
+    'wins_total_50',
+    'wins_aristocrat_50',
+    'elo_total_1300',
+    'games_played_100',
+    'games_played_34',
+    'wins_total_34',
+    'elo_aristocrat_1340',
+    'fast_solver_10s',
+    'under_30s_25x',
+    'under_60s_50x',
+    'under_34s_34x_aristocrat',
+    'close_call_59',
+    'slow_grinder',
+    'prime_times_under_60',
   ];
 
   let mockStats = {
@@ -194,12 +194,12 @@
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            node.classList.add("visible");
+            node.classList.add('visible');
             observer.unobserve(node);
           }
         });
       },
-      { threshold: 0.15 },
+      { threshold: 0.15 }
     );
     observer.observe(node);
     return {
@@ -221,14 +221,9 @@
 
     <header class="section hero-section animatable" use:animateOnScroll>
       <div class="hero">Welcome to Cipher Arena</div>
-      <div class="subhero">
-        Crack codes with friends. Train, compete, and climb the ranks.
-      </div>
+      <div class="subhero">Crack codes with friends. Train, compete, and climb the ranks.</div>
       <div class="hero-cta">
-        <button
-          class="play-now-button"
-          onclick={() => goto("/singleplayer/Aristocrat")}
-        >
+        <button class="play-now-button" onclick={() => goto('/singleplayer/Aristocrat')}>
           Play now
         </button>
       </div>
@@ -237,11 +232,7 @@
           <LandingPageCipher {onProgressUpdate} />
         </div>
         <div class="mobile-only">
-          <img
-            src="/landing-page/hero-mock.webp"
-            alt="Cipher example"
-            class="static-image"
-          />
+          <img src="/landing-page/hero-mock.webp" alt="Cipher example" class="static-image" />
         </div>
       </div>
     </header>
@@ -257,9 +248,7 @@
             </li>
             <li>
               <h3>Practice for Codebusters</h3>
-              <p>
-                Imrpove speed and accuracy with drills for every cipher type.
-              </p>
+              <p>Imrpove speed and accuracy with drills for every cipher type.</p>
             </li>
             <li>
               <h3>Multiplayer Battles</h3>
@@ -278,11 +267,7 @@
             />
           </div>
           <div class="mobile-only">
-            <img
-              src="/landing-page/pfp-badges.webp"
-              alt="User badges"
-              class="static-image"
-            />
+            <img src="/landing-page/pfp-badges.webp" alt="User badges" class="static-image" />
           </div>
         </div>
       </div>
@@ -296,11 +281,7 @@
               <Leaderboard count={10} simple={true} />
             </div>
             <div class="mobile-only">
-              <img
-                src="/landing-page/leaderboard.webp"
-                alt="Leaderboard"
-                class="static-image"
-              />
+              <img src="/landing-page/leaderboard.webp" alt="Leaderboard" class="static-image" />
             </div>
           </div>
         </div>
@@ -339,9 +320,7 @@
             </li>
             <li>
               <h3>Stats and Profiles</h3>
-              <p>
-                Unlock badges, visualize stats, and personalize your profile.
-              </p>
+              <p>Unlock badges, visualize stats, and personalize your profile.</p>
             </li>
           </ul>
         </div>
@@ -386,12 +365,9 @@
         {/if}
       </div>
       <div class="cta-buttons">
-        <button class="button" onclick={() => goto("/account/register")}
-          >Get started</button
-        >
-        <button
-          class="button secondary"
-          onclick={() => goto("/singleplayer/Aristocrat")}>Try it out</button
+        <button class="button" onclick={() => goto('/account/register')}>Get started</button>
+        <button class="button secondary" onclick={() => goto('/singleplayer/Aristocrat')}
+          >Try it out</button
         >
       </div>
     </section>
@@ -501,7 +477,7 @@
   }
 
   .play-now-button::before {
-    content: "";
+    content: '';
     position: absolute;
     top: 50%;
     left: 50%;
@@ -514,7 +490,7 @@
   }
 
   .play-now-button::after {
-    content: "";
+    content: '';
     position: absolute;
     z-index: -1;
     left: 2px;
@@ -722,17 +698,13 @@
   }
 
   .animated-logo::before {
-    content: "";
+    content: '';
     position: absolute;
     top: -20px;
     left: -20px;
     width: calc(100% + 40px);
     height: calc(100% + 40px);
-    background: radial-gradient(
-      circle,
-      rgba(120, 119, 198, 0.2),
-      transparent 70%
-    );
+    background: radial-gradient(circle, rgba(120, 119, 198, 0.2), transparent 70%);
     border-radius: 50%;
     z-index: -1;
     opacity: 0;

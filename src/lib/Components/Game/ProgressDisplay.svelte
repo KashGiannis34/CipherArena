@@ -1,37 +1,58 @@
 <script>
-  import { fade } from "svelte/transition";
-  import ProfilePicture from "../General/ProfilePicture.svelte";
-  let {username, players = [], progressMap = {}, forfeitVoters = []} = $props();
+  import { fade } from 'svelte/transition';
+  import ProfilePicture from '../General/ProfilePicture.svelte';
+  let { username, players = [], progressMap = {}, forfeitVoters = [] } = $props();
 
   function getProgressColor(progress) {
     if (progress >= 80) return 'var(--color-success-dark)'; // green
     if (progress >= 50) return 'var(--color-warning)'; // yellow
-    if (progress > 0) return 'var(--color-error-dark)';   // red
+    if (progress > 0) return 'var(--color-error-dark)'; // red
     return 'var(--color-neutral-400)'; // no progress
   }
-
 </script>
 
 <div class="progress-display-wrapper">
-  {#each players.slice().sort((a, b) => (a.username === username ? -1 : b.username === username ? 1 : 0)) as player (player.username)}
-    <div class="progress-player-card {player.connected === false ? 'disconnected' : ''} {forfeitVoters.includes(player.username) ? 'forfeited' : ''}">
-      <ProfilePicture profilePicture={player.profilePicture} size={40} useColorRing={player.username==username} preserveSize={true}/>
+  {#each players
+    .slice()
+    .sort( (a, b) => (a.username === username ? -1 : b.username === username ? 1 : 0) ) as player (player.username)}
+    <div
+      class="progress-player-card {player.connected === false
+        ? 'disconnected'
+        : ''} {forfeitVoters.includes(player.username) ? 'forfeited' : ''}"
+    >
+      <ProfilePicture
+        profilePicture={player.profilePicture}
+        size={40}
+        useColorRing={player.username == username}
+        preserveSize={true}
+      />
       <div class="progress-info">
         <div class="progress-username">
-          <a href={`/profile/${player.username}`} target="_blank" rel="noopener noreferrer" class="profile-link">
+          <a
+            href={`/profile/${player.username}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="profile-link"
+          >
             {player.username}
           </a>
           {#if player.connected === false}
-            <span class="status-tag" transition:fade={{ duration: 300 }}>{player.left ? '(left game)' : '(disconnected)'}</span>
+            <span class="status-tag" transition:fade={{ duration: 300 }}
+              >{player.left ? '(left game)' : '(disconnected)'}</span
+            >
           {/if}
           {#if player.connected && forfeitVoters.includes(player.username)}
-            <span class="status-tag forfeit-tag" transition:fade={{ duration: 300 }}>(forfeited)</span>
+            <span class="status-tag forfeit-tag" transition:fade={{ duration: 300 }}
+              >(forfeited)</span
+            >
           {/if}
         </div>
 
         <div class="progress-bar-container">
           <div
-            class="progress-bar-fill {(progressMap[player.username] ?? 0) >= 90 ? 'danger-pulse' : ''}"
+            class="progress-bar-fill {(progressMap[player.username] ?? 0) >= 90
+              ? 'danger-pulse'
+              : ''}"
             style="
               transform: scaleX({(progressMap[player.username] ?? 0) / 100});
               background-color: {getProgressColor(progressMap[player.username] ?? 0)};
@@ -55,15 +76,15 @@
 
   .profile-link {
     color: var(--text-primary);
-		text-decoration: none;
-		font-weight: 500;
-		transition: color 0.2s;
-	}
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
 
-	.profile-link:hover {
-		color: var(--color-link);
-		text-decoration: underline;
-	}
+  .profile-link:hover {
+    color: var(--color-link);
+    text-decoration: underline;
+  }
 
   .progress-display-wrapper {
     display: flex;
@@ -84,7 +105,9 @@
     box-shadow:
       0 4px 20px rgba(0, 0, 0, 0.3),
       inset 0 1px 1px rgba(255, 255, 255, 0.1);
-    transition: background 0.3s ease, opacity 0.3s ease;
+    transition:
+      background 0.3s ease,
+      opacity 0.3s ease;
   }
 
   .progress-player-card.disconnected {
@@ -125,7 +148,9 @@
     height: 100%;
     transform-origin: left;
     transform: scaleX(0);
-    transition: transform 0.5s ease, background-color 0.3s ease;
+    transition:
+      transform 0.5s ease,
+      background-color 0.3s ease;
     border-radius: 6px;
     background-color: var(--color-neutral-500);
   }
@@ -135,7 +160,8 @@
   }
 
   @keyframes pulse-danger {
-    0%, 100% {
+    0%,
+    100% {
       box-shadow: 0 0 0px rgba(255, 0, 0, 0.4);
     }
     50% {

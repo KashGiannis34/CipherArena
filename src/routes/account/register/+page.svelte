@@ -1,16 +1,16 @@
 <script>
-  import Auth from "$lib/Components/General/Auth.svelte";
-  import { generateSeo } from "$lib/util/generateSEO.js";
-  import { onMount } from "svelte";
+  import Auth from '$lib/Components/General/Auth.svelte';
+  import { generateSeo } from '$lib/util/generateSEO.js';
+  import { onMount } from 'svelte';
 
   let { form } = $props();
 
   const seo = generateSeo({
-    title: "Register: Cipher Arena",
+    title: 'Register: Cipher Arena',
     description:
-      "Create your Cipher Arena account and start competing in real-time cryptogram battles. Track your stats and climb the leaderboard.",
-    url: "https://cipherarena.com/account/register",
-    image: "https://cipherarena.com/landing-page/pfp-badges.webp",
+      'Create your Cipher Arena account and start competing in real-time cryptogram battles. Track your stats and climb the leaderboard.',
+    url: 'https://cipherarena.com/account/register',
+    image: 'https://cipherarena.com/landing-page/pfp-badges.webp',
   });
 </script>
 

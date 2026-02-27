@@ -1,4 +1,8 @@
 {
+  "printWidth": 100,
+  "singleQuote": true,
+  "semi": true,
+  "trailingComma": "es5",
   "plugins": ["prettier-plugin-svelte"],
   "overrides": [
     {
@@ -7,5 +11,8 @@
         "parser": "svelte"
       }
     }
-  ]
+  ],
+  "svelteSortOrder": "scripts-markup-styles-options",
+  "svelteStrictMode": false,
+  "svelteAllowShorthand": true
 }

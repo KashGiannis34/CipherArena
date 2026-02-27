@@ -1,201 +1,220 @@
 <script>
-    import {isLetter} from "$shared/CipherUtil";
+  import { isLetter } from '$shared/CipherUtil';
 
-    let {inputs=$bindable(), letterInputs=$bindable(), cipherLetter, index, inputValue, selected, autoFocus, onArrow, onFocus, onChange, solved, spanish} = $props();
-    let error = $state(false);
-    let focus = $state(false);
+  let {
+    inputs = $bindable(),
+    letterInputs = $bindable(),
+    cipherLetter,
+    index,
+    inputValue,
+    selected,
+    autoFocus,
+    onArrow,
+    onFocus,
+    onChange,
+    solved,
+    spanish,
+  } = $props();
+  let error = $state(false);
+  let focus = $state(false);
 
-    function handleKeyDown(event) {
-        if (solved)
-            return;
+  function handleKeyDown(event) {
+    if (solved) return;
 
-        const deleteKeys = [
-            "Backspace",
-            "Delete",
-        ];
+    const deleteKeys = ['Backspace', 'Delete'];
 
-        if (event.key == ',' && spanish) {
-            onChange(cipherLetter, 'Ñ', index);
-            event.preventDefault();
-            return;
-        }
-
-        if (event.key == "ArrowLeft" || event.key == "ArrowRight" || event.key == " " || event.key == "Tab") {
-            onArrow(event.key, index);
-            event.preventDefault();
-            return;
-        }
-
-        if (deleteKeys.includes(event.key)) {
-            onChange(cipherLetter, '', index);
-            return;
-        }
-
-        if (!isLetter(event.key) || (event.key.toUpperCase() == cipherLetter)) {
-            event.preventDefault();
-            return;
-        }
-
-        if (event.key !== undefined && isLetter(event.key) && inputValue !== '' && event.key.length == 1) {
-            onChange(cipherLetter, event.key.toUpperCase(), index);
-            event.preventDefault();
-            return;
-        }
+    if (event.key == ',' && spanish) {
+      onChange(cipherLetter, 'Ñ', index);
+      event.preventDefault();
+      return;
     }
 
-    function handleInput(event) {
-        if (solved)
-            return;
-
-        let character = event.data;
-        if (character != null && isLetter(character)) {
-            character = character.toUpperCase();
-        }
-
-        onChange(cipherLetter, character, index);
+    if (
+      event.key == 'ArrowLeft' ||
+      event.key == 'ArrowRight' ||
+      event.key == ' ' ||
+      event.key == 'Tab'
+    ) {
+      onArrow(event.key, index);
+      event.preventDefault();
+      return;
     }
 
-
-    function handleFocus() {
-        if (solved)
-            return;
-
-        onFocus(cipherLetter, true);
-        focus = true;
+    if (deleteKeys.includes(event.key)) {
+      onChange(cipherLetter, '', index);
+      return;
     }
 
-    function handleBlur() {
-        onFocus(cipherLetter, false);
-        focus = false;
+    if (!isLetter(event.key) || event.key.toUpperCase() == cipherLetter) {
+      event.preventDefault();
+      return;
     }
 
-    function handleClick() {
-        if (solved)
-            return;
+    if (
+      event.key !== undefined &&
+      isLetter(event.key) &&
+      inputValue !== '' &&
+      event.key.length == 1
+    ) {
+      onChange(cipherLetter, event.key.toUpperCase(), index);
+      event.preventDefault();
+      return;
+    }
+  }
 
-        inputs[index]?.focus();
-        onFocus(cipherLetter, true);
-        focus = true;
+  function handleInput(event) {
+    if (solved) return;
+
+    let character = event.data;
+    if (character != null && isLetter(character)) {
+      character = character.toUpperCase();
     }
 
-    if (isLetter(cipherLetter, spanish)) {
-        $effect(() => {
-            if (inputValue !== undefined && isLetter(inputValue, spanish)) {
-                let vals = Object.values(letterInputs);
-                error = vals.indexOf(inputValue) != vals.lastIndexOf(inputValue);
-            }
-        });
-    }
+    onChange(cipherLetter, character, index);
+  }
+
+  function handleFocus() {
+    if (solved) return;
+
+    onFocus(cipherLetter, true);
+    focus = true;
+  }
+
+  function handleBlur() {
+    onFocus(cipherLetter, false);
+    focus = false;
+  }
+
+  function handleClick() {
+    if (solved) return;
+
+    inputs[index]?.focus();
+    onFocus(cipherLetter, true);
+    focus = true;
+  }
+
+  if (isLetter(cipherLetter, spanish)) {
+    $effect(() => {
+      if (inputValue !== undefined && isLetter(inputValue, spanish)) {
+        let vals = Object.values(letterInputs);
+        error = vals.indexOf(inputValue) != vals.lastIndexOf(inputValue);
+      }
+    });
+  }
 </script>
 
-<td class:last={spanish ? index==26 : index==25} class:selected={selected && !solved}
-class:focus={focus && !solved} onclick={handleClick}>
-    <input
-        bind:this={inputs[index]}
-        class:error={error}
-        type="text"
-        placeholder="="
-        maxlength="1"
-        bind:value={inputValue}
-        oninput={handleInput}
-        onkeydown={handleKeyDown}
-        onfocus={handleFocus}
-        onblur={handleBlur}
-        readonly={solved}
-    />
+<td
+  class:last={spanish ? index == 26 : index == 25}
+  class:selected={selected && !solved}
+  class:focus={focus && !solved}
+  onclick={handleClick}
+>
+  <input
+    bind:this={inputs[index]}
+    class:error
+    type="text"
+    placeholder="="
+    maxlength="1"
+    bind:value={inputValue}
+    oninput={handleInput}
+    onkeydown={handleKeyDown}
+    onfocus={handleFocus}
+    onblur={handleBlur}
+    readonly={solved}
+  />
 </td>
 
 <style>
+  input {
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    caret-color: transparent;
+    font-size: 1.8vw;
+    font-family: 'Source Code Pro', monospace !important;
+  }
+  @media screen and (min-width: 1200px) {
     input {
-        text-align: center;
-        width: 100%;
-        height: 100%;
-        background-color: transparent;
-        border: none;
-        outline: none;
-        caret-color: transparent;
-        font-size: 1.8vw;
-        font-family: 'Source Code Pro', monospace !important;
+      font-size: 1.2rem;
     }
-    @media screen and (min-width: 1200px) {
-        input {
-            font-size: 1.2rem;
-        }
+  }
+
+  .selected {
+    background-color: var(--table-highlight-bg) !important;
+  }
+
+  .focus {
+    position: relative;
+    z-index: 1;
+  }
+
+  .focus::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.15) 0%,
+      rgba(255, 255, 255, 0.02) 70%,
+      transparent 100%
+    );
+    border-radius: 50%;
+    animation: softGlow 1.8s ease-in-out infinite;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  @keyframes softGlow {
+    0%,
+    100% {
+      opacity: 0.8;
+      transform: translate(-50%, -50%) scale(1);
     }
-
-    .selected {
-        background-color: var(--table-highlight-bg) !important;
+    50% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1.2);
     }
+  }
 
-    .focus {
-        position: relative;
-        z-index: 1;
-    }
+  td:hover {
+    background-color: var(--glass-bg);
+    cursor: pointer;
+  }
 
-    .focus::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 100%;
-        height: 100%;
-        transform: translate(-50%, -50%);
-        background: radial-gradient(
-            circle,
-            rgba(255, 255, 255, 0.15) 0%,
-            rgba(255, 255, 255, 0.02) 70%,
-            transparent 100%
-        );
-        border-radius: 50%;
-        animation: softGlow 1.8s ease-in-out infinite;
-        pointer-events: none;
-        z-index: -1;
-        }
+  td {
+    border-bottom: 1px solid var(--table-border-color);
+    border-right: 1px solid var(--table-border-color);
+    text-align: center;
+    display: block;
+    padding-top: 0.65vw;
+    padding-bottom: 0.65vw;
+  }
 
-        @keyframes softGlow {
-        0%, 100% {
-            opacity: 0.8;
-            transform: translate(-50%, -50%) scale(1);
-        }
-        50% {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1.2);
-        }
-    }
+  .last {
+    border-bottom-right-radius: 0.5rem;
+  }
 
+  :not(.error) {
+    color: var(--text-primary);
+    transition-duration: 0ms;
+  }
 
-    td:hover {
-        background-color: var(--glass-bg);
-        cursor: pointer;
-    }
+  .error {
+    color: rgb(219, 44, 44);
+  }
 
-    td {
-        border-bottom: 1px solid var(--table-border-color);
-        border-right: 1px solid var(--table-border-color);
-        text-align: center;
-        display: block;
-        padding-top: 0.65vw;
-        padding-bottom: 0.65vw;
-    }
+  input:hover {
+    cursor: pointer;
+  }
 
-    .last {
-        border-bottom-right-radius: 0.5rem;
-    }
-
-    :not(.error) {
-        color: var(--text-primary);
-        transition-duration: 0ms;
-    }
-
-    .error {
-        color: rgb(219, 44, 44);
-    }
-
-    input:hover {
-        cursor: pointer;
-    }
-
-    input::placeholder {
-        color: var(--text-muted);
-    }
+  input::placeholder {
+    color: var(--text-muted);
+  }
 </style>

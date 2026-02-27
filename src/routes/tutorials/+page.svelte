@@ -1,95 +1,91 @@
 <script>
-  import { onMount } from "svelte";
-  import { generateSeo } from "$lib/util/generateSEO";
+  import { onMount } from 'svelte';
+  import { generateSeo } from '$lib/util/generateSEO';
 
   const seo = generateSeo({
-    title: "Cipher Arena Tutorials",
+    title: 'Cipher Arena Tutorials',
     description:
-      "Learn how to solve ciphers like the Aristocrat, K1/K2, and Porta with step-by-step video guides.",
-    url: "https://cipherarena.com/tutorials",
-    image: "https://cipherarena.com/landing-page/hero-mock.webp",
+      'Learn how to solve ciphers like the Aristocrat, K1/K2, and Porta with step-by-step video guides.',
+    url: 'https://cipherarena.com/tutorials',
+    image: 'https://cipherarena.com/landing-page/hero-mock.webp',
   });
 
   const tutorials = [
     {
-      title: "How to Solve An Aristocrat",
+      title: 'How to Solve An Aristocrat',
       description:
-        "Master the basics of frequency analysis and pattern recognition to crack standard Aristocrat ciphers.",
-      url: "https://youtu.be/WHcxEUolCxM",
-      status: "available",
-      links: [{ text: "Practice Aristocrat", url: "/singleplayer/Aristocrat" }],
+        'Master the basics of frequency analysis and pattern recognition to crack standard Aristocrat ciphers.',
+      url: 'https://youtu.be/WHcxEUolCxM',
+      status: 'available',
+      links: [{ text: 'Practice Aristocrat', url: '/singleplayer/Aristocrat' }],
     },
     {
-      title: "How to Solve A K1/K2 Aristocrat",
+      title: 'How to Solve A K1/K2 Aristocrat',
       description:
-        "Learn the keyword alphabet system (K1/K2) and tackle this variation of the Aristocrat.",
-      url: "https://youtu.be/CA7E1RDCZjQ",
-      status: "available",
+        'Learn the keyword alphabet system (K1/K2) and tackle this variation of the Aristocrat.',
+      url: 'https://youtu.be/CA7E1RDCZjQ',
+      status: 'available',
       links: [
-        { text: "Practice K1", url: "/singleplayer/Aristocrat?K=1" },
-        { text: "Practice K2", url: "/singleplayer/Aristocrat?K=2" },
+        { text: 'Practice K1', url: '/singleplayer/Aristocrat?K=1' },
+        { text: 'Practice K2', url: '/singleplayer/Aristocrat?K=2' },
       ],
     },
     {
-      title: "How to Solve A Porta",
+      title: 'How to Solve A Porta',
       description:
-        "Two different methods to solve the Porta cipher. One with a table, and one with a math formula.",
-      url: "https://youtu.be/Ihx_XfL7XsQ",
-      status: "available",
-      links: [{ text: "Practice Porta", url: "/singleplayer/Porta" }],
+        'Two different methods to solve the Porta cipher. One with a table, and one with a math formula.',
+      url: 'https://youtu.be/Ihx_XfL7XsQ',
+      status: 'available',
+      links: [{ text: 'Practice Porta', url: '/singleplayer/Porta' }],
     },
     {
-      title: "Solve Checkerboard Cipher",
+      title: 'Solve Checkerboard Cipher',
       description:
-        "An introduction to the only new cipher added in the 2025-26 Scioly Codebusters Season.",
-      url: "https://youtu.be/vTFrUYghq-k",
-      status: "available",
-      links: [
-        { text: "Practice Checkerboard", url: "/singleplayer/Checkerboard" },
-      ],
+        'An introduction to the only new cipher added in the 2025-26 Scioly Codebusters Season.',
+      url: 'https://youtu.be/vTFrUYghq-k',
+      status: 'available',
+      links: [{ text: 'Practice Checkerboard', url: '/singleplayer/Checkerboard' }],
     },
     {
-      title: "How to Solve a Hill Cipher",
+      title: 'How to Solve a Hill Cipher',
       description:
-        "Dive into the world of matrix multiplication and modular arithmetic to conquer the Hill cipher.",
-      status: "coming-soon",
+        'Dive into the world of matrix multiplication and modular arithmetic to conquer the Hill cipher.',
+      status: 'coming-soon',
       links: [],
     },
     {
-      title: "How to Solve a Nihilist Cipher",
-      description:
-        "Learn to use a Polybius square and to tackle the nihilist cipher.",
-      status: "coming-soon",
+      title: 'How to Solve a Nihilist Cipher',
+      description: 'Learn to use a Polybius square and to tackle the nihilist cipher.',
+      status: 'coming-soon',
       links: [],
     },
     {
-      title: "How to Solve a Baconian",
-      description:
-        "Learn some tips and tricks to help you solve the Baconian cipher quicker.",
-      status: "coming-soon",
+      title: 'How to Solve a Baconian',
+      description: 'Learn some tips and tricks to help you solve the Baconian cipher quicker.',
+      status: 'coming-soon',
       links: [],
     },
     {
-      title: "How to Solve an Affine Cipher",
+      title: 'How to Solve an Affine Cipher',
       description:
-        "A guide to solving this monoalphabetic substitution cipher quickly using modular arithmetic.",
-      status: "coming-soon",
+        'A guide to solving this monoalphabetic substitution cipher quickly using modular arithmetic.',
+      status: 'coming-soon',
       links: [],
     },
   ];
 
   export function animateOnScroll(node) {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            node.classList.add("visible");
+            node.classList.add('visible');
             observer.unobserve(node);
           }
         });
       },
-      { threshold: 0.1 },
+      { threshold: 0.1 }
     );
     observer.observe(node);
     return {
@@ -108,9 +104,7 @@
   <div class="container">
     <header class="section hero-section animatable" use:animateOnScroll>
       <div class="hero">Cipher Tutorials</div>
-      <div class="subhero">
-        Master the art of codebreaking using video guides.
-      </div>
+      <div class="subhero">Master the art of codebreaking using video guides.</div>
     </header>
 
     <section class="section animatable" use:animateOnScroll>
@@ -122,7 +116,7 @@
             use:animateOnScroll
             style="transition-delay: {i * 100}ms;"
           >
-            {#if tutorial.status === "coming-soon"}
+            {#if tutorial.status === 'coming-soon'}
               <div class="status-badge">Coming Soon</div>
             {/if}
 
@@ -130,13 +124,8 @@
             <p>{tutorial.description}</p>
 
             <div class="card-footer">
-              {#if tutorial.status === "available"}
-                <a
-                  href={tutorial.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="button"
-                >
+              {#if tutorial.status === 'available'}
+                <a href={tutorial.url} target="_blank" rel="noopener noreferrer" class="button">
                   Watch on YouTube
                 </a>
               {/if}

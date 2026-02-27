@@ -1,9 +1,9 @@
 <script>
-    import "$lib/css/StrapBtn.css";
-    import "$lib/css/Button.css";
-    import "$lib/css/Checkbox.css";
+  import '$lib/css/StrapBtn.css';
+  import '$lib/css/Button.css';
+  import '$lib/css/Checkbox.css';
 
-    let {data, children} = $props();
+  let { data, children } = $props();
 </script>
 
 {@render children?.()}

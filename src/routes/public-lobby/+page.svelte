@@ -1,169 +1,181 @@
 <script>
-    import { onDestroy, onMount } from 'svelte';
-    import { io } from 'socket.io-client';
-    import LoadingOverlay from '$lib/Components/General/LoadingOverlay.svelte';
-    import { PUBLIC_APP_URL } from '$env/static/public';
-    import Container from "$lib/Components/General/Container.svelte";
-    import Options from "$lib/Components/Game/Options.svelte";
-    import { cipherTypes } from '$shared/CipherTypes.js';
-    import { goto } from "$app/navigation";
-    import { fade } from 'svelte/transition';
-    import SearchBar from '$lib/Components/General/SearchBar.svelte';
-    import { debounce, createStatusManager } from "$lib/util/helpers.js";
-    import { leaveCurrentGame, createGame as createGameApi } from "$lib/util/gameApi.js";
-    import { GAME_MODES, DEFAULT_GAME_OPTIONS, STATUS_TYPES } from "$lib/util/constants.js";
+  import { onDestroy, onMount } from 'svelte';
+  import { io } from 'socket.io-client';
+  import LoadingOverlay from '$lib/Components/General/LoadingOverlay.svelte';
+  import { PUBLIC_APP_URL } from '$env/static/public';
+  import Container from '$lib/Components/General/Container.svelte';
+  import Options from '$lib/Components/Game/Options.svelte';
+  import { cipherTypes } from '$shared/CipherTypes.js';
+  import { goto } from '$app/navigation';
+  import { fade } from 'svelte/transition';
+  import SearchBar from '$lib/Components/General/SearchBar.svelte';
+  import { debounce, createStatusManager } from '$lib/util/helpers.js';
+  import { leaveCurrentGame, createGame as createGameApi } from '$lib/util/gameApi.js';
+  import { GAME_MODES, DEFAULT_GAME_OPTIONS, STATUS_TYPES } from '$lib/util/constants.js';
 
-    let { data } = $props();
+  let { data } = $props();
 
-    let options = $state({ ...DEFAULT_GAME_OPTIONS, Ranked: true });
-    let cipherType = $state('Aristocrat');
-    let cipherOption = $state('Random');
-    let cipherOptionObj = { 'K': 'Random' };
-    let feedbackCreate = $state('');
-    let showLeaveGameButton = $state(false);
+  let options = $state({ ...DEFAULT_GAME_OPTIONS, Ranked: true });
+  let cipherType = $state('Aristocrat');
+  let cipherOption = $state('Random');
+  let cipherOptionObj = { K: 'Random' };
+  let feedbackCreate = $state('');
+  let showLeaveGameButton = $state(false);
 
-    let statusMessage = $state(null);
-    let statusType = $state(STATUS_TYPES.INFO);
-    const statusManager = createStatusManager();
+  let statusMessage = $state(null);
+  let statusType = $state(STATUS_TYPES.INFO);
+  const statusManager = createStatusManager();
 
-    function showStatus(msg, type = STATUS_TYPES.INFO, duration = 3000) {
-        statusManager.show(v => statusMessage = v, v => statusType = v, msg, type, duration);
-    }
+  function showStatus(msg, type = STATUS_TYPES.INFO, duration = 3000) {
+    statusManager.show(
+      (v) => (statusMessage = v),
+      (v) => (statusType = v),
+      msg,
+      type,
+      duration
+    );
+  }
 
-    let lobbies = $state([]);
-    let loading = $state(true);
-    let searchValue = $state('');
-    let disconnected = $state(false);
-    let mounted = $state(false);
-    let limit = 50;
-    let socket;
+  let lobbies = $state([]);
+  let loading = $state(true);
+  let searchValue = $state('');
+  let disconnected = $state(false);
+  let mounted = $state(false);
+  let limit = 50;
+  let socket;
 
-    async function fetchLobbies({ searchValue = '' } = {}) {
-        if (!socket?.connected) return;
+  async function fetchLobbies({ searchValue = '' } = {}) {
+    if (!socket?.connected) return;
 
-        const fetchPromise = new Promise((resolve) => {
-            const searchTerms = {};
-            const words = searchValue.split(' ');
-            let currentOption = null;
+    const fetchPromise = new Promise((resolve) => {
+      const searchTerms = {};
+      const words = searchValue.split(' ');
+      let currentOption = null;
 
-            for (const word of words) {
-                const trimmed = word.trim();
-                if (!trimmed) continue;
+      for (const word of words) {
+        const trimmed = word.trim();
+        if (!trimmed) continue;
 
-                if (trimmed.endsWith(':')) {
-                    currentOption = trimmed;
-                } else if (currentOption) {
-                    searchTerms[currentOption] = searchTerms[currentOption] || [];
-                    searchTerms[currentOption].push(trimmed);
-                }
-            }
-
-            socket.emit('get-public-lobbies', { searchTerms, limit }, (data) => {
-                lobbies = Array.isArray(data) ? data : [];
-                resolve();
-            });
-        });
-
-        try {
-            await Promise.race([fetchPromise, new Promise((_, reject) => setTimeout(() => reject(new Error('Fetch lobbies timeout')), 5000))]);
-        } catch (error) {
-            showStatus('Error fetching games', STATUS_TYPES.ERROR);
-            lobbies = [];
+        if (trimmed.endsWith(':')) {
+          currentOption = trimmed;
+        } else if (currentOption) {
+          searchTerms[currentOption] = searchTerms[currentOption] || [];
+          searchTerms[currentOption].push(trimmed);
         }
+      }
+
+      socket.emit('get-public-lobbies', { searchTerms, limit }, (data) => {
+        lobbies = Array.isArray(data) ? data : [];
+        resolve();
+      });
+    });
+
+    try {
+      await Promise.race([
+        fetchPromise,
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Fetch lobbies timeout')), 5000)
+        ),
+      ]);
+    } catch (error) {
+      showStatus('Error fetching games', STATUS_TYPES.ERROR);
+      lobbies = [];
     }
+  }
 
-    const debouncedFetchLobbies = debounce(fetchLobbies, 500);
+  const debouncedFetchLobbies = debounce(fetchLobbies, 500);
 
-    function changeCipherOption(option, optionObj) {
-        const nOption = option[0] === "!" ? option.substring(1) : cipherTypes[cipherType]['options'][0] + option;
-        cipherOption = nOption;
-        cipherOptionObj = optionObj;
+  function changeCipherOption(option, optionObj) {
+    const nOption =
+      option[0] === '!' ? option.substring(1) : cipherTypes[cipherType]['options'][0] + option;
+    cipherOption = nOption;
+    cipherOptionObj = optionObj;
+  }
+
+  function changeType(type) {
+    cipherType = type;
+  }
+
+  function onOptionChange(option, value) {
+    options[option] = value ?? !options[option];
+  }
+
+  async function handleCreateGame() {
+    try {
+      loading = true;
+      feedbackCreate = '';
+      const mode = options.Ranked ? GAME_MODES.RANKED : GAME_MODES.PUBLIC;
+      const res = await createGameApi({ cipherType, cipherOptionObj, options, mode });
+      loading = false;
+
+      if (res.success) {
+        goto(`/game/${res.gameId}`);
+      } else {
+        feedbackCreate = res.message;
+      }
+      showLeaveGameButton = !!res.leaveGame;
+    } catch (error) {
+      loading = false;
+      feedbackCreate = error.toString();
     }
+  }
 
-    function changeType(type) {
-        cipherType = type;
+  async function handleLeaveGame() {
+    loading = true;
+    const data = await leaveCurrentGame();
+
+    if (data.success) {
+      feedbackCreate = 'You left your previous game. Now retry creating or joining.';
+    } else {
+      feedbackCreate = data.message;
     }
+    loading = false;
+    showLeaveGameButton = false;
+  }
 
-    function onOptionChange(option, value) {
-        options[option] = value ?? !options[option];
-    }
+  onMount(() => {
+    mounted = true;
+    socket = io(PUBLIC_APP_URL, {
+      auth: {
+        token: decodeURIComponent(data.authToken),
+        joinLobby: true,
+      },
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      withCredentials: true,
+    });
 
-    async function handleCreateGame() {
-        try {
-            loading = true;
-            feedbackCreate = '';
-            const mode = options.Ranked ? GAME_MODES.RANKED : GAME_MODES.PUBLIC;
-            const res = await createGameApi({ cipherType, cipherOptionObj, options, mode });
-            loading = false;
-
-            if (res.success) {
-                goto(`/game/${res.gameId}`);
-            } else {
-                feedbackCreate = res.message;
-            }
-            showLeaveGameButton = !!res.leaveGame;
-        } catch (error) {
-            loading = false;
-            feedbackCreate = error.toString();
-        }
-    }
-
-    async function handleLeaveGame() {
-        loading = true;
-        const data = await leaveCurrentGame();
-
-        if (data.success) {
-            feedbackCreate = "You left your previous game. Now retry creating or joining.";
-        } else {
-            feedbackCreate = data.message;
-        }
+    socket.on('connect', () => {
+      disconnected = false;
+      socket.once('ready', async () => {
+        await fetchLobbies();
         loading = false;
-        showLeaveGameButton = false;
-    }
-
-    onMount(() => {
-        mounted = true;
-        socket = io(PUBLIC_APP_URL, {
-            auth: {
-                token: decodeURIComponent(data.authToken),
-                joinLobby: true
-            },
-            transports: ['websocket', 'polling'],
-            reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000,
-            withCredentials: true,
-        });
-
-        socket.on('connect', () => {
-            disconnected = false;
-            socket.once('ready', async () => {
-                await fetchLobbies();
-                loading = false;
-            });
-        });
-
-        socket.on('connect_error', (error) => {
-            showStatus('Failed to connect. Please refresh.', 'error');
-            disconnected = true;
-            loading = false;
-        });
-
-        socket.on('lobbies-updated', () => {
-            if (!disconnected) {
-                fetchLobbies({ searchValue });
-            }
-        });
-
-        socket.on('disconnect', (reason) => {
-            disconnected = true;
-            showStatus('Disconnected from server.', 'error');
-        });
+      });
     });
 
-    onDestroy(() => {
-        socket?.disconnect();
+    socket.on('connect_error', (error) => {
+      showStatus('Failed to connect. Please refresh.', 'error');
+      disconnected = true;
+      loading = false;
     });
+
+    socket.on('lobbies-updated', () => {
+      if (!disconnected) {
+        fetchLobbies({ searchValue });
+      }
+    });
+
+    socket.on('disconnect', (reason) => {
+      disconnected = true;
+      showStatus('Disconnected from server.', 'error');
+    });
+  });
+
+  onDestroy(() => {
+    socket?.disconnect();
+  });
 </script>
 
 <svelte:head>
@@ -177,97 +189,126 @@
 {/if}
 
 {#if !mounted || loading}
-    <LoadingOverlay />
+  <LoadingOverlay />
 {:else if disconnected}
-    <div transition:fade>Disconnected.</div>
+  <div transition:fade>Disconnected.</div>
 {:else}
-    <div transition:fade>
-        <Container style="gap: 15px; display: flex; justify-content: center; align-items: center;">
-            <h2>New Public Game</h2>
-            <Options options={options} onOptionChange={onOptionChange} cipherType={cipherType} multiplayer={true} cipherOption={cipherOption} changeCipherOption={changeCipherOption} changeType={changeType}/>
-            <div class="button-row">
-                <button class="button" onclick={handleCreateGame}>Create Game</button>
+  <div transition:fade>
+    <Container style="gap: 15px; display: flex; justify-content: center; align-items: center;">
+      <h2>New Public Game</h2>
+      <Options
+        {options}
+        {onOptionChange}
+        {cipherType}
+        multiplayer={true}
+        {cipherOption}
+        {changeCipherOption}
+        {changeType}
+      />
+      <div class="button-row">
+        <button class="button" onclick={handleCreateGame}>Create Game</button>
 
-                {#if showLeaveGameButton}
-                    <button class="button leave-game-btn" onclick={handleLeaveGame}>Leave Current Game</button>
-                {/if}
-            </div>
+        {#if showLeaveGameButton}
+          <button class="button leave-game-btn" onclick={handleLeaveGame}>Leave Current Game</button
+          >
+        {/if}
+      </div>
 
-            {#if feedbackCreate}
-                <p>{feedbackCreate}</p>
-            {/if}
-        </Container>
-        <div class="waiting-container">
-            <div class="top-bar">
-                <h2 class="waiting-title">Public Lobby</h2>
-                <div class="input-container">
-                    <SearchBar
-                        bind:value={searchValue}
-                        onSearch={fetchLobbies}
-                    />
-                </div>
-            </div>
-
-            {#if lobbies.length === 0}
-                <p style="color: white;" in:fade={{ duration: 200, delay: 200 }} out:fade={{ duration: 200 }}>No matching games found.</p>
-            {:else}
-                <div class="player-list" in:fade={{ duration: 200, delay: 200 }} out:fade={{ duration: 200 }}>
-                    {#each [...lobbies].sort((a, b) => b.usernames.includes(data.username) - a.usernames.includes(data.username)) as lobby (lobby.id)}
-                        <div class="player-card {lobby.playerCount >= lobby.playerLimit ? 'full' : ''} {lobby.usernames.includes(data.username) ? 'in-game' : ''}" transition:fade>
-                            <div class="player-info-wrapper">
-                                <div class="player-left-group">
-                                    <div class="player-name">
-                                        {#if lobby.K !== '-1'}
-                                            {lobby.cipherType}: {lobby.K === 'Random' ? 'Random' : `K${lobby.K}`}
-                                        {:else}
-                                            {lobby.cipherType}: {lobby.Solve}
-                                        {/if}
-                                    </div>
-                                    <div class="player-elo">
-                                        {lobby.mode === 'ranked' ? 'Ranked' : 'Casual'}
-                                        {#if lobby?.autoFocus}
-                                            <div
-                                                class="autofocus-indicator"
-                                                onmouseenter={() => {lobby.showTooltip = true}}
-                                                onmouseleave={() => {lobby.showTooltip = false}}
-                                                onkeydown={() => {}}
-                                                tabindex="0"
-                                                role="button"
-                                            >⌨️
-                                                {#if lobby.showTooltip}
-                                                    <div class="tooltip" transition:fade>Auto Focus</div>
-                                                {/if}
-                                            </div>
-                                        {/if}
-                                    </div>
-                                    <div class="player-elo {lobby.playerCount >= lobby.playerLimit ? 'full-text' : ''}">
-                                        {lobby.playerCount}/{lobby.playerLimit} Player{lobby.playerLimit > 1 ? 's' : ''} ({lobby.usernames.join(', ')})
-                                    </div>
-                                </div>
-                                <div class="button-row">
-                                    {#if lobby.usernames.includes(data.username)}
-                                        <a href={`/game-lobby/${lobby.id}`}>
-                                            <button class="copy-box rejoin">Rejoin</button>
-                                        </a>
-                                    {:else if lobby.playerCount < lobby.playerLimit}
-                                        <a href={`/game-lobby/${lobby.id}`}>
-                                            <button class="copy-box">Join</button>
-                                        </a>
-                                    {:else}
-                                        <div class="full-indicator">Full</div>
-                                    {/if}
-                                </div>
-                            </div>
-                        </div>
-                    {/each}
-                </div>
-            {/if}
+      {#if feedbackCreate}
+        <p>{feedbackCreate}</p>
+      {/if}
+    </Container>
+    <div class="waiting-container">
+      <div class="top-bar">
+        <h2 class="waiting-title">Public Lobby</h2>
+        <div class="input-container">
+          <SearchBar bind:value={searchValue} onSearch={fetchLobbies} />
         </div>
+      </div>
+
+      {#if lobbies.length === 0}
+        <p
+          style="color: white;"
+          in:fade={{ duration: 200, delay: 200 }}
+          out:fade={{ duration: 200 }}
+        >
+          No matching games found.
+        </p>
+      {:else}
+        <div
+          class="player-list"
+          in:fade={{ duration: 200, delay: 200 }}
+          out:fade={{ duration: 200 }}
+        >
+          {#each [...lobbies].sort((a, b) => b.usernames.includes(data.username) - a.usernames.includes(data.username)) as lobby (lobby.id)}
+            <div
+              class="player-card {lobby.playerCount >= lobby.playerLimit
+                ? 'full'
+                : ''} {lobby.usernames.includes(data.username) ? 'in-game' : ''}"
+              transition:fade
+            >
+              <div class="player-info-wrapper">
+                <div class="player-left-group">
+                  <div class="player-name">
+                    {#if lobby.K !== '-1'}
+                      {lobby.cipherType}: {lobby.K === 'Random' ? 'Random' : `K${lobby.K}`}
+                    {:else}
+                      {lobby.cipherType}: {lobby.Solve}
+                    {/if}
+                  </div>
+                  <div class="player-elo">
+                    {lobby.mode === 'ranked' ? 'Ranked' : 'Casual'}
+                    {#if lobby?.autoFocus}
+                      <div
+                        class="autofocus-indicator"
+                        onmouseenter={() => {
+                          lobby.showTooltip = true;
+                        }}
+                        onmouseleave={() => {
+                          lobby.showTooltip = false;
+                        }}
+                        onkeydown={() => {}}
+                        tabindex="0"
+                        role="button"
+                      >
+                        ⌨️
+                        {#if lobby.showTooltip}
+                          <div class="tooltip" transition:fade>Auto Focus</div>
+                        {/if}
+                      </div>
+                    {/if}
+                  </div>
+                  <div
+                    class="player-elo {lobby.playerCount >= lobby.playerLimit ? 'full-text' : ''}"
+                  >
+                    {lobby.playerCount}/{lobby.playerLimit} Player{lobby.playerLimit > 1 ? 's' : ''} ({lobby.usernames.join(
+                      ', '
+                    )})
+                  </div>
+                </div>
+                <div class="button-row">
+                  {#if lobby.usernames.includes(data.username)}
+                    <a href={`/game-lobby/${lobby.id}`}>
+                      <button class="copy-box rejoin">Rejoin</button>
+                    </a>
+                  {:else if lobby.playerCount < lobby.playerLimit}
+                    <a href={`/game-lobby/${lobby.id}`}>
+                      <button class="copy-box">Join</button>
+                    </a>
+                  {:else}
+                    <div class="full-indicator">Full</div>
+                  {/if}
+                </div>
+              </div>
+            </div>
+          {/each}
+        </div>
+      {/if}
     </div>
+  </div>
 {/if}
 
 <style>
-
   .button-row {
     display: flex;
     gap: 12px;
@@ -318,12 +359,12 @@
 
   @media (max-width: 500px) {
     .top-bar {
-        padding: 0 0.5rem;
-        gap: 1rem;
+      padding: 0 0.5rem;
+      gap: 1rem;
     }
 
     .input-container {
-        padding: 0 0.5rem;
+      padding: 0 0.5rem;
     }
   }
 
@@ -345,7 +386,9 @@
     border-radius: 12px;
     box-shadow: var(--glass-shadow);
     color: var(--text-primary);
-    transition: transform 0.2s ease, background-color 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      background-color 0.2s ease;
     backdrop-filter: blur(10px);
   }
 
@@ -460,16 +503,16 @@
 
   @keyframes pulse {
     0% {
-        box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
-        border-color: var(--color-primary);
+      box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
+      border-color: var(--color-primary);
     }
     50% {
-        box-shadow: 0 8px 30px rgba(106, 17, 203, 0.6);
-        border-color: var(--color-primary-light);
+      box-shadow: 0 8px 30px rgba(106, 17, 203, 0.6);
+      border-color: var(--color-primary-light);
     }
     100% {
-        box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
-        border-color: var(--color-primary);
+      box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
+      border-color: var(--color-primary);
     }
   }
 

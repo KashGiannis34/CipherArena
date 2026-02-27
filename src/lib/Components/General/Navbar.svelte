@@ -1,5 +1,5 @@
 <script>
-  import { goto } from "$app/navigation";
+  import { goto } from '$app/navigation';
 
   let isMenuOpen = $state(false);
   let isMenuClosing = $state(false);
@@ -30,7 +30,7 @@
     <div class="nav-left">
       <div
         class="logo"
-        onclick={() => navigate("/")}
+        onclick={() => navigate('/')}
         onkeydown={() => {}}
         tabindex="-1"
         role="button"
@@ -47,103 +47,52 @@
       </div>
       {#if authenticated}
         <div class="nav-links desktop-only">
-          <button class="nav-link" onclick={() => navigate("/profile")}
-            >Home</button
-          >
-          <button class="nav-link" onclick={() => navigate("/tutorials")}
-            >Tutorials</button
-          >
-          <button class="nav-link" onclick={() => navigate("/leaderboard")}
-            >Leaderboard</button
-          >
-          <button
-            class="nav-link"
-            onclick={() => navigate("/singleplayer/Aristocrat")}
+          <button class="nav-link" onclick={() => navigate('/profile')}>Home</button>
+          <button class="nav-link" onclick={() => navigate('/tutorials')}>Tutorials</button>
+          <button class="nav-link" onclick={() => navigate('/leaderboard')}>Leaderboard</button>
+          <button class="nav-link" onclick={() => navigate('/singleplayer/Aristocrat')}
             >Play Solo</button
           >
-          <button class="nav-link" onclick={() => navigate("/bot-practice")}
-            >Practice Bot</button
-          >
-          <button class="nav-link" onclick={() => navigate("/private-lobby")}
-            >Private</button
-          >
-          <button class="nav-link" onclick={() => navigate("/public-lobby")}
-            >Public</button
-          >
+          <button class="nav-link" onclick={() => navigate('/bot-practice')}>Practice Bot</button>
+          <button class="nav-link" onclick={() => navigate('/private-lobby')}>Private</button>
+          <button class="nav-link" onclick={() => navigate('/public-lobby')}>Public</button>
         </div>
       {/if}
     </div>
 
-    <div
-      class="menu-icon"
-      onclick={toggleMenu}
-      onkeydown={() => {}}
-      tabindex="-1"
-      role="button"
-    >
+    <div class="menu-icon" onclick={toggleMenu} onkeydown={() => {}} tabindex="-1" role="button">
       <span></span>
       <span></span>
       <span></span>
     </div>
 
-    <div
-      class="nav-right {isMenuOpen ? 'open' : ''} {isMenuClosing
-        ? 'closing'
-        : ''}"
-    >
+    <div class="nav-right {isMenuOpen ? 'open' : ''} {isMenuClosing ? 'closing' : ''}">
       {#if !authenticated}
-        <button class="nav-link" onclick={() => navigate("/tutorials")}
-          >Tutorials</button
-        >
-        <button
-          class="nav-link"
-          onclick={() => navigate("/singleplayer/Aristocrat")}
+        <button class="nav-link" onclick={() => navigate('/tutorials')}>Tutorials</button>
+        <button class="nav-link" onclick={() => navigate('/singleplayer/Aristocrat')}
           >Try it out</button
         >
-        <button class="nav-link" onclick={() => navigate("/bot-practice")}
-          >Practice Bot</button
-        >
-        <button class="nav-link" onclick={() => navigate("/leaderboard")}
-          >Leaderboard</button
-        >
+        <button class="nav-link" onclick={() => navigate('/bot-practice')}>Practice Bot</button>
+        <button class="nav-link" onclick={() => navigate('/leaderboard')}>Leaderboard</button>
         <div class="auth-buttons">
-          <button
-            class="nav-link login"
-            onclick={() => navigate("/account/login")}>Login</button
-          >
-          <button
-            class="nav-link signup"
-            onclick={() => navigate("/account/register")}>Sign up</button
+          <button class="nav-link login" onclick={() => navigate('/account/login')}>Login</button>
+          <button class="nav-link signup" onclick={() => navigate('/account/register')}
+            >Sign up</button
           >
         </div>
       {:else}
         <div class="mobile-nav-links">
-          <button class="nav-link" onclick={() => navigate("/profile")}
-            >Home</button
-          >
-          <button class="nav-link" onclick={() => navigate("/tutorials")}
-            >Tutorials</button
-          >
-          <button class="nav-link" onclick={() => navigate("/leaderboard")}
-            >Leaderboard</button
-          >
-          <button class="nav-link" onclick={() => navigate("/singleplayer")}
-            >Play Solo</button
-          >
-          <button class="nav-link" onclick={() => navigate("/bot-practice")}
-            >Practice Bot</button
-          >
-          <button class="nav-link" onclick={() => navigate("/private-lobby")}
-            >Private</button
-          >
-          <button class="nav-link" onclick={() => navigate("/public-lobby")}
-            >Public</button
-          >
+          <button class="nav-link" onclick={() => navigate('/profile')}>Home</button>
+          <button class="nav-link" onclick={() => navigate('/tutorials')}>Tutorials</button>
+          <button class="nav-link" onclick={() => navigate('/leaderboard')}>Leaderboard</button>
+          <button class="nav-link" onclick={() => navigate('/singleplayer')}>Play Solo</button>
+          <button class="nav-link" onclick={() => navigate('/bot-practice')}>Practice Bot</button>
+          <button class="nav-link" onclick={() => navigate('/private-lobby')}>Private</button>
+          <button class="nav-link" onclick={() => navigate('/public-lobby')}>Public</button>
         </div>
-        {#if verified == "false" || !verified}
-          <button
-            onclick={() => navigate("/resend-verification")}
-            class="special-link verify-btn">Verify Account</button
+        {#if verified == 'false' || !verified}
+          <button onclick={() => navigate('/resend-verification')} class="special-link verify-btn"
+            >Verify Account</button
           >
         {/if}
         <form method="POST" action="/logout">

@@ -1,10 +1,10 @@
-import crypto from "crypto";
+import crypto from 'crypto';
 
 const SECRET_KEY = process.env.QUOTE_TOKEN_SECRET;
 
 // check key is exactly 32 bytes for AES-256
 const getKey = () => {
-  return crypto.createHash("sha256").update(SECRET_KEY).digest();
+  return crypto.createHash('sha256').update(SECRET_KEY).digest();
 };
 
 /**
@@ -14,13 +14,13 @@ const getKey = () => {
  */
 export function encryptText(text) {
   const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv("aes-256-cbc", getKey(), iv);
+  const cipher = crypto.createCipheriv('aes-256-cbc', getKey(), iv);
 
-  let encrypted = cipher.update(text, "utf8", "base64");
-  encrypted += cipher.final("base64");
+  let encrypted = cipher.update(text, 'utf8', 'base64');
+  encrypted += cipher.final('base64');
 
-  const combined = Buffer.concat([iv, Buffer.from(encrypted, "base64")]);
-  return combined.toString("base64");
+  const combined = Buffer.concat([iv, Buffer.from(encrypted, 'base64')]);
+  return combined.toString('base64');
 }
 
 /**
@@ -30,18 +30,18 @@ export function encryptText(text) {
  */
 export function decryptToken(token) {
   try {
-    const combined = Buffer.from(token, "base64");
+    const combined = Buffer.from(token, 'base64');
     const iv = combined.subarray(0, 16);
     const encrypted = combined.subarray(16);
 
-    const decipher = crypto.createDecipheriv("aes-256-cbc", getKey(), iv);
+    const decipher = crypto.createDecipheriv('aes-256-cbc', getKey(), iv);
 
-    let decrypted = decipher.update(encrypted, undefined, "utf8");
-    decrypted += decipher.final("utf8");
+    let decrypted = decipher.update(encrypted, undefined, 'utf8');
+    decrypted += decipher.final('utf8');
 
     return decrypted;
   } catch (error) {
-    console.error("Failed to decrypt token:", error.message);
+    console.error('Failed to decrypt token:', error.message);
     return null;
   }
 }

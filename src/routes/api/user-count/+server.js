@@ -1,8 +1,8 @@
-import redis from "$services/redis.js";
-import { UserGame } from "$game/UserGame";
-import { json } from "@sveltejs/kit";
+import redis from '$services/redis.js';
+import { UserGame } from '$game/UserGame';
+import { json } from '@sveltejs/kit';
 
-const USER_COUNT_KEY = "total_user_count";
+const USER_COUNT_KEY = 'total_user_count';
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET() {
@@ -21,7 +21,7 @@ export async function GET() {
       await redis.set(USER_COUNT_KEY, userCount);
     }
   } catch (error) {
-    console.error("Failed to retrieve user count:", error);
+    console.error('Failed to retrieve user count:', error);
     userCount = 0;
   }
 

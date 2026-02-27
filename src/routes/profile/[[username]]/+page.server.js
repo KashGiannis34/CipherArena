@@ -39,7 +39,7 @@ export async function load({ params, cookies }) {
     stats: JSON.stringify(profileUser.stats),
     singleplayerStats: JSON.stringify(profileUser.singleplayerStats),
     isOwnProfile,
-    email: isOwnProfile ? cookies.get('email') ?? '' : ''
+    email: isOwnProfile ? (cookies.get('email') ?? '') : '',
   };
 }
 
@@ -58,7 +58,7 @@ export const actions = {
     }
 
     const existing = await UserAuth.findOne({
-      email: { $regex: `^${newEmail}$`, $options: 'i' }
+      email: { $regex: `^${newEmail}$`, $options: 'i' },
     }).lean();
     if (existing && existing._id.toString() !== auth.id) {
       return fail(400, { message: 'Email is already in use.' });
@@ -93,23 +93,35 @@ export const actions = {
       try {
         await removeUserFromLeaderboards(redis, user.username);
       } catch (redisError) {
-        console.error('CRITICAL: Failed to remove user from leaderboards in Redis for user:', user.username, redisError);
+        console.error(
+          'CRITICAL: Failed to remove user from leaderboards in Redis for user:',
+          user.username,
+          redisError
+        );
       }
     }
 
     await Promise.all([
       UserAuth.deleteOne({ _id: userId }),
       UserGame.deleteOne({ _id: userId }),
-      VerificationToken.deleteMany({ userId })
+      VerificationToken.deleteMany({ userId }),
     ]);
 
     await decrementUserCount();
 
-    try { cookies.delete('auth-token', { path: '/' }); } catch {}
-    try { cookies.delete('email', { path: '/' }); } catch {}
-    try { cookies.delete('username', { path: '/' }); } catch {}
-    try { cookies.delete('verified', { path: '/' }); } catch {}
+    try {
+      cookies.delete('auth-token', { path: '/' });
+    } catch {}
+    try {
+      cookies.delete('email', { path: '/' });
+    } catch {}
+    try {
+      cookies.delete('username', { path: '/' });
+    } catch {}
+    try {
+      cookies.delete('verified', { path: '/' });
+    } catch {}
 
     throw redirect(303, '/');
-  }
+  },
 };

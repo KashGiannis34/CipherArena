@@ -1,5 +1,5 @@
 <script>
-  import { onMount, onDestroy } from "svelte";
+  import { onMount, onDestroy } from 'svelte';
 
   let { startTime, solved, finalTime = null } = $props();
 
@@ -18,15 +18,13 @@
     if (interval) clearInterval(interval);
   });
 
-  let elapsed = $derived(
-    finalTime !== null ? finalTime : Math.max(0, Math.floor(now - startTime)),
-  );
+  let elapsed = $derived(finalTime !== null ? finalTime : Math.max(0, Math.floor(now - startTime)));
 
   function formatTime(seconds) {
     const m = Math.floor(seconds / 60)
       .toString()
-      .padStart(2, "0");
-    const s = (seconds % 60).toString().padStart(2, "0");
+      .padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
   }
 </script>

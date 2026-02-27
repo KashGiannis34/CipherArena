@@ -1,6 +1,6 @@
-import { json } from "@sveltejs/kit";
-import { checkAnswer } from "$bots/botService";
-import { decryptToken } from "$server/utils/textEncode";
+import { json } from '@sveltejs/kit';
+import { checkAnswer } from '$bots/botService';
+import { decryptToken } from '$server/utils/textEncode';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
@@ -8,40 +8,40 @@ export async function POST({ request }) {
     const { encryptedAnswer, userAnswer, problemData } = await request.json();
 
     if (!encryptedAnswer) {
-      return json({ error: "Encrypted answer is required" }, { status: 400 });
+      return json({ error: 'Encrypted answer is required' }, { status: 400 });
     }
 
     if (userAnswer === undefined || userAnswer === null) {
-      return json({ error: "User answer is required" }, { status: 400 });
+      return json({ error: 'User answer is required' }, { status: 400 });
     }
 
     let decryptedData;
     try {
       const decryptedString = decryptToken(encryptedAnswer);
       if (!decryptedString) {
-        throw new Error("Decryption returned null");
+        throw new Error('Decryption returned null');
       }
       decryptedData = JSON.parse(decryptedString);
     } catch (error) {
-      console.error("Decryption failed:", error);
+      console.error('Decryption failed:', error);
       return json(
         {
-          error: "Invalid or tampered answer data",
-          details: "The problem data appears to be corrupted",
+          error: 'Invalid or tampered answer data',
+          details: 'The problem data appears to be corrupted',
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const { problemType, answer } = decryptedData;
 
     if (!problemType || !problemData) {
-      return json({ error: "Invalid problem data" }, { status: 400 });
+      return json({ error: 'Invalid problem data' }, { status: 400 });
     }
 
     let processedAnswer = userAnswer;
     if (problemType === 6) {
-      if (typeof userAnswer === "string") {
+      if (typeof userAnswer === 'string') {
         try {
           processedAnswer = JSON.parse(userAnswer);
         } catch {
@@ -59,7 +59,7 @@ export async function POST({ request }) {
           error: result.error,
           userAnswer: result.user_answer,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -79,13 +79,13 @@ export async function POST({ request }) {
           }),
     });
   } catch (error) {
-    console.error("Error checking answer:", error);
+    console.error('Error checking answer:', error);
     return json(
       {
-        error: "Failed to check answer",
+        error: 'Failed to check answer',
         details: error.message,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

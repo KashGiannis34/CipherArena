@@ -1,17 +1,17 @@
 <script>
-  import Container from "$lib/Components/General/Container.svelte";
-  import Cipher from "$lib/Components/Game/Cipher.svelte";
-  import Options from "$lib/Components/Game/Options.svelte";
-  import Popup from "$lib/Components/General/Popup.svelte";
-  import LoadingOverlay from "$lib/Components/General/LoadingOverlay.svelte";
-  import { fade } from "svelte/transition";
-  import { onMount } from "svelte";
-  import { generateSeo } from "$lib/util/generateSEO.js";
+  import Container from '$lib/Components/General/Container.svelte';
+  import Cipher from '$lib/Components/Game/Cipher.svelte';
+  import Options from '$lib/Components/Game/Options.svelte';
+  import Popup from '$lib/Components/General/Popup.svelte';
+  import LoadingOverlay from '$lib/Components/General/LoadingOverlay.svelte';
+  import { fade } from 'svelte/transition';
+  import { onMount } from 'svelte';
+  import { generateSeo } from '$lib/util/generateSEO.js';
 
   let { data } = $props();
   let mounted = $state(false);
   let visibility = $state(false);
-  let feedbackMessage = $state("");
+  let feedbackMessage = $state('');
   let options = $state({ AutoFocus: false, AutoSwitch: false });
   let quoteData = $state(null);
   let loading = $state(true);
@@ -19,8 +19,8 @@
   let solved = false;
 
   let params = {
-    K: "-1",
-    Solve: "Decode",
+    K: '-1',
+    Solve: 'Decode',
     cipherType: data.props.cipherType,
   };
 
@@ -29,8 +29,8 @@
     let time = 0;
     try {
       time = Number((Date.now() / 1000 - startTime).toFixed(3));
-      const response = await fetch("/api/validate-quote", {
-        method: "POST",
+      const response = await fetch('/api/validate-quote', {
+        method: 'POST',
         body: JSON.stringify({
           input: i,
           id: hash,
@@ -40,26 +40,23 @@
           solve: params.Solve,
         }),
         headers: {
-          "content-type": "application/json",
+          'content-type': 'application/json',
         },
       });
       const answer = await response.json();
       const minutes = Math.floor(time / 60);
       const seconds = Math.floor(time % 60);
       const strTime =
-        minutes.toString().padStart(2, "0") +
-        ":" +
-        seconds.toString().padStart(2, "0");
+        minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
       if (answer) {
-        feedbackMessage =
-          "Congratulations! The cipher was solved in " + strTime + "!";
+        feedbackMessage = 'Congratulations! The cipher was solved in ' + strTime + '!';
         solved = true;
       } else {
         feedbackMessage =
           "Sorry, your answer isn't correct. Giannis hopes you get it on the next try!";
       }
     } catch (error) {
-      feedbackMessage = "An error occurred while checking the quote.";
+      feedbackMessage = 'An error occurred while checking the quote.';
     }
     time = Math.floor(time);
     return { feedbackMessage, solved, time };
@@ -67,9 +64,9 @@
 
   async function fetchQuote() {
     try {
-      const res = await fetch("/api/generate-quote", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/generate-quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
       });
       const result = await res.json();
@@ -93,7 +90,7 @@
   }
 
   function toggle() {
-    if (visibility && solved && options["AutoSwitch"]) {
+    if (visibility && solved && options['AutoSwitch']) {
       newProblem();
     }
     visibility = !visibility;
@@ -101,17 +98,17 @@
 
   function onOptionChange(option) {
     options[option] = !options[option];
-    sessionStorage.setItem("options", JSON.stringify(options));
+    sessionStorage.setItem('options', JSON.stringify(options));
   }
 
   onMount(async () => {
-    options = sessionStorage.getItem("options")
-      ? JSON.parse(sessionStorage.getItem("options"))
+    options = sessionStorage.getItem('options')
+      ? JSON.parse(sessionStorage.getItem('options'))
       : { AutoFocus: true, AutoSwitch: false };
 
     const searchParams = new URLSearchParams(window.location.search);
-    params.K = searchParams.get("K") || "-1";
-    params.Solve = searchParams.get("Solve") || "Decode";
+    params.K = searchParams.get('K') || '-1';
+    params.Solve = searchParams.get('Solve') || 'Decode';
     params.cipherType = data.props.cipherType;
 
     await fetchQuote();
@@ -122,7 +119,7 @@
     title: `Singleplayer ${params.cipherType}: Cipher Arena`,
     description: `Practice solving ${params.cipherType} cryptograms solo to sharpen your skills before entering multiplayer battles.`,
     url: `https://cipherarena.com/singleplayer/${params.cipherType}`,
-    image: "https://cipherarena.com/landing-page/cipher-solved.webp",
+    image: 'https://cipherarena.com/landing-page/cipher-solved.webp',
   });
 </script>
 

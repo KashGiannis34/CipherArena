@@ -1,5 +1,5 @@
-import { json } from "@sveltejs/kit";
-import { getStats } from "$bots/botService";
+import { json } from '@sveltejs/kit';
+import { getStats } from '$bots/botService';
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET() {
@@ -7,13 +7,13 @@ export async function GET() {
     const stats = getStats();
     return json(stats);
   } catch (error) {
-    console.error("Error getting bot stats:", error);
+    console.error('Error getting bot stats:', error);
     return json(
       {
-        error: "Failed to get stats",
+        error: 'Failed to get stats',
         details: error.message,
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -8,7 +8,9 @@
     "build": "vite build && node buildServer.js",
     "preview": "vite preview",
     "start": "node dist/server.js",
-    "prepare": "husky"
+    "prepare": "husky",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
     "@flydotio/dockerfile": "^0.7.10",
@@ -57,8 +59,13 @@
     "svelte-easy-crop": "^4.0.1"
   },
   "lint-staged": {
-    "*.{js,ts,svelte,json,md,css}": [
-      "prettier --write"
+    "*.{js,ts,css,scss,html,json,md}": [
+      "prettier --write",
+      "git add"
+    ],
+    "*.svelte": [
+      "prettier --write",
+      "git add"
     ]
   }
 }

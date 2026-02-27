@@ -1,7 +1,7 @@
 <script>
-  import { cipherTypes } from "$shared/CipherTypes";
-  import { isLetter, isSolvableChunk } from "$shared/CipherUtil";
-  import { createLetterHandlers } from "./letterUtils.svelte.js";
+  import { cipherTypes } from '$shared/CipherTypes';
+  import { isLetter, isSolvableChunk } from '$shared/CipherUtil';
+  import { createLetterHandlers } from './letterUtils.svelte.js';
 
   let {
     inputs = $bindable(),
@@ -38,18 +38,13 @@
     $effect(() => {
       if (inputValue !== undefined && isLetter(inputValue, spanish)) {
         let vals = Object.values(letterInputs);
-        handler.error =
-          vals.indexOf(inputValue) != vals.lastIndexOf(inputValue);
+        handler.error = vals.indexOf(inputValue) != vals.lastIndexOf(inputValue);
       }
     });
   }
 </script>
 
-<div
-  class="letter-container {cipherTypes[cipherType].letterGap
-    ? 'letterGap'
-    : ''}"
->
+<div class="letter-container {cipherTypes[cipherType].letterGap ? 'letterGap' : ''}">
   {#if keyLetter}
     <div class="key-letter unselectable">{keyLetter}</div>
   {/if}
@@ -85,7 +80,7 @@
   }
 
   .key-letter {
-    font-family: "Source Code Pro", monospace;
+    font-family: 'Source Code Pro', monospace;
     font-size: 1rem;
     color: var(--color-link-muted) !important;
   }
@@ -104,7 +99,7 @@
   }
 
   .cipher-letter {
-    font-family: "Source Code Pro", monospace;
+    font-family: 'Source Code Pro', monospace;
     font-size: 1.4rem;
     font-weight: 500;
     margin-bottom: 5px;
@@ -113,7 +108,7 @@
   }
 
   input {
-    font-family: "Source Code Pro", monospace !important;
+    font-family: 'Source Code Pro', monospace !important;
     text-align: center;
     font-size: 1.4rem;
     font-weight: 500;

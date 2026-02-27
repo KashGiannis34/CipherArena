@@ -1,29 +1,29 @@
 <script>
-  import Letter from "./Letter.svelte";
-  import Timer from "./Timer.svelte";
-  import BaconianLetter from "./BaconianLetter.svelte";
-  import FreqTable from "./FreqTable.svelte";
-  import Container from "../General/Container.svelte";
-  import { isSolvableChunk } from "$shared/CipherUtil";
-  import { Confetti } from "svelte-confetti";
-  import { cipherTypes } from "$shared/CipherTypes";
-  import LoadingOverlay from "../General/LoadingOverlay.svelte";
-  import { fade } from "svelte/transition";
-  import { onMount, onDestroy } from "svelte";
-  import AtbashTable from "./AtbashTable.svelte";
-  import BaconianTable from "./BaconianTable.svelte";
-  import PortaTable from "./PortaTable.svelte";
-  import CaesarTable from "./CaesarTable.svelte";
-  import PolybiusSquare from "./PolybiusSquare.svelte";
-  import CheckerboardTable from "./CheckerboardTable.svelte";
-  import DeterminantTable from "./DeterminantTable.svelte";
-  import MatrixInput from "./MatrixInput.svelte";
-  import AffineInput from "./AffineInput.svelte";
-  import Calculator from "./Calculator.svelte";
-  import MorseTable from "./MorseTable.svelte";
-  import MorseLetter from "./MorseLetter.svelte";
-  import { debounce } from "$lib/util/helpers.js";
-  import { MATH_INTENSIVE_CIPHERS, GAME_MODES } from "$lib/util/constants.js";
+  import Letter from './Letter.svelte';
+  import Timer from './Timer.svelte';
+  import BaconianLetter from './BaconianLetter.svelte';
+  import FreqTable from './FreqTable.svelte';
+  import Container from '../General/Container.svelte';
+  import { isSolvableChunk } from '$shared/CipherUtil';
+  import { Confetti } from 'svelte-confetti';
+  import { cipherTypes } from '$shared/CipherTypes';
+  import LoadingOverlay from '../General/LoadingOverlay.svelte';
+  import { fade } from 'svelte/transition';
+  import { onMount, onDestroy } from 'svelte';
+  import AtbashTable from './AtbashTable.svelte';
+  import BaconianTable from './BaconianTable.svelte';
+  import PortaTable from './PortaTable.svelte';
+  import CaesarTable from './CaesarTable.svelte';
+  import PolybiusSquare from './PolybiusSquare.svelte';
+  import CheckerboardTable from './CheckerboardTable.svelte';
+  import DeterminantTable from './DeterminantTable.svelte';
+  import MatrixInput from './MatrixInput.svelte';
+  import AffineInput from './AffineInput.svelte';
+  import Calculator from './Calculator.svelte';
+  import MorseTable from './MorseTable.svelte';
+  import MorseLetter from './MorseLetter.svelte';
+  import { debounce } from '$lib/util/helpers.js';
+  import { MATH_INTENSIVE_CIPHERS, GAME_MODES } from '$lib/util/constants.js';
   import {
     initQuote,
     initLetterInputs,
@@ -35,7 +35,7 @@
     getNextEmptyInputIndex,
     getInputText,
     calculateProgress,
-  } from "$lib/util/cipherUtils.js";
+  } from '$lib/util/cipherUtils.js';
 
   let {
     quote,
@@ -52,7 +52,7 @@
     autoSwitch,
     crib = {},
   } = $props();
-  let spanish = cipherType == "Xenocrypt";
+  let spanish = cipherType == 'Xenocrypt';
   let startTime = Date.now() / 1000;
   let solved = $state(false);
   let gaveUp = $state(false);
@@ -61,25 +61,17 @@
   let clearPolybius = $state(false);
   let finalTime = $state(null);
   let debouncedProgressUpdate;
-  let initialQuote = initQuote(
-    quote,
-    cipherTypes[cipherType]["spacing"],
-    cipherType,
-  );
+  let initialQuote = initQuote(quote, cipherTypes[cipherType]['spacing'], cipherType);
 
   let info = $state({
     cipherText: initialQuote,
-    cipherTextTrim: initialQuote.filter((c) => c !== " "),
+    cipherTextTrim: initialQuote.filter((c) => c !== ' '),
     letterInputs: initLetterInputs(spanish),
     letterFocus: initLetterFocus(spanish),
     inputs: [],
   });
 
-  let lettersWithIndices = initLettersWithIndices(
-    initialQuote,
-    cipherType,
-    keys,
-  );
+  let lettersWithIndices = initLettersWithIndices(initialQuote, cipherType, keys);
   let directMap = getDirectMap(cipherType);
   let paramString = paramToString(params);
 
@@ -95,7 +87,7 @@
     info.letterInputs = initLetterInputs(spanish);
     for (let input of info.inputs) {
       if (input != undefined) {
-        input.value = "";
+        input.value = '';
       }
     }
 
@@ -103,11 +95,11 @@
       debouncedProgressUpdate();
     }
 
-    if (cipherType == "Nihilist" || cipherType == "Checkerboard") {
+    if (cipherType == 'Nihilist' || cipherType == 'Checkerboard') {
       clearPolybius = true;
     }
 
-    if (cipherType === "Fractionated Morse") {
+    if (cipherType === 'Fractionated Morse') {
       info.trigramInputs = {};
     }
   }
@@ -119,7 +111,7 @@
       info.inputs,
       info.cipherTextTrim,
       cipherType,
-      directMap,
+      directMap
     );
     info.inputs[nextIndex]?.focus();
   }
@@ -133,22 +125,19 @@
     Object.entries(info.trigramInputs || {}).reduce((acc, [t, c]) => {
       acc[c] = t;
       return acc;
-    }, {}),
+    }, {})
   );
 
   let slotDistribution = $derived.by(() => {
-    if (cipherType !== "Fractionated Morse") return {};
+    if (cipherType !== 'Fractionated Morse') return {};
 
     const stream = info.cipherText
       .map((c) =>
         cipherToTrigram[c]
-          ? cipherToTrigram[c]
-              .replace(/\./g, "●")
-              .replace(/-/g, "–")
-              .replace(/x/g, "×")
-          : "   ",
+          ? cipherToTrigram[c].replace(/\./g, '●').replace(/-/g, '–').replace(/x/g, '×')
+          : '   '
       )
-      .join("");
+      .join('');
 
     const slots = [];
     const validCharRegex = /([●–]+)|(×(?:\s*×)+)/g;
@@ -161,17 +150,17 @@
           start: match.index,
           end: match.index + match[0].length,
           content: match[0],
-          type: "input",
+          type: 'input',
         });
       } else if (match[2]) {
         const content = match[0];
-        const xCount = content.replace(/\s/g, "").length;
+        const xCount = content.replace(/\s/g, '').length;
         slots.push({
           id: slots.length,
           start: match.index,
           end: match.index + content.length,
           content: content,
-          type: "separator",
+          type: 'separator',
           isError: xCount >= 3,
         });
       }
@@ -195,7 +184,7 @@
       debouncedProgressUpdate &&
       mode === GAME_MODES.MULTIPLAYER &&
       info.inputs[index].value != newValue &&
-      (newValue === "" || info.inputs[index].value === "")
+      (newValue === '' || info.inputs[index].value === '')
     ) {
       debouncedProgressUpdate();
     }
@@ -206,7 +195,7 @@
       info.letterInputs[letter] = newValue;
     }
 
-    if (autoFocus && newValue !== "") {
+    if (autoFocus && newValue !== '') {
       const nextIndex = getNextEmptyInputIndex(
         index,
         info.inputs,
@@ -214,7 +203,7 @@
         cipherType,
         directMap,
         info.letterInputs,
-        letter,
+        letter
       );
       info.inputs[nextIndex]?.focus();
     }
@@ -230,7 +219,7 @@
       cipherType,
       keys,
       params.Solve,
-      startTime,
+      startTime
     );
     solved = answer.solved;
     isChecking = false;
@@ -264,12 +253,7 @@
   }
 
   function handleGlobalKeydown(e) {
-    if (
-      e.altKey &&
-      e.key.toLowerCase() === "k" &&
-      showCalculatorButton &&
-      !calculatorFocused
-    ) {
+    if (e.altKey && e.key.toLowerCase() === 'k' && showCalculatorButton && !calculatorFocused) {
       e.preventDefault();
       e.stopPropagation();
       toggleCalculator();
@@ -287,7 +271,7 @@
     if (info.inputs && info.inputs.length > 0) {
       for (let i = 0; i < info.inputs.length; i++) {
         const input = info.inputs[i];
-        if (input && typeof input.focus === "function") {
+        if (input && typeof input.focus === 'function') {
           input.focus();
           cipherFocused = true;
           lastFocusedInputIndex = i;
@@ -299,12 +283,9 @@
 
   function focusLastOrFirstAvailableInput() {
     if (info.inputs && info.inputs.length > 0) {
-      if (
-        lastFocusedInputIndex >= 0 &&
-        lastFocusedInputIndex < info.inputs.length
-      ) {
+      if (lastFocusedInputIndex >= 0 && lastFocusedInputIndex < info.inputs.length) {
         const lastInput = info.inputs[lastFocusedInputIndex];
-        if (lastInput && typeof lastInput.focus === "function") {
+        if (lastInput && typeof lastInput.focus === 'function') {
           lastInput.focus();
           cipherFocused = true;
           return;
@@ -324,15 +305,10 @@
   }
 
   onMount(() => {
-    if (mode == "multiplayer") {
+    if (mode == 'multiplayer') {
       debouncedProgressUpdate = debounce(() => {
-        const filled = getInputText(info.inputs).replace(
-          /[^A-Za-z]/g,
-          "",
-        ).length;
-        const total = info.cipherText.filter((chunk) =>
-          isSolvableChunk(chunk, cipherType),
-        ).length;
+        const filled = getInputText(info.inputs).replace(/[^A-Za-z]/g, '').length;
+        const total = info.cipherText.filter((chunk) => isSolvableChunk(chunk, cipherType)).length;
         const percent = Math.floor((filled / total) * 100);
         onProgressUpdate(percent);
       }, 250);
@@ -340,20 +316,20 @@
       debouncedProgressUpdate();
     }
 
-    document.addEventListener("keydown", handleGlobalKeydown);
+    document.addEventListener('keydown', handleGlobalKeydown);
 
-    document.addEventListener("focusin", handleGlobalFocusIn);
-    document.addEventListener("focusout", handleGlobalFocusOut);
+    document.addEventListener('focusin', handleGlobalFocusIn);
+    document.addEventListener('focusout', handleGlobalFocusOut);
   });
 
   onDestroy(() => {
-    document.removeEventListener("keydown", handleGlobalKeydown);
-    document.removeEventListener("focusin", handleGlobalFocusIn);
-    document.removeEventListener("focusout", handleGlobalFocusOut);
+    document.removeEventListener('keydown', handleGlobalKeydown);
+    document.removeEventListener('focusin', handleGlobalFocusIn);
+    document.removeEventListener('focusout', handleGlobalFocusOut);
   });
 
   function handleGlobalFocusIn(e) {
-    if (e.target && e.target.closest && e.target.closest(".cipher")) {
+    if (e.target && e.target.closest && e.target.closest('.cipher')) {
       cipherFocused = true;
 
       if (info.inputs && info.inputs.length > 0) {
@@ -366,14 +342,10 @@
   }
 
   function handleGlobalFocusOut(e) {
-    if (e.target && e.target.closest && e.target.closest(".cipher")) {
+    if (e.target && e.target.closest && e.target.closest('.cipher')) {
       setTimeout(() => {
         const activeElement = document.activeElement;
-        if (
-          !activeElement ||
-          !activeElement.closest ||
-          !activeElement.closest(".cipher")
-        ) {
+        if (!activeElement || !activeElement.closest || !activeElement.closest('.cipher')) {
           cipherFocused = false;
         }
       }, 10);
@@ -391,22 +363,20 @@
 
   <div class="info">
     <h3>
-      {params["Solve"]} this
+      {params['Solve']} this
       <span class="highlight" style="border-radius: 3px; padding: 3px;"
         >{paramString + cipherType}</span
       > cipher.
     </h3>
     {#each keys as key, index}
-      {#if cipherTypes[cipherType]["keys"][index][0] != "!"}
+      {#if cipherTypes[cipherType]['keys'][index][0] != '!'}
         <h4>
-          The {cipherTypes[cipherType]["keys"][index]} is
-          <span class="highlight" style="border-radius: 3px; padding: 3px;"
-            >{key}</span
-          >.
+          The {cipherTypes[cipherType]['keys'][index]} is
+          <span class="highlight" style="border-radius: 3px; padding: 3px;">{key}</span>.
         </h4>
       {/if}
     {/each}
-    {#if cipherType == "Xenocrypt"}
+    {#if cipherType == 'Xenocrypt'}
       <h4>Type "," to get "Ñ".</h4>
     {/if}
   </div>
@@ -414,7 +384,7 @@
     {#each lettersWithIndices as word}
       <div class="word">
         {#each word as { letter, index, keyLetter }}
-          {#if cipherType === "Fractionated Morse"}
+          {#if cipherType === 'Fractionated Morse'}
             <MorseLetter
               bind:inputs={info.inputs}
               cipherLetter={letter}
@@ -427,7 +397,7 @@
               {onChange}
               {solved}
             />
-          {:else if cipherType === "Baconian"}
+          {:else if cipherType === 'Baconian'}
             <BaconianLetter
               bind:inputs={info.inputs}
               cipherLetter={letter}
@@ -465,33 +435,33 @@
       </div>
     {/each}
   </div>
-  {#if cipherTypes[cipherType]["addOn"] == "freqTable"}
-    <FreqTable bind:info {solved} {autoFocus} k={params["K"]} {spanish} />
-  {:else if cipherTypes[cipherType]["addOn"] == "atbashTable"}
+  {#if cipherTypes[cipherType]['addOn'] == 'freqTable'}
+    <FreqTable bind:info {solved} {autoFocus} k={params['K']} {spanish} />
+  {:else if cipherTypes[cipherType]['addOn'] == 'atbashTable'}
     <AtbashTable />
-  {:else if cipherTypes[cipherType]["addOn"] == "baconTable"}
+  {:else if cipherTypes[cipherType]['addOn'] == 'baconTable'}
     <BaconianTable />
-  {:else if cipherTypes[cipherType]["addOn"] == "portaTable"}
+  {:else if cipherTypes[cipherType]['addOn'] == 'portaTable'}
     <PortaTable />
-  {:else if cipherTypes[cipherType]["addOn"] == "caesarTable"}
+  {:else if cipherTypes[cipherType]['addOn'] == 'caesarTable'}
     <CaesarTable />
-  {:else if cipherTypes[cipherType]["addOn"] == "polybiusSquare"}
+  {:else if cipherTypes[cipherType]['addOn'] == 'polybiusSquare'}
     <PolybiusSquare {autoFocus} {clearPolybius} {resetClear} />
-  {:else if cipherTypes[cipherType]["addOn"] == "checkerboardTable"}
+  {:else if cipherTypes[cipherType]['addOn'] == 'checkerboardTable'}
     <CheckerboardTable {autoFocus} {clearPolybius} {resetClear} />
-  {:else if cipherTypes[cipherType]["addOn"] == "mathAddOn"}
+  {:else if cipherTypes[cipherType]['addOn'] == 'mathAddOn'}
     <CaesarTable />
 
-    {#if cipherType == "Hill"}
-      <MatrixInput encode={params["Solve"] == "Encode"} keyword={keys[0]} />
+    {#if cipherType == 'Hill'}
+      <MatrixInput encode={params['Solve'] == 'Encode'} keyword={keys[0]} />
     {:else}
-      <AffineInput encode={params["Solve"] == "Encode"} {keys} />
+      <AffineInput encode={params['Solve'] == 'Encode'} {keys} />
     {/if}
 
-    {#if params["Solve"] == "Decode"}
+    {#if params['Solve'] == 'Decode'}
       <DeterminantTable />
     {/if}
-  {:else if cipherTypes[cipherType]["addOn"] == "morseTable"}
+  {:else if cipherTypes[cipherType]['addOn'] == 'morseTable'}
     <MorseTable bind:info {solved} {autoFocus} {crib} />
   {/if}
 
@@ -502,19 +472,13 @@
     {#if (mode === GAME_MODES.SINGLEPLAYER && !autoSwitch) || !solved}
       <button
         class="button"
-        onclick={solved && mode === GAME_MODES.SINGLEPLAYER
-          ? newProblem
-          : checkQuote}
-        >{solved && mode === GAME_MODES.SINGLEPLAYER
-          ? "New Problem"
-          : "Submit"}</button
+        onclick={solved && mode === GAME_MODES.SINGLEPLAYER ? newProblem : checkQuote}
+        >{solved && mode === GAME_MODES.SINGLEPLAYER ? 'New Problem' : 'Submit'}</button
       >
     {/if}
   </div>
   {#if submissionError}
-    <div class="cipher-error" transition:fade>
-      ❌ Incorrect submission. Try again!
-    </div>
+    <div class="cipher-error" transition:fade>❌ Incorrect submission. Try again!</div>
   {/if}
 
   <!-- Calculator Button -->
@@ -555,7 +519,7 @@
   />
 {/if}
 
-{#if solved && mode == "singleplayer" && !gaveUp}
+{#if solved && mode == 'singleplayer' && !gaveUp}
   <div
     style="
     position: fixed;
@@ -692,11 +656,7 @@
   }
 
   .calculator-toggle-btn {
-    background: linear-gradient(
-      145deg,
-      var(--color-primary),
-      var(--color-primary-dark)
-    );
+    background: linear-gradient(145deg, var(--color-primary), var(--color-primary-dark));
     border: 2px solid var(--color-gray-border);
     border-radius: 50%;
     width: 56px;
@@ -712,11 +672,7 @@
   }
 
   .calculator-toggle-btn:hover {
-    background: linear-gradient(
-      145deg,
-      var(--color-primary-dark),
-      var(--color-primary)
-    );
+    background: linear-gradient(145deg, var(--color-primary-dark), var(--color-primary));
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
   }
@@ -735,11 +691,7 @@
   }
 
   .calculator-toggle-btn.cipher-focused:hover {
-    background: linear-gradient(
-      145deg,
-      var(--color-success-darker),
-      var(--color-success-dark)
-    );
+    background: linear-gradient(145deg, var(--color-success-darker), var(--color-success-dark));
   }
 
   .calculator-hint {
