@@ -5,21 +5,21 @@ const clientOptions = {
   serverApi: { version: '1', strict: true, deprecationErrors: true },
   maxPoolSize: 50,
   minPoolSize: 10,
-  maxIdleTimeMS: 45000,
+  maxIdleTimeMS: 120000,
   socketTimeoutMS: 45000,
   connectTimeoutMS: 10000,
   serverSelectionTimeoutMS: 5000,
-  bufferCommands: false,
+  bufferCommands: true,
 };
 
 export async function start_mongo() {
   try {
-    if (mongoose.connection.readyState !== 1) {
-      console.log('[mongo] Connecting to MongoDB...');
+    const readyState = mongoose.connection.readyState;
+
+    if (readyState !== 1) {
+      console.log(`[mongo] Connection state: ${readyState}, attempting to connect...`);
       await mongoose.connect(MONGO_URL, clientOptions);
       console.log('[mongo] Connected to MongoDB.');
-    } else {
-      console.log('[mongo] Already connected.');
     }
 
     const db = mongoose.connection.db;
@@ -31,5 +31,6 @@ export async function start_mongo() {
     console.log('[mongo] Connection verified with ping.');
   } catch (err) {
     console.error('[mongo] Connection error:', err?.stack ?? err);
+    throw err; // Re-throw so caller knows about the failure
   }
 }

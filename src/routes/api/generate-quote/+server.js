@@ -2,9 +2,12 @@ import { json } from '@sveltejs/kit';
 import { generateQuote } from '$game/generateQuote';
 import { authenticate } from '$utils/authenticate';
 import { incrementTotal } from '$utils/statsUtil.js';
+import { start_mongo } from '$services/mongo.js';
 
 export async function POST({ request, cookies }) {
   try {
+    await start_mongo();
+
     const params = await request.json();
     const quoteData = await generateQuote(params);
 

@@ -8,6 +8,7 @@ import helmet from 'helmet';
 import 'dotenv/config';
 import { handler } from '../build/handler.js';
 import { setupSocketServer } from '../ws/socketServer.js';
+import { start_mongo } from '../shared-server/services/mongo.js';
 
 const app = express();
 app.use(
@@ -20,39 +21,50 @@ const server = http.createServer(app);
 
 console.log(`[server] ENV PORT = ${process.env.PORT}`);
 
-// Initialize Socket.io
-const io = setupSocketServer(server);
+async function initializeServer() {
+  try {
+    await start_mongo();
 
-// SvelteKit handlers
-app.use(handler);
+    // Initialize Socket.io
+    const io = setupSocketServer(server);
 
-server.listen(process.env.PORT || 3000, '0.0.0.0', () => {
-  console.log('Server is running');
-});
+    // SvelteKit handlers
+    app.use(handler);
 
-const gracefulShutdown = async (signal) => {
-  console.log(`[server] ${signal} received, starting graceful shutdown...`);
+    server.listen(process.env.PORT || 3000, '0.0.0.0', () => {
+      console.log('Server is running');
+    });
 
-  server.close(() => {
-    console.log('[server] HTTP server closed');
-  });
+    const gracefulShutdown = async (signal) => {
+      console.log(`[server] ${signal} received, starting graceful shutdown...`);
 
-  io.close(() => {
-    console.log('[server] Socket.IO server closed');
-  });
+      server.close(() => {
+        console.log('[server] HTTP server closed');
+      });
 
-  setTimeout(() => {
-    console.log('[server] Graceful shutdown complete');
-    process.exit(0);
-  }, 5000);
-};
+      io.close(() => {
+        console.log('[server] Socket.IO server closed');
+      });
 
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+      setTimeout(() => {
+        console.log('[server] Graceful shutdown complete');
+        process.exit(0);
+      }, 5000);
+    };
 
-process.on('uncaughtException', (err) => {
-  console.error('[server] Uncaught Exception:', err);
-});
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+    process.on('uncaughtException', (err) => {
+      console.error('[server] Uncaught Exception:', err);
+    });
+  } catch (err) {
+    console.error('[server] Initialization error:', err);
+    process.exit(1);
+  }
+}
+
+await initializeServer();
 
 process.on('unhandledRejection', (err) => {
   console.error('[server] Unhandled Promise Rejection:', err);
